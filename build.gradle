@@ -3,9 +3,9 @@ plugins {
 }
 
 repositories {
-    jcenter()
+    mavenCentral()
 }
 
 dependencies {
-
+	compile group: 'org.jsoup', name: 'jsoup', version: '1.13.1'
 }
