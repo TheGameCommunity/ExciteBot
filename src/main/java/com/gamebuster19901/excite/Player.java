@@ -139,6 +139,7 @@ public class Player {
 		if(knownPlayers.contains(player)) {
 			throw new IllegalArgumentException("Player already known!: " + player.toString());
 		}
+		LOGGER.info("New Player found!: " + player.toString());
 		knownPlayers.add(player);
 	}
 	
