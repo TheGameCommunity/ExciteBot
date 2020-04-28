@@ -27,6 +27,7 @@ public class Wiimmfi {
 	
 	private URL url;
 	private Document document;
+	private Throwable error = null;
 	
 	public Wiimmfi() {
 		this(EXCITEBOTS);
@@ -36,8 +37,14 @@ public class Wiimmfi {
 		update(url);
 	};
 	
-	public Wiimmfi(String url) throws MalformedURLException {
-		this(new URL(url));
+	public Wiimmfi(String url) {
+		try {
+			this.url = new URL(url);
+		} catch (MalformedURLException e) {
+			error = e;
+			logger.log(Level.SEVERE, e, () -> e.getMessage());
+		}
+		update();
 	}
 
 	public void update(URL url) {
@@ -58,9 +65,15 @@ public class Wiimmfi {
 					document = Jsoup.connect(url.toString()).get();
 					logger.info("connected to " + url);
 				}
+				error = null;
 			}
 			catch(Exception e) {
-				logger.log(Level.WARNING, e, () -> e.getMessage());
+				error = e;
+			}
+		}
+		else {
+			if(error == null) {
+				error = new NullPointerException("No url or file provided!");
 			}
 		}
 	}
@@ -97,6 +110,11 @@ public class Wiimmfi {
 			}
 		}
 		return players.toArray(new Player[]{});
+	}
+	
+	
+	public Throwable getError() {
+		return error;
 	}
 	
 	public static Player[] getKnownPlayers() {

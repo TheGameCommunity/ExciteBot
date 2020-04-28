@@ -42,7 +42,7 @@ public class Player {
 	private String discord = "";
 	
 	public Player(String name, String friendCode, int playerID) {
-		this(name, friendCode, playerID, null, false);
+		this(name, friendCode, playerID, "", false);
 	}
 	
 	public Player(String name, String friendCode, int playerID, String discord, boolean zeroLoss) {
@@ -93,7 +93,7 @@ public class Player {
 	}
 	
 	public boolean isVerified() {
-		return !getDiscord().isEmpty();
+		return getDiscord() != null && !getDiscord().isEmpty();
 	}
 	
 	public boolean isZeroLoss() {

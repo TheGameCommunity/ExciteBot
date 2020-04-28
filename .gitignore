@@ -16,5 +16,8 @@ out
 build
 .gradle
 
+#JVM
+hs_err_pid*.log
+
 # secrets
 **.secret

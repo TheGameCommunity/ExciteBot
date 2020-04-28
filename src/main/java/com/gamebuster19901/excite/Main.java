@@ -1,48 +1,95 @@
 package com.gamebuster19901.excite;
 
-import java.net.MalformedURLException;
+import java.io.File;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.security.auth.login.LoginException;
+
+import com.gamebuster19901.excite.bot.DiscordBot;
 
 public class Main {
 	
-    public static void main(String[] args) throws MalformedURLException, InterruptedException {
-    	Wiimmfi wiimmfi = null;
-    	if(args.length > 0) {
-    		for(int i = 0; i < args.length; i++) {
-    			if(args[i] == "-url") {
-					wiimmfi = new Wiimmfi(args[++i]);
-    			}
-    		}
-    	}
-    	if(wiimmfi == null) {
-    		wiimmfi = new Wiimmfi();
-    	}
+	private static final Logger LOGGER = Logger.getLogger(Main.class.getName());
+	
+	public static Wiimmfi wiimmfi;
+	public static DiscordBot discordBot;
+	
+    public static void main(String[] args) throws InterruptedException {
     	
-    	Player[] onlinePlayers = wiimmfi.getOnlinePlayers();
-		System.out.println("Online players (" + onlinePlayers.length + "):");
-    	for(int i = 0; i < onlinePlayers.length; i++) {
-    		Player p = onlinePlayers[i];
-    		if(!Player.isPlayerKnown(p.getPlayerID())) {
-    			Player.addPlayer(p);
-    		}
-    		System.out.println(p.getName());
-    	}
+		if(args.length % 2 != 0) {
+			throw new IllegalArgumentException("Must be started with an even number of arguments!");
+		}
+		
+		wiimmfi = startWiimmfi(args);
+		discordBot = null;
+		try {
+			discordBot = startDiscordBot(args, wiimmfi);
+			discordBot.setWiimmfi(wiimmfi);
+		} catch (LoginException | IOException e) {
+			LOGGER.log(Level.SEVERE, e, () -> e.getMessage());
+		}
     	
-    	Player.updatePlayerListFile();
-    	
-    	@SuppressWarnings("static-access")
-		Player[] knownPlayers = wiimmfi.getKnownPlayers();
-    	System.out.println("Known players :(" + knownPlayers.length + ")");
-    	for(int i = 0; i < knownPlayers.length; i++) {
-    		System.out.println(knownPlayers[i].getName());
-    	}
-    	
+    	Throwable prevError = null;
+    	int prevOnline = 0;
+    	discordBot.updatePresence();
     	while(true) {
-    		if(wiimmfi.getOnlinePlayers().length == 0) {
-    			Thread.sleep(60000);
+    		wiimmfi.update();
+    		Throwable error = wiimmfi.getError();
+    		if(error == null) {
+    			if(prevError != null) {
+    				LOGGER.log(Level.SEVERE, "Error resolved.");
+    			}
+    			
+    			Player[] onlinePlayers = wiimmfi.getOnlinePlayers();
+    			Player.updatePlayerListFile();
+    			
+    			LOGGER.info("Players online: " + onlinePlayers.length);
+    			if(discordBot != null && (prevError != null || prevOnline != onlinePlayers.length)) {
+    				discordBot.updatePresence();
+    			}
+    			int waitTime = 6000;
+    			if(onlinePlayers.length > 1) {
+    				waitTime = waitTime / onlinePlayers.length;
+    				if(waitTime < 4000) {
+    					waitTime = 4000;
+    				}
+    			}
+	    		Thread.sleep(waitTime);
+	    		prevOnline = onlinePlayers.length;
     		}
     		else {
-    			Thread.sleep(30000);
+    			Thread.sleep(5000);
+    			if(prevError == null || !prevError.getClass().equals(error.getClass())) {
+    				System.out.println("Error!");
+    				LOGGER.log(Level.SEVERE, error, () -> error.getMessage());
+    			}
+    		}
+    		prevError = error;
+    	}
+    }
+    
+    private static Wiimmfi startWiimmfi(String[] args) {
+    	for(int i = 0; i < args.length; i++) {
+			if(args[i].equalsIgnoreCase("-url")) {
+				return new Wiimmfi(args[++i]);
+			}
+    	}
+    	return new Wiimmfi();
+    }
+    
+    private static DiscordBot startDiscordBot(String[] args, Wiimmfi wiimmfi) throws LoginException, IOException {
+		String botOwner = null;
+		File keyFile = new File("./discord.secret");
+    	for(int i = 0; i < args.length; i++) {
+    		if(args[i].equalsIgnoreCase("-owner")) {
+    			botOwner = args[++i];
+    		}
+    		if(args[i].equalsIgnoreCase("-keyFile")) {
+    			keyFile = new File(args[++i]);
     		}
     	}
+    	return new DiscordBot(wiimmfi, botOwner, keyFile);
     }
 }

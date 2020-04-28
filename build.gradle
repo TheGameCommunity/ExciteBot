@@ -4,8 +4,12 @@ plugins {
 
 repositories {
     mavenCentral()
+    jcenter()
 }
 
 dependencies {
 	compile group: 'org.jsoup', name: 'jsoup', version: '1.13.1'
+    compile ('net.dv8tion:JDA:4.1.1_139') {
+        exclude module: 'opus-java'
+    }
 }
