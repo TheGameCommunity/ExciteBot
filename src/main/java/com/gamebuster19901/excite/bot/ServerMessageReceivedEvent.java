@@ -16,6 +16,7 @@ public class ServerMessageReceivedEvent extends ListenerAdapter {
 		Wiimmfi wiimmfi = Main.discordBot.getWiimmfi();
 		
 		if(e.getGuild().getSelfMember().hasPermission(e.getChannel(), Permission.MESSAGE_WRITE)) {
+			
 			if(message.equals("!online")) {
 				if(checkNotErrored(e)) {
 					Player[] players = wiimmfi.getOnlinePlayers();
@@ -31,6 +32,35 @@ public class ServerMessageReceivedEvent extends ListenerAdapter {
 				}
 				else {
 					e.getChannel().sendMessage("Bot offline due to an error: " + wiimmfi.getError().getClass().getCanonicalName() + ": " + wiimmfi.getError().getMessage());
+				}
+			}
+			
+			else if (message.startsWith("!whois ")) {
+				if(checkNotErrored(e)) {
+					Player[] players = Wiimmfi.getKnownPlayers();
+					String lookingFor = message.substring(7);
+					String response = "";
+					
+					for(Player p : players) {
+						if(p.getName().equalsIgnoreCase(lookingFor)) {
+							response = response + p + "\n";
+						}
+						else if (p.getDiscord().toLowerCase().startsWith(lookingFor.toLowerCase())) {
+							response = response + p + "\n";
+						}
+						else if (p.getFriendCode().equals(lookingFor)) {
+							response = response + p + "\n";
+						}
+						else if (lookingFor.equals("" + p.getPlayerID())) {
+							response = response + p + "\n";
+						}
+					}
+					
+					if(response.isEmpty()) {
+						response = "No players found.";
+					}
+					
+					e.getChannel().sendMessage(response).complete();
 				}
 			}
 		}
