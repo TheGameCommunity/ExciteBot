@@ -49,7 +49,7 @@ public class Main {
     			if(discordBot != null && (prevError != null || prevOnline != onlinePlayers.length)) {
     				discordBot.updatePresence();
     			}
-    			int waitTime = 6000;
+    			int waitTime = 60000;
     			if(onlinePlayers.length > 1) {
     				waitTime = waitTime / onlinePlayers.length;
     				if(waitTime < 4000) {
