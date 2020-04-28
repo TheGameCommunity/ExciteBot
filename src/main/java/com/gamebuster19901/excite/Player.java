@@ -69,7 +69,6 @@ public class Player {
 	}
 	
 	public String toCSV() {
-		System.out.println(playerID + "," + friendCode + "," +  name + "," + discord + "," + zeroLoss);
 		return playerID + "," + friendCode + "," +  name + "," + discord + "," + zeroLoss;
 	}
 	
