@@ -5,6 +5,10 @@ plugins {
 repositories {
     mavenCentral()
     jcenter()
+    
+    maven {
+    	url "https://libraries.minecraft.net"
+	}
 }
 
 dependencies {
@@ -12,4 +16,5 @@ dependencies {
     compile ('net.dv8tion:JDA:4.1.1_139') {
         exclude module: 'opus-java'
     }
+    compile 'com.mojang:brigadier:1.0.17'
 }

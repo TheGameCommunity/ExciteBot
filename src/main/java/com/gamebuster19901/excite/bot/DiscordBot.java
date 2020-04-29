@@ -27,6 +27,7 @@ public class DiscordBot {
 	private static final Logger LOGGER = Logger.getLogger(DiscordBot.class.getName());
 	
 	private static final List<GatewayIntent> GATEWAYS = Arrays.asList(new GatewayIntent[] {GatewayIntent.GUILD_MESSAGES, GatewayIntent.DIRECT_MESSAGES});
+	public static final CommandDispatcher COMMAND_DISPATCHER = new CommandDispatcher();
 	private String botOwner;
 	protected final JDA jda;
 	protected Wiimmfi wiimmfi;
@@ -55,7 +56,7 @@ public class DiscordBot {
 		
 		JDABuilder builder = JDABuilder.create(secret, GATEWAYS).setMemberCachePolicy(MemberCachePolicy.NONE).disableCache(CacheFlag.ACTIVITY, CacheFlag.VOICE_STATE, CacheFlag.EMOTE, CacheFlag.CLIENT_STATUS);
 		this.jda = builder.build();
-		jda.addEventListener(new ServerMessageReceivedEvent());
+		jda.addEventListener(new EventReceiver());
 		secret = null;
 		secretFile = null;
 	}
