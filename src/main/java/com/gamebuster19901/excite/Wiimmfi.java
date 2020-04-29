@@ -96,7 +96,7 @@ public class Wiimmfi {
 					String name = parseLine(e.html(), 10);
 					int playerId = Integer.parseInt(parseLine(e.html(), 1));
 					
-					Player player = Player.getPlayer(playerId);
+					Player player = Player.getPlayerByID(playerId);
 					if(player != null) {
 						player.setName(name);
 					}

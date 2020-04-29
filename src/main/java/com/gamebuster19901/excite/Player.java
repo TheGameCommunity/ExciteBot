@@ -126,7 +126,7 @@ public class Player {
 		return false;
 	}
 	
-	public static Player getPlayer(int pid) {
+	public static Player getPlayerByID(int pid) {
 		for(Player player : knownPlayers) {
 			if (player.playerID == pid) {
 				return player;
