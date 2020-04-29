@@ -29,10 +29,6 @@ public class WhoIsCommand extends WiimmfiCommand{
 		Wiimmfi wiimmfi = Main.discordBot.getWiimmfi();
 		if(checkNotErrored(messageContext)) {
 			Player[] players = wiimmfi.getKnownPlayers();
-			int maxLines = 10000;
-			if(messageContext.isGuildMessage() || messageContext.isPrivateMessage()) {
-				maxLines = 24;
-			}
 			
 			String response = "";
 			if(!lookingFor.isEmpty()) {
