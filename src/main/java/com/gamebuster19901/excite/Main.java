@@ -32,7 +32,6 @@ public class Main {
 		}
     	
     	Throwable prevError = null;
-    	int prevOnline = 0;
     	discordBot.updatePresence();
     	while(true) {
     		wiimmfi.update();
@@ -46,9 +45,6 @@ public class Main {
     			Player.updatePlayerListFile();
     			
     			LOGGER.info("Players online: " + onlinePlayers.length);
-    			if(discordBot != null && (prevError != null || prevOnline != onlinePlayers.length)) {
-    				discordBot.updatePresence();
-    			}
     			int waitTime = 60000;
     			if(onlinePlayers.length > 1) {
     				waitTime = waitTime / onlinePlayers.length;
@@ -57,7 +53,6 @@ public class Main {
     				}
     			}
 	    		Thread.sleep(waitTime);
-	    		prevOnline = onlinePlayers.length;
     		}
     		else {
     			Thread.sleep(5000);
@@ -66,6 +61,7 @@ public class Main {
     				LOGGER.log(Level.SEVERE, error, () -> error.getMessage());
     			}
     		}
+			discordBot.updatePresence();
     		prevError = error;
     	}
     }

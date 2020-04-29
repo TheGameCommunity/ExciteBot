@@ -12,12 +12,14 @@ import java.util.logging.Logger;
 import javax.security.auth.login.LoginException;
 
 import com.gamebuster19901.excite.Wiimmfi;
+import com.mojang.brigadier.CommandDispatcher;
 
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.entities.Activity.ActivityType;
+import net.dv8tion.jda.api.managers.Presence;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.utils.MemberCachePolicy;
 import net.dv8tion.jda.api.utils.cache.CacheFlag;
@@ -74,11 +76,19 @@ public class DiscordBot {
 	}
 	
 	public void updatePresence() {
+		Presence presence = jda.getPresence();
 		if(wiimmfi.getError() == null) {
-			jda.getPresence().setPresence(OnlineStatus.ONLINE, Activity.of(ActivityType.WATCHING, wiimmfi.getOnlinePlayers().length + " racers online"));
+			int playerCount = wiimmfi.getOnlinePlayers().length;
+			if (presence.getStatus() != OnlineStatus.ONLINE || presence.getActivity() == null || presence.getActivity().getType() != ActivityType.WATCHING || !presence.getActivity().getName().equals(playerCount + " racers online")) {
+				presence.setPresence(OnlineStatus.ONLINE, Activity.of(ActivityType.WATCHING, playerCount + " racers online"));
+				System.out.println("set presence");
+			}
 		}
 		else {
-			jda.getPresence().setPresence(OnlineStatus.DO_NOT_DISTURB, true);
+			if(presence.getStatus() != OnlineStatus.DO_NOT_DISTURB || presence.getActivity().getType() != ActivityType.DEFAULT) {
+				presence.setPresence(OnlineStatus.DO_NOT_DISTURB, Activity.of(ActivityType.DEFAULT, "Bot offline"));
+				System.out.println("set presence");
+			}
 		}
 	}
 	
