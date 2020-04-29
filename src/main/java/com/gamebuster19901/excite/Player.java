@@ -15,7 +15,7 @@ public class Player {
 	private static final Logger LOGGER = Logger.getLogger(Player.class.getName());
 	
 	protected static final String LEGACY = new String(Character.toChars(0x1F396));
-	protected static final String VERIFIED = new String(Character.toChars(0x2713));
+	protected static final String VERIFIED = new String(Character.toChars(0x2705));
 	protected static final String ZEROLOSS = new String(Character.toChars(0x2B50));
 	protected static final File KNOWN_PLAYERS = new File("./run/encounteredPlayers.csv");
 	protected static final File OLD_KNOWN_PLAYERS = new File("./run/encounteredPlayers.csv.old");
