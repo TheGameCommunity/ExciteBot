@@ -11,7 +11,12 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.logging.Logger;
 
-public class Player {
+import com.gamebuster19901.excite.bot.user.DiscordUser;
+import com.gamebuster19901.excite.output.OutputCSV;
+
+import net.dv8tion.jda.api.entities.User;
+
+public class Player implements OutputCSV{
 	private static final Logger LOGGER = Logger.getLogger(Player.class.getName());
 	
 	protected static final String LEGACY = new String(Character.toChars(0x1F396));
@@ -40,8 +45,6 @@ public class Player {
 	
 	private boolean zeroLoss = false;
 	private long discord = -1;
-	
-	private String tempCredentials = null;
 	
 	public Player(String name, String friendCode, int playerID) {
 		this(name, friendCode, playerID, -1, false);
@@ -145,6 +148,57 @@ public class Player {
 			}
 		}
 		return null;
+	}
+	
+	public static Player[] getPlayersByName(String name) {
+		HashSet<Player> players = new HashSet<Player>();
+		for(Player player : knownPlayers) {
+			if(player.getName().equalsIgnoreCase(name)) {
+				players.add(player);
+			}
+		}
+		return players.toArray(new Player[]{});
+	}
+	
+	/**
+	 * @deprecated use DiscordUser.getProfiles()
+	 */
+	@Deprecated
+	public static Player[] getPlayersByDiscord(String name, String discriminator) {
+		return getPlayersByDiscord(DiscordUser.getJDAUser(name, discriminator));
+	}
+	
+	/**
+	 * @deprecated use DiscordUser.getProfiles()
+	 */
+	@Deprecated
+	public static Player[] getPlayersByDiscord(User user) {
+		HashSet<Player> players = new HashSet<Player>();
+		if(Main.discordBot != null) {
+			if(user != null) {
+				for(Player player : knownPlayers) {
+					if(player.getPrettyDiscord() == user.getAsTag()) {
+						players.add(player);
+					}
+				}
+			}
+		}
+		return players.toArray(new Player[]{});
+	}
+	
+	/**
+	 * @deprecated use DiscordUser.getProfiles()
+	 */
+	@Deprecated
+	public static Player[] getPlayersByDiscord(DiscordUser user) {
+		return getPlayersByDiscord(user.getJDAUser());
+	}
+	
+	/**
+	 * @deprecated use DiscordUser.getProfiles()
+	 */
+	public static Player[] getPlayersByDiscord(long id) {
+		return getPlayersByDiscord(DiscordUser.getJDAUser(id));
 	}
 	
 	public static void addPlayer(Player player) {
