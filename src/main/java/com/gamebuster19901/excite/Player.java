@@ -39,13 +39,15 @@ public class Player {
 	private final int playerID;
 	
 	private boolean zeroLoss = false;
-	private String discord = "";
+	private long discord = -1;
+	
+	private String tempCredentials = null;
 	
 	public Player(String name, String friendCode, int playerID) {
-		this(name, friendCode, playerID, "", false);
+		this(name, friendCode, playerID, -1, false);
 	}
 	
-	public Player(String name, String friendCode, int playerID, String discord, boolean zeroLoss) {
+	public Player(String name, String friendCode, int playerID, long discord, boolean zeroLoss) {
 		this.name = name;
 		this.friendCode = friendCode;
 		this.playerID = playerID;
@@ -69,7 +71,7 @@ public class Player {
 	}
 	
 	public String toCSV() {
-		return playerID + "," + friendCode + "," +  name + "," + discord + "," + zeroLoss;
+		return playerID + "," + friendCode + "," +  name + "," + getPrettyDiscord() + "," + zeroLoss;
 	}
 	
 	public String getName() {
@@ -93,15 +95,25 @@ public class Player {
 	}
 	
 	public boolean isVerified() {
-		return getDiscord() != null && !getDiscord().isEmpty();
+		return getDiscord() != -1;
 	}
 	
 	public boolean isZeroLoss() {
 		return zeroLoss;
 	}
 	
-	public String getDiscord() {
+	public long getDiscord() {
 		return discord;
+	}
+	
+	public String getPrettyDiscord() {
+		if(Main.discordBot != null) {
+			User user = DiscordUser.getJDAUser(discord);
+			if(user != null) {
+				return user.getAsTag();
+			}
+		}
+		return "<" + getDiscord() + ">"; //if for some reason we cannot get the user's account
 	}
 	
 	@Override
@@ -189,7 +201,7 @@ public class Player {
 					int playerID = Integer.MIN_VALUE;
 					String friendCode = null;
 					String name = null;
-					String discord = null;
+					long discord = -1;
 					boolean zeroLoss = false;
 					
 					String[] data = line.split(",");
@@ -206,7 +218,7 @@ public class Player {
 					playerID = Integer.parseInt(data[0]);
 					friendCode = data[1];
 					name = data[2];
-					discord = data[3];
+					discord = Long.parseLong(data[3]);
 					zeroLoss = Boolean.parseBoolean(data[4]);
 					
 					players.add(new Player(name, friendCode, playerID, discord, zeroLoss));

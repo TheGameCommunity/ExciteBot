@@ -40,13 +40,16 @@ public class WhoIsCommand extends WiimmfiCommand{
 					if(p.getName().equalsIgnoreCase(lookingFor)) {
 						response = response + p + "\n";
 					}
-					else if (p.getDiscord().toLowerCase().startsWith(lookingFor.toLowerCase())) {
+					else if (p.getPrettyDiscord().toLowerCase().startsWith(lookingFor.toLowerCase())) {
 						response = response + p + "\n";
 					}
 					else if (p.getFriendCode().equals(lookingFor)) {
 						response = response + p + "\n";
 					}
 					else if (lookingFor.equals("" + p.getPlayerID())) {
+						response = response + p + "\n";
+					}
+					else if (lookingFor.equals("" + p.getDiscord())) {
 						response = response + p + "\n";
 					}
 				}
