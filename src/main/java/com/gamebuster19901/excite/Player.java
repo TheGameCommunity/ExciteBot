@@ -22,6 +22,7 @@ public class Player implements OutputCSV{
 	protected static final String LEGACY = new String(Character.toChars(0x1F396));
 	protected static final String VERIFIED = new String(Character.toChars(0x2705));
 	protected static final String ZEROLOSS = new String(Character.toChars(0x2B50));
+	protected static final String BANNED = new String(Character.toChars(0x274C));
 	protected static final File KNOWN_PLAYERS = new File("./run/encounteredPlayers.csv");
 	protected static final File OLD_KNOWN_PLAYERS = new File("./run/encounteredPlayers.csv.old");
 	
@@ -68,13 +69,13 @@ public class Player implements OutputCSV{
 		}
 		if(isVerified()) {
 			prefix += VERIFIED;
-			return String.format(prefix + " " + discord + "(" + name + ") - FC:[" + friendCode +  "] - PID:["  + playerID + "]");
+			return String.format(prefix + " " + getPrettyDiscord() + "(" + name + ") - FC:[" + friendCode +  "] - PID:["  + playerID + "]");
 		}
 		return String.format(prefix + " " + name + " - FC:[" + friendCode +  "] - PID:["  + playerID + "]");
 	}
 	
 	public String toCSV() {
-		return playerID + "," + friendCode + "," +  name + "," + getPrettyDiscord() + "," + zeroLoss;
+		return playerID + "," + friendCode + "," +  name + "," + discord + "," + zeroLoss;
 	}
 	
 	public String getName() {
