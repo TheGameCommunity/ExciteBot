@@ -61,6 +61,9 @@ public class DiscordUser implements OutputCSV{
 	}
 	
 	public static final User getJDAUser(String name, String discriminator) {
-		return Main.discordBot.jda.getUserByTag(name, discriminator);
+		if(Main.discordBot != null) {
+			return Main.discordBot.jda.getUserByTag(name, discriminator);
+		}
+		return null;
 	}
 }

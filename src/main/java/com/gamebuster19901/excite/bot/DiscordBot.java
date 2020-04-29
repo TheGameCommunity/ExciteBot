@@ -31,7 +31,7 @@ public class DiscordBot {
 	private static final List<GatewayIntent> GATEWAYS = Arrays.asList(new GatewayIntent[] {GatewayIntent.GUILD_MESSAGES, GatewayIntent.DIRECT_MESSAGES});
 	public static final CommandDispatcher COMMAND_DISPATCHER = new CommandDispatcher();
 	private String botOwner;
-	protected final JDA jda;
+	public final JDA jda;
 	protected Wiimmfi wiimmfi;
 	
 	public DiscordBot(Wiimmfi wiimmfi, String botOwner, File secretFile) throws LoginException, IOException {
