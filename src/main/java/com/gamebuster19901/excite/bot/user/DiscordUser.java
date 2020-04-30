@@ -80,7 +80,7 @@ public class DiscordUser implements OutputCSV{
 	}
 	
 	public static void addUser(DiscordUser user) {
-		
+		knownUsers.add(user);
 	}
 	
 	public static final User getJDAUser(long id) {
@@ -111,7 +111,7 @@ public class DiscordUser implements OutputCSV{
 		User JDAUser = getJDAUser(id);
 		if(JDAUser != null) {
 			DiscordUser user = new DiscordUser(JDAUser);
-			knownUsers.add(user);
+			addUser(user);
 			return user;
 		}
 		return null;
@@ -126,7 +126,7 @@ public class DiscordUser implements OutputCSV{
 		User JDAUser = getJDAUser(discriminator);
 		if(JDAUser != null) {
 			DiscordUser user = new DiscordUser(JDAUser);
-			knownUsers.add(user);
+			addUser(user);
 			return user;
 		}
 		return null;
