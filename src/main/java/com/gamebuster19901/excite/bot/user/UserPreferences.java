@@ -127,6 +127,7 @@ public class UserPreferences implements OutputCSV{
 			this.banExpire.setValue(Instant.MAX);
 		}
 		this.banReason.setValue(reason);
+		int bans = banCount.setValue(banCount.getValue() + 1);
 		DiscordUser discordUser = DiscordUser.getDiscordUser(this.discordId.getValue());
 		discordUser.sendMessage(discordUser.getJDAUser().getAsMention() + " " + (String)banReason.getValue());
 	}
@@ -161,10 +162,10 @@ public class UserPreferences implements OutputCSV{
 	void sentCommand() {
 		int messageCount = messageCountPastFifteenSeconds.setValue(messageCountPastFifteenSeconds.getValue() + 1);
 		if(messageCount > 7) {
-			int bans = banCount.setValue(banCount.getValue() + 1);
 			String banTimeString;
 			Duration banTime;
-			switch(bans) {
+			switch(banCount.getValue()) {
+				case 0:
 				case 1:
 					banTime = Duration.ofSeconds(30);
 					break;
