@@ -1,10 +1,15 @@
 package com.gamebuster19901.excite.util;
 
 import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 
 public final class TimeUtils {
 	public static String readableDuration(Duration duration) {
 		String time = "";
+		
+		if(duration.equals(ChronoUnit.FOREVER.getDuration())) {
+			return " forever";
+		}
 		
 		if(duration.isNegative()) {
 			time = "-";
@@ -28,6 +33,6 @@ public final class TimeUtils {
 			duration = duration.minus(Duration.ofSeconds(duration.getSeconds()));
 		}
 		
-		return time.replaceAll("#", "");
+		return time.replaceAll("#", " ");
 	}
 }
