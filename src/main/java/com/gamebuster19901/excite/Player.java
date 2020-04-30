@@ -33,7 +33,7 @@ public class Player implements OutputCSV{
 				KNOWN_PLAYERS.getParentFile().mkdirs();
 				KNOWN_PLAYERS.createNewFile();
 			}
-			knownPlayers = new HashSet<Player>(Arrays.asList(getEncounteredPlayers()));
+			knownPlayers = new HashSet<Player>(Arrays.asList(getEncounteredPlayersFromFile()));
 		}
 		catch(IOException e) {
 			throw new IOError(e);
@@ -247,6 +247,21 @@ public class Player implements OutputCSV{
 	}
 	
 	public static Player[] getEncounteredPlayers() {
+		return knownPlayers.toArray(new Player[] {});
+	}
+	
+	public static Player[] getPlayersFromIds(int[] ids) {
+		HashSet<Player> players = new HashSet<Player>();
+		for(int i = 0; i < ids.length; i++) {
+			Player player = getPlayerByID(ids[i]);
+			if(player != null) {
+				players.add(player);
+			}
+		}
+		return players.toArray(new Player[]{});
+	}
+	
+	private static Player[] getEncounteredPlayersFromFile() {
 		HashSet<Player> players = new HashSet<Player>();
 		try {
 			BufferedReader reader = null;

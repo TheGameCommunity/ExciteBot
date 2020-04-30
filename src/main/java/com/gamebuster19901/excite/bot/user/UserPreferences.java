@@ -40,7 +40,12 @@ public class UserPreferences implements OutputCSV{
 		discordId = new LongPreference(discordUser.getId());
 	}
 	
-	public void parsePreferences(String preferences) {
+	public UserPreferences(String discord, long discordId) {
+		this.discord = new StringPreference(discord);
+		this.discordId = new LongPreference(discordId);
+	}
+	
+	public UserPreferences() {
 		
 	}
 	

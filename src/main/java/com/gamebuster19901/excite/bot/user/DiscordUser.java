@@ -1,6 +1,15 @@
 package com.gamebuster19901.excite.bot.user;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOError;
+import java.io.IOException;
 import java.time.Duration;
+import java.time.Instant;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -16,10 +25,25 @@ import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 
 public class DiscordUser implements OutputCSV{
 	
-	private static final HashSet<DiscordUser> knownUsers = new HashSet<DiscordUser>();
+	private static final File USER_PREFS = new File("./run/userPreferences.csv");
+	private static final File OLD_USER_PREFS = new File("./run/userPreferences.csv.old");
+	private static HashSet<DiscordUser> users;
+	
+	static {
+		try {
+			if(!USER_PREFS.exists()) {
+				USER_PREFS.getParentFile().mkdirs();
+				USER_PREFS.createNewFile();
+			}
+			users = new HashSet<DiscordUser>(Arrays.asList(getEncounteredUsersFromFile()));
+		}
+		catch(IOException e) {
+			throw new IOError(e);
+		}
+	}
 	
 	private User user;
-	private final long id;
+	protected final long id;
 	UserPreferences preferences;
 	
 	public DiscordUser(User user) {
@@ -33,6 +57,11 @@ public class DiscordUser implements OutputCSV{
 	
 	public DiscordUser(String name, String discriminator) {
 		this(getJDAUser(name, discriminator));
+	}
+	
+	protected DiscordUser(long id) {
+		this.id = id;
+		this.preferences = new UserPreferences();
 	}
 	
 	@Nullable
@@ -95,7 +124,7 @@ public class DiscordUser implements OutputCSV{
 	}
 	
 	public static void addUser(DiscordUser user) {
-		knownUsers.add(user);
+		users.add(user);
 	}
 	
 	public static final User getJDAUser(long id) {
@@ -118,7 +147,7 @@ public class DiscordUser implements OutputCSV{
 	}
 	
 	public static final DiscordUser getDiscordUser(long id) {
-		for(DiscordUser user : knownUsers) {
+		for(DiscordUser user : users) {
 			if(user.getId() == id) {
 				return user;
 			}
@@ -133,7 +162,7 @@ public class DiscordUser implements OutputCSV{
 	}
 	
 	public static final DiscordUser getDiscordUser(String discriminator) {
-		for(DiscordUser user : knownUsers) {
+		for(DiscordUser user : users) {
 			if(user.getJDAUser().getAsTag().equalsIgnoreCase(discriminator)) {
 				return user;
 			}
@@ -148,16 +177,114 @@ public class DiscordUser implements OutputCSV{
 	}
 	
 	public static final DiscordUser[] getKnownUsers() {
-		return knownUsers.toArray(new DiscordUser[]{});
-	}
-	
-	public static final void updateDiscordUserListFile() {
-		
+		return users.toArray(new DiscordUser[]{});
 	}
 	
 	public static void updateCooldowns() {
 		for(DiscordUser user : getKnownUsers()) {
 			user.preferences.updateCooldowns();
 		}
+	}
+	
+	public static void updateUserPreferencesFile() {
+		BufferedWriter writer = null;
+		try {
+			if(OLD_USER_PREFS.exists()) {
+				OLD_USER_PREFS.delete();
+			}
+			if(!USER_PREFS.renameTo(OLD_USER_PREFS)) {
+				throw new IOException();
+			}
+			USER_PREFS.createNewFile();
+			writer = new BufferedWriter(new FileWriter(USER_PREFS));
+			for(DiscordUser discordUser : users) {
+				writer.write(discordUser.toCSV());
+				writer.newLine();
+			}
+		}
+		catch(IOException e) {
+			throw new AssertionError(e);
+		}
+		finally {
+			try {
+				if(writer != null) {
+					writer.close();
+				}
+			} catch (IOException e) {
+				throw new IOError(e);
+			}
+		}
+	}
+	
+	private static final DiscordUser[] getEncounteredUsersFromFile() {
+		HashSet<DiscordUser> discordUsers = new HashSet<DiscordUser>();
+		try {
+			BufferedReader reader = new BufferedReader(new FileReader(USER_PREFS));
+			try {
+				while(reader.ready()) {
+					String line = reader.readLine();
+					
+					String discord;
+					long discordId;
+					int notifyThreshold;
+					Duration notifyFrequency;
+					Player[] profiles;
+					Instant banTime;
+					Duration banDuration;
+					Instant banExpire;
+					String banReason;
+					int banCount;
+					
+					String[] data = line.split(REGEX_SPLITTER);
+					
+					for(int i = 0; i < data.length; i++) {
+						if (data[i] == null) {
+							throw new IllegalArgumentException("argument " + i + " in \"" + line + "\"");
+						}
+					}
+					
+					DiscordUser discordUser;
+					UserPreferences preferences = new UserPreferences();
+					
+					discord = data[0];
+					discordId = Integer.parseInt(data[1]);
+					notifyThreshold = Integer.parseInt(data[2]);
+					notifyFrequency = Duration.parse(data[3]);
+					String[] players = data[4].split(",");
+					int[] playerIDs = new int[players.length];
+					for(int i = 0; i < players.length; i++) {
+						playerIDs[i] = Integer.parseInt(players[i]);
+					}
+					profiles = Player.getPlayersFromIds(playerIDs);
+					banTime = Instant.parse(data[5]);
+					banDuration = Duration.parse(data[6]);
+					banExpire = Instant.parse(data[7]);
+					banReason = data[8];
+					banCount = Integer.parseInt(data[9]);
+					
+					preferences.parsePreferences(discord, discordId, notifyThreshold, notifyFrequency, profiles, banTime, banDuration, banExpire, banReason, banCount);
+					
+					User jdaUser = getJDAUser(discordId);
+					if(jdaUser != null) {
+						discordUser = new DiscordUser(jdaUser);
+					}
+					else {
+						discordUser = new UnknownDiscordUser(discordId);
+					}
+					discordUser.preferences = preferences;
+					
+					discordUsers.add(discordUser);
+				}
+			}
+			finally {
+				if(reader != null) {
+					reader.close();
+				}
+			}
+		}
+		catch(IOException e) {
+			throw new AssertionError(e);
+		}
+		return discordUsers.toArray(new DiscordUser[]{});
 	}
 }

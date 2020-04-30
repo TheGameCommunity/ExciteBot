@@ -80,9 +80,9 @@ public class Main {
 			if(discordBot != null) {
 				if(nextDiscordPing.isBefore(Instant.now())) {
 					nextDiscordPing = Instant.now().plus(Duration.ofSeconds(5));
+					DiscordUser.updateUserPreferencesFile();;
 					discordBot.updatePresence();
 					UserPreferences.attemptRegister();
-					//DiscordUser.updateDiscordUserListFile();
 				}
 				if(updateCooldowns.isBefore(Instant.now())) {
 					updateCooldowns = Instant.now().plus(Duration.ofSeconds(4));
