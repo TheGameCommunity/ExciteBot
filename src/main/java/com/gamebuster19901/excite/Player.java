@@ -68,7 +68,13 @@ public class Player implements OutputCSV{
 			prefix += LEGACY;
 		}
 		if(isVerified()) {
-			prefix += VERIFIED;
+			DiscordUser user = DiscordUser.getDiscordUser(discord);
+			if(!user.isBanned()) {
+				prefix += VERIFIED;
+			}
+			else {
+				prefix += BANNED;
+			}
 			return String.format(prefix + " " + getPrettyDiscord() + "(" + name + ") - FC:[" + friendCode +  "] - PID:["  + playerID + "]");
 		}
 		return String.format(prefix + " " + name + " - FC:[" + friendCode +  "] - PID:["  + playerID + "]");
@@ -273,6 +279,9 @@ public class Player implements OutputCSV{
 					playerID = Integer.parseInt(data[0]);
 					friendCode = data[1];
 					name = data[2];
+					if(data[3].isEmpty()) {
+						data[3] = "-1";
+					}
 					discord = Long.parseLong(data[3]);
 					zeroLoss = Boolean.parseBoolean(data[4]);
 					

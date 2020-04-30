@@ -1,6 +1,7 @@
 package com.gamebuster19901.excite.bot.command;
 
 import com.gamebuster19901.excite.bot.EventReceiver;
+import com.gamebuster19901.excite.bot.user.DiscordUser;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
@@ -18,6 +19,7 @@ public class Commands extends EventReceiver{
 	public Commands() {
 		OnlineCommand.register(dispatcher);
 		WhoIsCommand.register(dispatcher);
+		BanCommand.register(dispatcher);
 	}
 	
 	public void handleCommand(String command) {
@@ -34,20 +36,36 @@ public class Commands extends EventReceiver{
 		try {
 			MessageContext<GuildMessageReceivedEvent> context = new MessageContext<GuildMessageReceivedEvent>(e);
 			if(e.getMessage().getContentRaw().startsWith("!")) {
-				this.dispatcher.execute(e.getMessage().getContentRaw(), context);
+				DiscordUser sender = DiscordUser.getDiscordUser(e.getAuthor().getIdLong());
+				if(!sender.isBanned()) {
+					sender.sentCommand();
+					if(!sender.isBanned()) {
+						this.dispatcher.execute(e.getMessage().getContentRaw(), context);
+					}
+				}
+			}
+		}
+		catch (CommandSyntaxException ex) {
+			if(ex.getMessage() != null && !ex.getMessage().startsWith("Unknown command at position")) {
+				e.getChannel().sendMessage(ex.getClass() + " " + ex.getMessage()).complete();
 			}
 		}
 		catch (Exception ex) {
-			if(!ex.getMessage().startsWith("Unknown command at position")) {
-				e.getChannel().sendMessage(ex.getClass() + " " + ex.getMessage()).complete();
-			}
+			ex.printStackTrace();
+			e.getChannel().sendMessage(ex.getClass() + " " + ex.getMessage()).complete();
 		}
 	}
 	
 	public void handleCommand(PrivateMessageReceivedEvent e) {
 		try {
 			MessageContext<PrivateMessageReceivedEvent> context = new MessageContext<PrivateMessageReceivedEvent>(e);
-			this.dispatcher.execute(e.getMessage().getContentRaw(), context);
+			DiscordUser sender = DiscordUser.getDiscordUser(e.getAuthor().getIdLong());
+			if(!sender.isBanned()) {
+				sender.sentCommand();
+				if(!sender.isBanned()) {
+					this.dispatcher.execute(e.getMessage().getContentRaw(), context);
+				}
+			}
 		}
 		catch (CommandSyntaxException ex) {
 			e.getChannel().sendMessage(ex.getMessage()).complete();
