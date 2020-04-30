@@ -8,9 +8,11 @@ import javax.annotation.Nullable;
 
 import com.gamebuster19901.excite.Main;
 import com.gamebuster19901.excite.Player;
+import com.gamebuster19901.excite.bot.command.MessageContext;
 import com.gamebuster19901.excite.output.OutputCSV;
 
 import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 
 public class DiscordUser implements OutputCSV{
 	
@@ -46,8 +48,8 @@ public class DiscordUser implements OutputCSV{
 		return id;
 	}
 	
-	public void ban(Duration duration, String reason) {
-		this.preferences.ban(duration, reason);
+	public void ban(MessageContext context, Duration duration, String reason) {
+		this.preferences.ban(context, duration, reason);
 	}
 	
 	public void pardon() {
@@ -71,12 +73,26 @@ public class DiscordUser implements OutputCSV{
 		return preferences.isBanned();
 	}
 	
-	public void sentCommand() {
-		this.preferences.sentCommand();
+	public void sentCommand(MessageContext context) {
+		this.preferences.sentCommand(context);
 	}
 	
 	public void sendMessage(String message) {
 		user.openPrivateChannel().complete().sendMessage(message).complete();
+	}
+	
+	public void sendMessage(MessageContext context, String message) {
+		if(context.isGuildMessage()) {
+			GuildMessageReceivedEvent e = (GuildMessageReceivedEvent) context.getEvent();
+			User receiver = this.getJDAUser();
+			if(e.getGuild().isMember(receiver)) {
+				if(e.getChannel().canTalk(e.getGuild().getMember(receiver))) {
+					e.getChannel().sendMessage(message).complete();
+					return;
+				}
+			}
+		}
+		sendMessage(message);
 	}
 	
 	public static void addUser(DiscordUser user) {
@@ -138,5 +154,11 @@ public class DiscordUser implements OutputCSV{
 	
 	public static final void updateDiscordUserListFile() {
 		
+	}
+	
+	public static void updateCooldowns() {
+		for(DiscordUser user : getKnownUsers()) {
+			user.preferences.updateCooldowns();
+		}
 	}
 }

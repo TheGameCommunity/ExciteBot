@@ -16,15 +16,15 @@ public class BanCommand extends WiimmfiCommand {
 	public static void register(CommandDispatcher<MessageContext> dispatcher) {
 		dispatcher.register(Commands.literal("!ban").requires((permission) -> {
 			return true;//permission.isConsoleMessage() || permission.isAdmin();
-		}).then(Commands.argument("discordUser", StringArgumentType.word()).then((Commands.argument("discriminator", StringArgumentType.string()).executes((command) -> {
-			return banUserForever(getDiscordUser(command.getArgument("discordUser", String.class), command.getArgument("discriminator", String.class)));
-		}).then(Commands.argument("reason", StringArgumentType.greedyString()).executes((command) -> {
-			return banUserForever(getDiscordUser(command.getArgument("discordUser", String.class), command.getArgument("discriminator", String.class)), command.getArgument("reason", String.class));
+		}).then(Commands.argument("discordUser", StringArgumentType.word()).then((Commands.argument("discriminator", StringArgumentType.string()).executes((context) -> {
+			return banUserForever(context.getSource(), getDiscordUser(context.getArgument("discordUser", String.class), context.getArgument("discriminator", String.class)));
+		}).then(Commands.argument("reason", StringArgumentType.greedyString()).executes((context) -> {
+			return banUserForever(context.getSource(), getDiscordUser(context.getArgument("discordUser", String.class), context.getArgument("discriminator", String.class)), context.getArgument("reason", String.class));
 		}))
-		.then(Commands.argument("amount", IntegerArgumentType.integer(1)).then(Commands.argument("timeUnit", StringArgumentType.string()).executes((command) -> {
-			return banUser(getDiscordUser(command.getArgument("discordUser", String.class), command.getArgument("discriminator", String.class)), command.getArgument("amount", Integer.class), command.getArgument("timeUnit", String.class));
-		}).then(Commands.argument("reason", StringArgumentType.greedyString()).executes((command) -> {
-			return banUser(getDiscordUser(command.getArgument("discordUser", String.class), command.getArgument("discriminator", String.class)), command.getArgument("amount", Integer.class), command.getArgument("timeUnit", String.class), command.getArgument("reason", String.class));
+		.then(Commands.argument("amount", IntegerArgumentType.integer(1)).then(Commands.argument("timeUnit", StringArgumentType.string()).executes((context) -> {
+			return banUser(context.getSource(), getDiscordUser(context.getArgument("discordUser", String.class), context.getArgument("discriminator", String.class)), context.getArgument("amount", Integer.class), context.getArgument("timeUnit", String.class));
+		}).then(Commands.argument("reason", StringArgumentType.greedyString()).executes((context) -> {
+			return banUser(context.getSource(), getDiscordUser(context.getArgument("discordUser", String.class), context.getArgument("discriminator", String.class)), context.getArgument("amount", Integer.class), context.getArgument("timeUnit", String.class), context.getArgument("reason", String.class));
 		}))))))));
 	}
 	
@@ -36,29 +36,29 @@ public class BanCommand extends WiimmfiCommand {
 		return user;
 	}
 	
-	private static int banUser(DiscordUser user, int amount, String timeUnit) {
-		return banUser(user, amount, timeUnit, null);
+	private static int banUser(MessageContext context, DiscordUser user, int amount, String timeUnit) {
+		return banUser(context, user, amount, timeUnit, null);
 	}
 	
-	private static int banUser(DiscordUser user, int amount, String timeUnit, String reason) {
+	private static int banUser(MessageContext context, DiscordUser user, int amount, String timeUnit, String reason) {
 		if(user != null) {
 			Duration duration = computeDuration(amount, timeUnit);
 			if(duration != null) {
-				return banUser(user, duration, reason);
+				return banUser(context, user, duration, reason);
 			}
 		}
 		return 0;
 	}
 	
-	private static int banUserForever(DiscordUser user) {
-		return banUserForever(user, null);
+	private static int banUserForever(MessageContext context, DiscordUser user) {
+		return banUserForever(context, user, null);
 	}
 	
-	private static int banUserForever(DiscordUser user, String reason) {
+	private static int banUserForever(MessageContext context, DiscordUser user, String reason) {
 		if(user != null) {
 			Duration duration = ChronoUnit.FOREVER.getDuration();
 			if(duration != null) {
-				user.ban(duration, parseReason(duration, reason));
+				user.ban(context, duration, parseReason(duration, reason));
 			}
 		}
 		return 0;
@@ -81,8 +81,8 @@ public class BanCommand extends WiimmfiCommand {
 		return duration;
 	}
 	
-	private static int banUser(DiscordUser user, Duration duration, String reason) {
-		user.ban(duration, parseReason(duration, reason));
+	private static int banUser(MessageContext context, DiscordUser user, Duration duration, String reason) {
+		user.ban(new MessageContext(), duration, parseReason(duration, reason));
 		return 1;
 	}
 	

@@ -10,6 +10,7 @@ import java.util.logging.Logger;
 import javax.security.auth.login.LoginException;
 
 import com.gamebuster19901.excite.bot.DiscordBot;
+import com.gamebuster19901.excite.bot.user.DiscordUser;
 import com.gamebuster19901.excite.bot.user.UserPreferences;
 
 public class Main {
@@ -45,6 +46,7 @@ public class Main {
 		Throwable prevError = null;
 		Instant nextWiimmfiPing = Instant.now();
 		Instant nextDiscordPing = Instant.now();
+		Instant updateCooldowns = Instant.now();
 		while(true) {
 			Throwable error = wiimmfi.getError();
 			if(nextWiimmfiPing.isBefore(Instant.now())) {
@@ -81,6 +83,10 @@ public class Main {
 					discordBot.updatePresence();
 					UserPreferences.attemptRegister();
 					//DiscordUser.updateDiscordUserListFile();
+				}
+				if(updateCooldowns.isBefore(Instant.now())) {
+					updateCooldowns = Instant.now().plus(Duration.ofSeconds(4));
+					DiscordUser.updateCooldowns();
 				}
 			}
 			prevError = error;

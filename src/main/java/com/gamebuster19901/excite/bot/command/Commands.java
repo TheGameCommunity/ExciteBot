@@ -38,7 +38,7 @@ public class Commands extends EventReceiver{
 			if(e.getMessage().getContentRaw().startsWith("!")) {
 				DiscordUser sender = DiscordUser.getDiscordUser(e.getAuthor().getIdLong());
 				if(!sender.isBanned()) {
-					sender.sentCommand();
+					sender.sentCommand(context);
 					if(!sender.isBanned()) {
 						this.dispatcher.execute(e.getMessage().getContentRaw(), context);
 					}
@@ -61,7 +61,7 @@ public class Commands extends EventReceiver{
 			MessageContext<PrivateMessageReceivedEvent> context = new MessageContext<PrivateMessageReceivedEvent>(e);
 			DiscordUser sender = DiscordUser.getDiscordUser(e.getAuthor().getIdLong());
 			if(!sender.isBanned()) {
-				sender.sentCommand();
+				sender.sentCommand(context);
 				if(!sender.isBanned()) {
 					this.dispatcher.execute(e.getMessage().getContentRaw(), context);
 				}

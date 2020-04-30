@@ -8,6 +8,7 @@ import java.util.Set;
 
 import com.gamebuster19901.excite.Main;
 import com.gamebuster19901.excite.Player;
+import com.gamebuster19901.excite.bot.command.MessageContext;
 import com.gamebuster19901.excite.bot.common.preferences.IntegerPreference;
 import com.gamebuster19901.excite.bot.common.preferences.LongPreference;
 import com.gamebuster19901.excite.bot.common.preferences.StringPreference;
@@ -117,7 +118,7 @@ public class UserPreferences implements OutputCSV{
 		profiles.addProfile(profile);
 	}
 	
-	public void ban(Duration duration, String reason) {
+	public void ban(MessageContext context, Duration duration, String reason) {
 		this.banTime.setValue(Instant.now());
 		this.banDuration.setValue(duration);
 		try {
@@ -127,7 +128,7 @@ public class UserPreferences implements OutputCSV{
 			this.banExpire.setValue(Instant.MAX);
 		}
 		this.banReason.setValue(reason);
-		int bans = banCount.setValue(banCount.getValue() + 1);
+		banCount.setValue(banCount.getValue() + 1);
 		DiscordUser discordUser = DiscordUser.getDiscordUser(this.discordId.getValue());
 		discordUser.sendMessage(discordUser.getJDAUser().getAsMention() + " " + (String)banReason.getValue());
 	}
@@ -159,35 +160,46 @@ public class UserPreferences implements OutputCSV{
 		return (String) registrationCode.getValue();
 	}
 	
-	void sentCommand() {
+	void sentCommand(MessageContext context) {
 		int messageCount = messageCountPastFifteenSeconds.setValue(messageCountPastFifteenSeconds.getValue() + 1);
-		if(messageCount > 7) {
-			String banTimeString;
+		if(messageCount == 3) {
+			DiscordUser user = DiscordUser.getDiscordUser(this.discordId.getValue());
+			user.sendMessage(context, user.getJDAUser().getAsMention() + " Slow down! Spamming the bot will result in loss of privilages.");
+		}
+		if(messageCount > 5) {
 			Duration banTime;
 			switch(banCount.getValue()) {
 				case 0:
-				case 1:
 					banTime = Duration.ofSeconds(30);
 					break;
-				case 2:
+				case 1:
 					banTime = Duration.ofMinutes(5);
 					break;
-				case 3:
+				case 2:
 					banTime = Duration.ofMinutes(30);
 					break;
-				case 4:
+				case 3:
 					banTime = Duration.ofDays(1);
 					break;
-				case 5:
+				case 4:
 					banTime = Duration.ofDays(7);
 					break;
+				case 5:
+					banTime = Duration.ofDays(30);
 				default:
 					banTime = ChronoUnit.FOREVER.getDuration();
-					banTimeString = "indefinetly";
 					break;
 			}
-			ban(banTime, "Do not spam the bot. You have been banned from using the bot for " + TimeUtils.readableDuration(banTime));
+			ban(context, banTime, "Do not spam the bot. You have been banned from using the bot for " + TimeUtils.readableDuration(banTime));
 		}
+	}
+	
+	void updateCooldowns() {
+		if(messageCountPastFifteenSeconds.getValue() > 0) {
+			messageCountPastFifteenSeconds.setValue(messageCountPastFifteenSeconds.getValue() - 1);
+		}
+		System.out.println(messageCountPastFifteenSeconds.getValue());
+		System.out.println("Times banned: " + banCount.getValue());
 	}
 	
 	private void register() {
