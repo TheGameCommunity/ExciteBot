@@ -6,8 +6,8 @@ import java.time.temporal.ChronoUnit;
 import java.util.Random;
 import java.util.Set;
 
-import com.gamebuster19901.excite.Main;
 import com.gamebuster19901.excite.Player;
+import com.gamebuster19901.excite.Wiimmfi;
 import com.gamebuster19901.excite.bot.command.MessageContext;
 import com.gamebuster19901.excite.bot.common.preferences.IntegerPreference;
 import com.gamebuster19901.excite.bot.common.preferences.LongPreference;
@@ -118,6 +118,7 @@ public class UserPreferences implements OutputCSV{
 		profiles.addProfile(profile);
 	}
 	
+	@SuppressWarnings("rawtypes")
 	public void ban(MessageContext context, Duration duration, String reason) {
 		this.banTime.setValue(Instant.now());
 		this.banDuration.setValue(duration);
@@ -160,6 +161,7 @@ public class UserPreferences implements OutputCSV{
 		return (String) registrationCode.getValue();
 	}
 	
+	@SuppressWarnings("rawtypes")
 	void sentCommand(MessageContext context) {
 		int messageCount = messageCountPastFifteenSeconds.setValue(messageCountPastFifteenSeconds.getValue() + 1);
 		if(messageCount == 3) {
@@ -222,7 +224,7 @@ public class UserPreferences implements OutputCSV{
 				int desiredProfile = preferences.desiredProfile.getValue();
 				if(desiredProfile > -1) {
 					if(preferences.registrationTimer.getValue().isBefore(Instant.now())) {
-						for(Player player : Main.wiimmfi.getOnlinePlayers()) {
+						for(Player player : Wiimmfi.getOnlinePlayers()) {
 							if(player.getName().equals(preferences.registrationCode.getValue())) {
 								if(player.getPlayerID() == desiredProfile) {
 									preferences.register();

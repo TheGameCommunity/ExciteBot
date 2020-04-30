@@ -19,7 +19,7 @@ public class OnlineCommand extends WiimmfiCommand{
 	public static String getResponse(MessageContext messageContext) {
 		Wiimmfi wiimmfi = Main.discordBot.getWiimmfi();
 		if(checkNotErrored(messageContext)) {
-			Player[] players = wiimmfi.getOnlinePlayers();
+			Player[] players = Wiimmfi.getOnlinePlayers();
 			String response = "Players Online: (" + players.length + ")" + "\n\n";
 			int maxLines = 10000;
 			if(messageContext.isGuildMessage() || messageContext.isPrivateMessage()) {

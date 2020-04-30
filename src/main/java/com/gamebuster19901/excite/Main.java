@@ -56,7 +56,7 @@ public class Main {
 						LOGGER.log(Level.SEVERE, "Error resolved.");
 					}
 					
-					Player[] onlinePlayers = wiimmfi.getOnlinePlayers();
+					Player[] onlinePlayers = Wiimmfi.getOnlinePlayers();
 					Player.updatePlayerListFile();
 					
 					LOGGER.info("Players online: " + onlinePlayers.length);

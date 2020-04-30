@@ -12,8 +12,6 @@ import java.util.logging.Logger;
 import javax.security.auth.login.LoginException;
 
 import com.gamebuster19901.excite.Wiimmfi;
-import com.mojang.brigadier.CommandDispatcher;
-
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.OnlineStatus;
@@ -29,7 +27,6 @@ public class DiscordBot {
 	private static final Logger LOGGER = Logger.getLogger(DiscordBot.class.getName());
 	
 	private static final List<GatewayIntent> GATEWAYS = Arrays.asList(new GatewayIntent[] {GatewayIntent.GUILD_MESSAGES, GatewayIntent.DIRECT_MESSAGES, GatewayIntent.GUILD_MEMBERS});
-	public static final CommandDispatcher COMMAND_DISPATCHER = new CommandDispatcher();
 	private String botOwner;
 	public final JDA jda;
 	protected Wiimmfi wiimmfi;

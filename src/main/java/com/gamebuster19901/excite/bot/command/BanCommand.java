@@ -36,10 +36,12 @@ public class BanCommand extends WiimmfiCommand {
 		return user;
 	}
 	
+	@SuppressWarnings("rawtypes")
 	private static int banUser(MessageContext context, DiscordUser user, int amount, String timeUnit) {
 		return banUser(context, user, amount, timeUnit, null);
 	}
 	
+	@SuppressWarnings("rawtypes")
 	private static int banUser(MessageContext context, DiscordUser user, int amount, String timeUnit, String reason) {
 		if(user != null) {
 			Duration duration = computeDuration(amount, timeUnit);
@@ -50,10 +52,12 @@ public class BanCommand extends WiimmfiCommand {
 		return 0;
 	}
 	
+	@SuppressWarnings("rawtypes")
 	private static int banUserForever(MessageContext context, DiscordUser user) {
 		return banUserForever(context, user, null);
 	}
 	
+	@SuppressWarnings("rawtypes")
 	private static int banUserForever(MessageContext context, DiscordUser user, String reason) {
 		if(user != null) {
 			Duration duration = ChronoUnit.FOREVER.getDuration();
@@ -81,6 +85,7 @@ public class BanCommand extends WiimmfiCommand {
 		return duration;
 	}
 	
+	@SuppressWarnings("rawtypes")
 	private static int banUser(MessageContext context, DiscordUser user, Duration duration, String reason) {
 		user.ban(new MessageContext(), duration, parseReason(duration, reason));
 		return 1;

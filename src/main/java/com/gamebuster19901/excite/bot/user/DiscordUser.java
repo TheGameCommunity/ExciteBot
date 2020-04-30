@@ -48,6 +48,7 @@ public class DiscordUser implements OutputCSV{
 		return id;
 	}
 	
+	@SuppressWarnings("rawtypes")
 	public void ban(MessageContext context, Duration duration, String reason) {
 		this.preferences.ban(context, duration, reason);
 	}
@@ -73,6 +74,7 @@ public class DiscordUser implements OutputCSV{
 		return preferences.isBanned();
 	}
 	
+	@SuppressWarnings("rawtypes")
 	public void sentCommand(MessageContext context) {
 		this.preferences.sentCommand(context);
 	}
@@ -81,6 +83,7 @@ public class DiscordUser implements OutputCSV{
 		user.openPrivateChannel().complete().sendMessage(message).complete();
 	}
 	
+	@SuppressWarnings("rawtypes")
 	public void sendMessage(MessageContext context, String message) {
 		if(context.isGuildMessage()) {
 			GuildMessageReceivedEvent e = (GuildMessageReceivedEvent) context.getEvent();
