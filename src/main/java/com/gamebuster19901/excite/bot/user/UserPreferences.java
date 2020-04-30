@@ -200,8 +200,6 @@ public class UserPreferences implements OutputCSV{
 		if(messageCountPastFifteenSeconds.getValue() > 0) {
 			messageCountPastFifteenSeconds.setValue(messageCountPastFifteenSeconds.getValue() - 1);
 		}
-		System.out.println(messageCountPastFifteenSeconds.getValue());
-		System.out.println("Times banned: " + banCount.getValue());
 	}
 	
 	private void register() {
