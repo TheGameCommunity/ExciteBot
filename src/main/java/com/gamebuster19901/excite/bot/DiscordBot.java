@@ -28,7 +28,7 @@ public class DiscordBot {
 
 	private static final Logger LOGGER = Logger.getLogger(DiscordBot.class.getName());
 	
-	private static final List<GatewayIntent> GATEWAYS = Arrays.asList(new GatewayIntent[] {GatewayIntent.GUILD_MESSAGES, GatewayIntent.DIRECT_MESSAGES});
+	private static final List<GatewayIntent> GATEWAYS = Arrays.asList(new GatewayIntent[] {GatewayIntent.GUILD_MESSAGES, GatewayIntent.DIRECT_MESSAGES, GatewayIntent.GUILD_MEMBERS});
 	public static final CommandDispatcher COMMAND_DISPATCHER = new CommandDispatcher();
 	private String botOwner;
 	public final JDA jda;
@@ -56,7 +56,7 @@ public class DiscordBot {
 			}
 		}
 		
-		JDABuilder builder = JDABuilder.create(secret, GATEWAYS).setMemberCachePolicy(MemberCachePolicy.NONE).disableCache(CacheFlag.ACTIVITY, CacheFlag.VOICE_STATE, CacheFlag.EMOTE, CacheFlag.CLIENT_STATUS);
+		JDABuilder builder = JDABuilder.create(secret, GATEWAYS).setMemberCachePolicy(MemberCachePolicy.ALL).disableCache(CacheFlag.ACTIVITY, CacheFlag.VOICE_STATE, CacheFlag.EMOTE, CacheFlag.CLIENT_STATUS);
 		this.jda = builder.build();
 		jda.addEventListener(new EventReceiver());
 		secret = null;
@@ -78,7 +78,7 @@ public class DiscordBot {
 	public void updatePresence() {
 		Presence presence = jda.getPresence();
 		if(wiimmfi.getError() == null) {
-			int playerCount = wiimmfi.getOnlinePlayers().length;
+			int playerCount = Wiimmfi.getOnlinePlayers().length;
 			if (presence.getStatus() != OnlineStatus.ONLINE || presence.getActivity() == null || presence.getActivity().getType() != ActivityType.WATCHING || !presence.getActivity().getName().equals(playerCount + " racers online")) {
 				presence.setPresence(OnlineStatus.ONLINE, Activity.of(ActivityType.WATCHING, playerCount + " racers online"));
 				System.out.println("set presence");

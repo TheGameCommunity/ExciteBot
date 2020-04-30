@@ -2,16 +2,20 @@ package com.gamebuster19901.excite;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.security.auth.login.LoginException;
 
 import com.gamebuster19901.excite.bot.DiscordBot;
+import com.gamebuster19901.excite.bot.user.UserPreferences;
 
 public class Main {
 	
 	private static final Logger LOGGER = Logger.getLogger(Main.class.getName());
+	public static String botOwner;
 	
 	public static Wiimmfi wiimmfi;
 	public static DiscordBot discordBot;
@@ -22,47 +26,65 @@ public class Main {
 			throw new IllegalArgumentException("Must be started with an even number of arguments!");
 		}
 		
+		for(int i = 0; i < args.length; i++) {
+			if(args[i].equals("-owner")) {
+				botOwner = args[++i];
+			}
+		}
+		
 		wiimmfi = startWiimmfi(args);
 		discordBot = null;
 		try {
 			discordBot = startDiscordBot(args, wiimmfi);
 			discordBot.setWiimmfi(wiimmfi);
+			discordBot.updatePresence();
 		} catch (LoginException | IOException e) {
 			LOGGER.log(Level.SEVERE, e, () -> e.getMessage());
 		}
 	
 		Throwable prevError = null;
-		discordBot.updatePresence();
+		Instant nextWiimmfiPing = Instant.now();
+		Instant nextDiscordPing = Instant.now();
 		while(true) {
-			wiimmfi.update();
 			Throwable error = wiimmfi.getError();
-			if(error == null) {
-				if(prevError != null) {
-					LOGGER.log(Level.SEVERE, "Error resolved.");
+			if(nextWiimmfiPing.isBefore(Instant.now())) {
+				wiimmfi.update();
+				if(error == null) {
+					if(prevError != null) {
+						LOGGER.log(Level.SEVERE, "Error resolved.");
+					}
+					
+					Player[] onlinePlayers = wiimmfi.getOnlinePlayers();
+					Player.updatePlayerListFile();
+					
+					LOGGER.info("Players online: " + onlinePlayers.length);
+					int waitTime = 60000;
+					if(onlinePlayers.length > 1) {
+						waitTime = waitTime / onlinePlayers.length;
+						if(waitTime < 4000) {
+							waitTime = 4000;
+						}
+					}
+					nextWiimmfiPing = Instant.now().plus(Duration.ofMillis(waitTime));
 				}
-				
-				Player[] onlinePlayers = wiimmfi.getOnlinePlayers();
-				Player.updatePlayerListFile();
-				
-				LOGGER.info("Players online: " + onlinePlayers.length);
-				int waitTime = 60000;
-				if(onlinePlayers.length > 1) {
-					waitTime = waitTime / onlinePlayers.length;
-					if(waitTime < 4000) {
-						waitTime = 4000;
+				else {
+					nextWiimmfiPing = Instant.now().plus(Duration.ofMillis(5000));
+					if(prevError == null || !prevError.getClass().equals(error.getClass())) {
+						System.out.println("Error!");
+						LOGGER.log(Level.SEVERE, error, () -> error.getMessage());
 					}
 				}
-				Thread.sleep(waitTime);
 			}
-			else {
-				Thread.sleep(5000);
-				if(prevError == null || !prevError.getClass().equals(error.getClass())) {
-					System.out.println("Error!");
-					LOGGER.log(Level.SEVERE, error, () -> error.getMessage());
+			if(discordBot != null) {
+				if(nextDiscordPing.isBefore(Instant.now())) {
+					nextDiscordPing = Instant.now().plus(Duration.ofSeconds(5));
+					discordBot.updatePresence();
+					UserPreferences.attemptRegister();
+					//DiscordUser.updateDiscordUserListFile();
 				}
 			}
-				discordBot.updatePresence();
 			prevError = error;
+			Thread.sleep(1000);
 		}
 	}
 

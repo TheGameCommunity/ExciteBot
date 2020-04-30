@@ -17,6 +17,7 @@ public class Wiimmfi {
 	private static final Logger logger = Logger.getLogger(Wiimmfi.class.getName());
 	
 	private static final URL EXCITEBOTS;
+	private static Document document;
 	static {
 		try {
 			EXCITEBOTS = new URL("https://wiimmfi.de/game/exciteracewii");
@@ -26,7 +27,6 @@ public class Wiimmfi {
 	}
 	
 	private URL url;
-	private Document document;
 	private Throwable error = null;
 	
 	public Wiimmfi() {
@@ -78,7 +78,7 @@ public class Wiimmfi {
 		}
 	}
 	
-	public Player[] getOnlinePlayers() {
+	public static Player[] getOnlinePlayers() {
 		HashSet<Player> players = new HashSet<Player>();
 		if(document != null) {
 			document.getElementsByAttributeValueContaining("id", "game").remove();
