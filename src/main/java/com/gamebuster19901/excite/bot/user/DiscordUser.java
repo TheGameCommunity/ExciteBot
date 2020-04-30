@@ -1,6 +1,8 @@
 package com.gamebuster19901.excite.bot.user;
 
+import java.time.Duration;
 import java.util.HashSet;
+import java.util.Set;
 
 import javax.annotation.Nullable;
 
@@ -16,7 +18,7 @@ public class DiscordUser implements OutputCSV{
 	
 	private User user;
 	private final long id;
-	private final HashSet<Player> profiles = new HashSet<Player>();
+	UserPreferences preferences;
 	
 	public DiscordUser(User user) {
 		if(user == null) {
@@ -24,14 +26,11 @@ public class DiscordUser implements OutputCSV{
 		}
 		this.user = user;
 		this.id = user.getIdLong();
+		this.preferences = new UserPreferences(this);
 	}
 	
 	public DiscordUser(String name, String discriminator) {
 		this(getJDAUser(name, discriminator));
-	}
-	
-	public DiscordUser(long id) {
-		this.id = id;
 	}
 	
 	@Nullable
@@ -44,16 +43,44 @@ public class DiscordUser implements OutputCSV{
 	}
 	
 	public long getId() {
-		return user.getIdLong();
+		return id;
+	}
+	
+	public void ban(Duration duration, String reason) {
+		this.preferences.ban(duration, reason);
+	}
+	
+	public void pardon() {
+		this.preferences.pardon();
 	}
 	
 	@Override
 	public String toCSV() {
 		String output = user.getId();
-		for(Player player : profiles) {
+		for(Player player : getProfiles()) {
 			output += "," + player.getPlayerID();
 		}
 		return output;
+	}
+	
+	public Set<Player> getProfiles() {
+		return preferences.getProfiles();
+	}
+	
+	public boolean isBanned() {
+		return preferences.isBanned();
+	}
+	
+	public void sentCommand() {
+		this.preferences.sentCommand();
+	}
+	
+	public void sendMessage(String message) {
+		user.openPrivateChannel().complete().sendMessage(message).complete();
+	}
+	
+	public static void addUser(DiscordUser user) {
+		
 	}
 	
 	public static final User getJDAUser(long id) {
@@ -65,5 +92,51 @@ public class DiscordUser implements OutputCSV{
 			return Main.discordBot.jda.getUserByTag(name, discriminator);
 		}
 		return null;
+	}
+	
+	public static final User getJDAUser(String discriminator) {
+		if(Main.discordBot != null) {
+			System.out.println(discriminator);
+			return Main.discordBot.jda.getUserByTag(discriminator);
+		}
+		return null;
+	}
+	
+	public static final DiscordUser getDiscordUser(long id) {
+		for(DiscordUser user : knownUsers) {
+			if(user.getId() == id) {
+				return user;
+			}
+		}
+		User JDAUser = getJDAUser(id);
+		if(JDAUser != null) {
+			DiscordUser user = new DiscordUser(JDAUser);
+			knownUsers.add(user);
+			return user;
+		}
+		return null;
+	}
+	
+	public static final DiscordUser getDiscordUser(String discriminator) {
+		for(DiscordUser user : knownUsers) {
+			if(user.getJDAUser().getAsTag().equalsIgnoreCase(discriminator)) {
+				return user;
+			}
+		}
+		User JDAUser = getJDAUser(discriminator);
+		if(JDAUser != null) {
+			DiscordUser user = new DiscordUser(JDAUser);
+			knownUsers.add(user);
+			return user;
+		}
+		return null;
+	}
+	
+	public static final DiscordUser[] getKnownUsers() {
+		return knownUsers.toArray(new DiscordUser[]{});
+	}
+	
+	public static final void updateDiscordUserListFile() {
+		
 	}
 }

@@ -2,12 +2,12 @@ package com.gamebuster19901.excite.bot.common.preferences;
 
 public class IntegerPreference extends Preference<Integer>{
 
-	public IntegerPreference(String name, Integer value) {
-		super(name, value);
+	public IntegerPreference(Integer value) {
+		super(value);
 	}
 	
-	public IntegerPreference(String name, String value) {
-		super(name, Integer.parseInt(value));
+	public IntegerPreference(String value) {
+		super(Integer.parseInt(value));
 	}
 
 	@Override
@@ -17,7 +17,7 @@ public class IntegerPreference extends Preference<Integer>{
 
 	@Override
 	public String toString() {
-		return name + ":" + value;
+		return value + "";
 	}
 
 }

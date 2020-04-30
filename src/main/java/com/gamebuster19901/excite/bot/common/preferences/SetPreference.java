@@ -6,13 +6,13 @@ import java.util.Set;
 
 public abstract class SetPreference<T> extends Preference<Set<T>>{
 
-	public SetPreference(String name, Set<T> value) {
-		super(name, value);
+	public SetPreference(Set<T> value) {
+		super(value);
 	}
 	
 	@SafeVarargs
-	public SetPreference(String name, T... values) {
-		this(name, new HashSet<T>(Arrays.asList(values)));
+	public SetPreference(T... values) {
+		this(new HashSet<T>(Arrays.asList(values)));
 	}
 	
 }
