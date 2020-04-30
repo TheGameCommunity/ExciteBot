@@ -59,11 +59,7 @@ public class DiscordUser implements OutputCSV{
 	
 	@Override
 	public String toCSV() {
-		String output = user.getId();
-		for(Player player : getProfiles()) {
-			output += "," + player.getPlayerID();
-		}
-		return output;
+		return preferences.toCSV();
 	}
 	
 	public Set<Player> getProfiles() {

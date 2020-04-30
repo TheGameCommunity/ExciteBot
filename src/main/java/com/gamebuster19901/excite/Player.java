@@ -266,9 +266,6 @@ public class Player implements OutputCSV{
 					boolean zeroLoss = false;
 					
 					String[] data = line.split(",");
-					for(String s : data) {
-						s.replaceAll(",", "");
-					}
 					
 					for(int i = 0; i < data.length; i++) {
 						if (data[i] == null) {
