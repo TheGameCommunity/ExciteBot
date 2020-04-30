@@ -19,5 +19,8 @@ build
 #JVM
 hs_err_pid*.log
 
+#Run
+/run
+
 # secrets
 **.secret
