@@ -308,6 +308,9 @@ public class DiscordUser implements OutputCSV{
 				if(reader != null) {
 					reader.close();
 				}
+				if(csvParser != null) {
+					csvParser.close();
+				}
 			}
 		}
 		catch(IOException e) {
