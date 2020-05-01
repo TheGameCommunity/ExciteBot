@@ -42,12 +42,13 @@ public class ProfilePreference extends SetPreference<Player>{
 
 	@Override
 	public String toString() {
-		String value = "\"";
+		String value = "\"'";
 		for(Player profile : getValue()) {
 			value += profile.getPlayerID() + ",";
 		}
+		
 		if(value.length() > 0 && value.charAt(value.length() - 1) == ',') {
-			value = value.substring(value.length() - 1);
+			value = value.substring(0, value.length() - 1);
 		}
 		value += "\"";
 		
