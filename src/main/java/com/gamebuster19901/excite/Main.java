@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Scanner;
+import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -20,6 +22,8 @@ public class Main {
 	
 	public static Wiimmfi wiimmfi;
 	public static DiscordBot discordBot;
+	
+	private static ConcurrentLinkedDeque<String> consoleCommandsAwaitingProcessing = new ConcurrentLinkedDeque<String>();
 	
 	public static void main(String[] args) throws InterruptedException {
 	
@@ -47,8 +51,12 @@ public class Main {
 		Instant nextWiimmfiPing = Instant.now();
 		Instant nextDiscordPing = Instant.now();
 		Instant updateCooldowns = Instant.now();
+		startConsole();
 		while(true) {
 			Throwable error = wiimmfi.getError();
+			while(!consoleCommandsAwaitingProcessing.isEmpty()) {
+				Commands.DISPATCHER.handleCommand(consoleCommandsAwaitingProcessing.pollFirst());
+			}
 			if(nextWiimmfiPing.isBefore(Instant.now())) {
 				wiimmfi.update();
 				if(error == null) {
@@ -115,5 +123,20 @@ public class Main {
 			}
 		}
 		return new DiscordBot(wiimmfi, botOwner, keyFile);
+	}
+	
+	private static void startConsole() {
+		Thread consoleThread = new Thread() {
+			@Override
+			public void run() {
+				Scanner scanner = new Scanner(System.in);
+				while(scanner.hasNextLine()) {
+					consoleCommandsAwaitingProcessing.addFirst(scanner.nextLine());
+				}
+			}
+		};
+		consoleThread.setName("consoleReader");
+		consoleThread.setDaemon(true);
+		consoleThread.start();
 	}
 }

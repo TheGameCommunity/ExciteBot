@@ -59,4 +59,18 @@ public class MessageContext<E>{
 				.getAsTag()
 				.equalsIgnoreCase(Main.botOwner);
 	}
+	
+	public void sendMessage(String message) {
+		if(!isConsoleMessage()) {
+			if(event instanceof GuildMessageReceivedEvent) {
+				((GuildMessageReceivedEvent)event).getChannel().sendMessage(message).complete();
+			}
+			else if (event instanceof PrivateMessageReceivedEvent) {
+				((PrivateMessageReceivedEvent)event).getChannel().sendMessage(message).complete();
+			}
+		}
+		else {
+			System.out.println(message);
+		}
+	}
 }
