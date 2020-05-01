@@ -46,6 +46,9 @@ public class ProfilePreference extends SetPreference<Player>{
 		for(Player profile : getValue()) {
 			value += profile.getPlayerID() + ",";
 		}
+		if(value.length() > 0 && value.charAt(value.length() - 1) == ',') {
+			value = value.substring(value.length() - 1);
+		}
 		value += "\"";
 		
 		return value;
