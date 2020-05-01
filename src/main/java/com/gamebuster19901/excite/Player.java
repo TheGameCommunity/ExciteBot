@@ -129,6 +129,10 @@ public class Player implements OutputCSV{
 		return "<" + getDiscord() + ">"; //if for some reason we cannot get the user's account
 	}
 	
+	public void setDiscord(long discordId) {
+		this.discord = discordId;
+	}
+	
 	@Override
 	public boolean equals(Object o) {
 		if(o instanceof Player) {
