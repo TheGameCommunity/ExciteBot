@@ -62,6 +62,9 @@ public abstract class WiimmfiCommand {
 		else if (messageEvent instanceof PrivateMessageReceivedEvent) {
 			((PrivateMessageReceivedEvent) messageEvent).getChannel().sendMessage(message).complete();
 		}
+		else if (messageEvent == null) {
+			System.out.println(message);
+		}
 		else {
 			throw new IllegalArgumentException("messageEvent must be a messageEvent or null, but it was " + messageEvent.getClass());
 		}
