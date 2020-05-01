@@ -78,7 +78,7 @@ public class Player implements OutputCSV{
 			return String.format(prefix + " " + getPrettyDiscord() + "(" + name + ") - FC:[" + friendCode +  "] - PID:["  + playerID + "]");
 		}
 		if(!prefix.isEmpty()) {
-			prefix = " ";
+			prefix = prefix + " ";
 		}
 		return String.format(prefix + name + " - FC:[" + friendCode +  "] - PID:["  + playerID + "]");
 	}
