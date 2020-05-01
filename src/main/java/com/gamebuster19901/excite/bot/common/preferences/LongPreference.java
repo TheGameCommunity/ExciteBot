@@ -8,12 +8,12 @@ public class LongPreference extends Preference<Long>{
 
 	@Override
 	public Long convertString(String value) {
-		return Long.parseLong(value);
+		return Long.parseLong(value.replaceAll("\"", ""));
 	}
 
 	@Override
 	public String toString() {
-		return value + "";
+		return "\"" + value + "\"";
 	}
 
 }
