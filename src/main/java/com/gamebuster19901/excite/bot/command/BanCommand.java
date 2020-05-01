@@ -44,7 +44,7 @@ public class BanCommand extends WiimmfiCommand {
 	@SuppressWarnings("rawtypes")
 	private static int banUser(MessageContext context, DiscordUser user, int amount, String timeUnit, String reason) {
 		if(user != null) {
-			Duration duration = computeDuration(amount, timeUnit);
+			Duration duration = TimeUtils.computeDuration(amount, timeUnit);
 			if(duration != null) {
 				return banUser(context, user, duration, reason);
 			}
@@ -67,23 +67,7 @@ public class BanCommand extends WiimmfiCommand {
 		}
 		return 0;
 	}
-	
-	private static Duration computeDuration(int amount, String timeUnit) {
-		Duration duration = null;
-		if(isSeconds(timeUnit)) {
-			duration = Duration.ofSeconds(amount);
-		}
-		else if(isMinutes(timeUnit)) {
-			duration = Duration.ofMinutes(amount);
-		}
-		else if (isHours(timeUnit)) {
-			duration = Duration.ofHours(amount);
-		}
-		else if (isDays(timeUnit)) {
-			duration = Duration.ofDays(amount);
-		}
-		return duration;
-	}
+
 	
 	@SuppressWarnings("rawtypes")
 	private static int banUser(MessageContext context, DiscordUser user, Duration duration, String reason) {
