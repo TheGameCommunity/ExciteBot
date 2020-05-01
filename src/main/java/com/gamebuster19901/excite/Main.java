@@ -17,6 +17,10 @@ import com.gamebuster19901.excite.bot.server.DiscordServer;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
 import com.gamebuster19901.excite.bot.user.UserPreferences;
 
+import net.dv8tion.jda.api.OnlineStatus;
+import net.dv8tion.jda.api.entities.Activity;
+import net.dv8tion.jda.api.entities.Activity.ActivityType;
+
 public class Main {
 	
 	private static final Logger LOGGER = Logger.getLogger(Main.class.getName());
@@ -54,56 +58,66 @@ public class Main {
 		Instant nextDiscordPing = Instant.now();
 		Instant updateCooldowns = Instant.now();
 		startConsole();
-		while(true) {
-			Throwable error = wiimmfi.getError();
-			while(!consoleCommandsAwaitingProcessing.isEmpty()) {
-				Commands.DISPATCHER.handleCommand(consoleCommandsAwaitingProcessing.pollFirst());
-			}
-			if(nextWiimmfiPing.isBefore(Instant.now())) {
-				wiimmfi.update();
-				if(error == null) {
-					if(prevError != null) {
-						LOGGER.log(Level.SEVERE, "Error resolved.");
+		
+		try {
+			while(true) {
+				Throwable error = wiimmfi.getError();
+				while(!consoleCommandsAwaitingProcessing.isEmpty()) {
+					Commands.DISPATCHER.handleCommand(consoleCommandsAwaitingProcessing.pollFirst());
+				}
+				if(nextWiimmfiPing.isBefore(Instant.now())) {
+					wiimmfi.update();
+					if(error == null) {
+						if(prevError != null) {
+							LOGGER.log(Level.SEVERE, "Error resolved.");
+						}
+						
+						Player[] onlinePlayers = Wiimmfi.getOnlinePlayers();
+						Player.updatePlayerListFile();
+						
+						LOGGER.info("Players online: " + onlinePlayers.length);
+						int waitTime = 60000;
+						if(onlinePlayers.length > 1) {
+							waitTime = waitTime / onlinePlayers.length;
+							if(waitTime < 4000) {
+								waitTime = 4000;
+							}
+						}
+						nextWiimmfiPing = Instant.now().plus(Duration.ofMillis(waitTime));
 					}
-					
-					Player[] onlinePlayers = Wiimmfi.getOnlinePlayers();
-					Player.updatePlayerListFile();
-					
-					LOGGER.info("Players online: " + onlinePlayers.length);
-					int waitTime = 60000;
-					if(onlinePlayers.length > 1) {
-						waitTime = waitTime / onlinePlayers.length;
-						if(waitTime < 4000) {
-							waitTime = 4000;
+					else {
+						nextWiimmfiPing = Instant.now().plus(Duration.ofMillis(5000));
+						if(prevError == null || !prevError.getClass().equals(error.getClass())) {
+							System.out.println("Error!");
+							LOGGER.log(Level.SEVERE, error, () -> error.getMessage());
 						}
 					}
-					nextWiimmfiPing = Instant.now().plus(Duration.ofMillis(waitTime));
 				}
-				else {
-					nextWiimmfiPing = Instant.now().plus(Duration.ofMillis(5000));
-					if(prevError == null || !prevError.getClass().equals(error.getClass())) {
-						System.out.println("Error!");
-						LOGGER.log(Level.SEVERE, error, () -> error.getMessage());
+				if(discordBot != null) {
+					if(nextDiscordPing.isBefore(Instant.now())) {
+						nextDiscordPing = Instant.now().plus(Duration.ofSeconds(5));
+						DiscordServer.updateServerList();
+						DiscordServer.updateServerPreferencesFile();
+						DiscordUser.updateUserList();
+						DiscordUser.updateUserPreferencesFile();
+						discordBot.updatePresence();
+						UserPreferences.attemptRegister();
+					}
+					if(updateCooldowns.isBefore(Instant.now())) {
+						updateCooldowns = Instant.now().plus(Duration.ofSeconds(4));
+						DiscordUser.updateCooldowns();
 					}
 				}
+				prevError = error;
+				Thread.sleep(1000);
 			}
+		}
+		catch(Throwable t) {
+			t.printStackTrace();
 			if(discordBot != null) {
-				if(nextDiscordPing.isBefore(Instant.now())) {
-					nextDiscordPing = Instant.now().plus(Duration.ofSeconds(5));
-					DiscordServer.updateServerList();
-					DiscordServer.updateServerPreferencesFile();
-					DiscordUser.updateUserList();
-					DiscordUser.updateUserPreferencesFile();
-					discordBot.updatePresence();
-					UserPreferences.attemptRegister();
-				}
-				if(updateCooldowns.isBefore(Instant.now())) {
-					updateCooldowns = Instant.now().plus(Duration.ofSeconds(4));
-					DiscordUser.updateCooldowns();
-				}
+				discordBot.jda.getPresence().setPresence(OnlineStatus.DO_NOT_DISTURB, Activity.of(ActivityType.DEFAULT, "Bot Crashed"));
+				while(true) {Thread.sleep(1000);}
 			}
-			prevError = error;
-			Thread.sleep(1000);
 		}
 	}
 
