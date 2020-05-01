@@ -13,6 +13,7 @@ import javax.security.auth.login.LoginException;
 
 import com.gamebuster19901.excite.bot.DiscordBot;
 import com.gamebuster19901.excite.bot.command.Commands;
+import com.gamebuster19901.excite.bot.server.DiscordServer;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
 import com.gamebuster19901.excite.bot.user.UserPreferences;
 
@@ -89,6 +90,8 @@ public class Main {
 			if(discordBot != null) {
 				if(nextDiscordPing.isBefore(Instant.now())) {
 					nextDiscordPing = Instant.now().plus(Duration.ofSeconds(5));
+					DiscordServer.updateServerList();
+					DiscordServer.updateServerPreferencesFile();
 					DiscordUser.updateUserList();
 					DiscordUser.updateUserPreferencesFile();
 					discordBot.updatePresence();
