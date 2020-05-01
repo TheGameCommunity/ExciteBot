@@ -15,7 +15,7 @@ public class BanCommand extends WiimmfiCommand {
 	@SuppressWarnings("rawtypes")
 	public static void register(CommandDispatcher<MessageContext> dispatcher) {
 		dispatcher.register(Commands.literal("!ban").requires((permission) -> {
-			return true;//permission.isConsoleMessage() || permission.isAdmin();
+			return permission.isAdmin();
 		}).then(Commands.argument("discordUser", StringArgumentType.word()).then((Commands.argument("discriminator", StringArgumentType.string()).executes((context) -> {
 			return banUserForever(context.getSource(), getDiscordUser(context.getArgument("discordUser", String.class), context.getArgument("discriminator", String.class)));
 		}).then(Commands.argument("reason", StringArgumentType.greedyString()).executes((context) -> {
