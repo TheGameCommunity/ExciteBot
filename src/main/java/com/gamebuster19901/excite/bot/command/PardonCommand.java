@@ -22,9 +22,10 @@ public class PardonCommand extends WiimmfiCommand{
 		if(context.isAdmin()) {
 			DiscordUser user = DiscordUser.getDiscordUser(username + "#" + discriminator);
 			if(user == null) {
-				throw new IllegalArgumentException(username + "#" + discriminator);
+				context.sendMessage("Could not find user " + username + "#" + discriminator);
 			}
 			user.pardon(count);
+			context.sendMessage("Pardoned " + user.getJDAUser().getAsTag());
 		}
 		else {
 			context.sendMessage("You do not have permission to execute this command");
