@@ -82,8 +82,8 @@ public class DiscordUser implements OutputCSV{
 		this.preferences.ban(context, duration, reason);
 	}
 	
-	public void pardon() {
-		this.preferences.pardon();
+	public void pardon(int amount) {
+		this.preferences.pardon(amount);
 	}
 	
 	@Override

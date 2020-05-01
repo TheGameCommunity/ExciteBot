@@ -20,6 +20,7 @@ public class Commands extends EventReceiver{
 		OnlineCommand.register(dispatcher);
 		WhoIsCommand.register(dispatcher);
 		BanCommand.register(dispatcher);
+		PardonCommand.register(dispatcher);
 	}
 	
 	public void handleCommand(String command) {
