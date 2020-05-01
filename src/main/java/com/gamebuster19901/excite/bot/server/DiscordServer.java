@@ -49,6 +49,32 @@ public class DiscordServer implements OutputCSV{
 		this.id = guild.getIdLong();
 		this.adminRoles = new RolePreference(this);
 	}
+
+	@Override
+	public String toCSV() {
+		return server.getName() + "," + server.getId() + "," + adminRoles;
+	}
+
+	public Guild getGuild() {
+		return server;
+	}
+	
+	public Role getRoleById(long id) {
+		return server.getRoleById(id);
+	}
+	
+	@Override
+	public int hashCode() {
+		return Long.valueOf(id).hashCode();
+	}
+	
+	@Override
+	public boolean equals(Object o) {
+		if(o instanceof DiscordServer) {
+			return ((DiscordServer)o).id == id;
+		}
+		return false;
+	}
 	
 	public static void addServer(DiscordServer server) {
 		if(!servers.contains(server)) {
@@ -106,16 +132,17 @@ public class DiscordServer implements OutputCSV{
 					Guild guild = Main.discordBot.jda.getGuildById(guildId);
 					if(guild != null) {
 						DiscordServer discordServer = new DiscordServer(Main.discordBot.jda.getGuildById(csvRecord.get(1)));
-						String[] adminRoleIdStrings = csvRecord.get(2).replaceAll("\"", "").split(",");
-						long[] adminRoleIds = new long[adminRoleIdStrings.length];
-						for(int i = 0; i < adminRoleIdStrings.length; i++) {
-							if(!adminRoleIdStrings[i].isEmpty()) {
-								adminRoleIds[i] = Long.parseLong(adminRoleIdStrings[i]);
+						String adminRoleString = csvRecord.get(2);
+						if(!adminRoleString.isEmpty()) {
+							String[] adminRoleIdStrings = csvRecord.get(2).replaceAll("\"", "").split(",");
+							long[] adminRoleIds = new long[adminRoleIdStrings.length];
+							for(int i = 0; i < adminRoleIdStrings.length; i++) {
+								if(!adminRoleIdStrings[i].isEmpty()) {
+									adminRoleIds[i] = Long.parseLong(adminRoleIdStrings[i]);
+								}
 							}
+							discordServer.adminRoles.setFromIds(adminRoleIds);
 						}
-						
-						discordServer.adminRoles.setFromIds(adminRoleIds);
-						
 						discordServers.add(discordServer);
 					}
 					else {
@@ -137,31 +164,4 @@ public class DiscordServer implements OutputCSV{
 		}
 		return discordServers.toArray(new DiscordServer[]{});
 	}
-
-	@Override
-	public String toCSV() {
-		return server.getName() + "," + server.getId() + "," + adminRoles;
-	}
-
-	public Guild getGuild() {
-		return server;
-	}
-	
-	public Role getRoleById(long id) {
-		return server.getRoleById(id);
-	}
-	
-	@Override
-	public int hashCode() {
-		return Long.valueOf(id).hashCode();
-	}
-	
-	@Override
-	public boolean equals(Object o) {
-		if(o instanceof DiscordServer) {
-			return ((DiscordServer)o).id == id;
-		}
-		return false;
-	}
-
 }
