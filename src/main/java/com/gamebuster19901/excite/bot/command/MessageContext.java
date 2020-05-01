@@ -80,4 +80,11 @@ public class MessageContext<E>{
 		}
 		return getAuthor().getJDAUser().getAsMention();
 	}
+	
+	public String getTag() {
+		if(isConsoleMessage()) {
+			return "CONSOLE";
+		}
+		return getAuthor().getJDAUser().getAsTag();
+	}
 }

@@ -23,6 +23,7 @@ public class Commands extends EventReceiver{
 		PardonCommand.register(dispatcher);
 		RegisterCommand.register(dispatcher);
 		NotifyCommand.register(dispatcher);
+		StopCommand.register(dispatcher);
 	}
 	
 	public void handleCommand(String command) {
