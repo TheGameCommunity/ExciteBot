@@ -208,7 +208,9 @@ public class DiscordUser implements OutputCSV{
 			if(discordUser == null || discordUser instanceof UnloadedDiscordUser) {
 				return null;
 			}
-			return discordUser;
+			if(discordUser.getJDAUser().getAsTag().equals(discriminator)) {
+				return discordUser;
+			}
 		}
 		return null;
 	}
