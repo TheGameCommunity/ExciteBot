@@ -123,8 +123,23 @@ public class DiscordUser implements OutputCSV{
 		sendMessage(message);
 	}
 	
+	@Override
+	public int hashCode() {
+		return Long.valueOf(id).hashCode();
+	}
+	
+	@Override
+	public boolean equals(Object o) {
+		if(o instanceof DiscordUser) {
+			return ((DiscordUser) o).id == id;
+		}
+		return false;
+	}
+	
 	public static void addUser(DiscordUser user) {
-		users.add(user);
+		if(!users.contains(user)) {
+			users.add(user);
+		}
 	}
 	
 	public static final User getJDAUser(long id) {
@@ -183,6 +198,12 @@ public class DiscordUser implements OutputCSV{
 	public static void updateCooldowns() {
 		for(DiscordUser user : getKnownUsers()) {
 			user.preferences.updateCooldowns();
+		}
+	}
+	
+	public static void updateUserList() {
+		for(User user : Main.discordBot.jda.getUsers()) {
+			addUser(new DiscordUser(user));
 		}
 	}
 	
