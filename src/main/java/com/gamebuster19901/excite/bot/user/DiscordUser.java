@@ -220,47 +220,41 @@ public class DiscordUser implements OutputCSV{
 		HashSet<DiscordUser> discordUsers = new HashSet<DiscordUser>();
 		try {
 			BufferedReader reader = new BufferedReader(new FileReader(USER_PREFS));
+			CSVParser csvParser = new CSVParser(reader, CSVFormat.DEFAULT);
 			try {
-				while(reader.ready()) {
-					String line = reader.readLine();
-					
-					String discord;
-					long discordId;
-					int notifyThreshold;
-					Duration notifyFrequency;
-					Player[] profiles;
-					Instant banTime;
-					Duration banDuration;
-					Instant banExpire;
-					String banReason;
-					int banCount;
-					
-					String[] data = line.split(REGEX_SPLITTER);
-					
-					for(int i = 0; i < data.length; i++) {
-						if (data[i] == null) {
-							throw new IllegalArgumentException("argument " + i + " in \"" + line + "\"");
-						}
-					}
-					
+				
+				String discord;
+				long discordId;
+				int notifyThreshold;
+				Duration notifyFrequency;
+				Player[] profiles;
+				Instant banTime;
+				Duration banDuration;
+				Instant banExpire;
+				String banReason;
+				int banCount;
+				
+				for(CSVRecord csvRecord : csvParser) {
 					DiscordUser discordUser;
 					UserPreferences preferences = new UserPreferences();
-					
-					discord = data[0];
-					discordId = Integer.parseInt(data[1]);
-					notifyThreshold = Integer.parseInt(data[2]);
-					notifyFrequency = Duration.parse(data[3]);
-					String[] players = data[4].split(",");
+
+					discord = csvRecord.get(0);
+					discordId = Long.parseLong(csvRecord.get(1));
+					notifyThreshold = Integer.parseInt(csvRecord.get(2));
+					notifyFrequency = Duration.parse(csvRecord.get(3));
+					String[] players = csvRecord.get(4).replaceAll("\"", "").split(",");
 					int[] playerIDs = new int[players.length];
 					for(int i = 0; i < players.length; i++) {
-						playerIDs[i] = Integer.parseInt(players[i]);
+						if(!players[i].isEmpty()) {
+							playerIDs[i] = Integer.parseInt(players[i]);
+						}
 					}
 					profiles = Player.getPlayersFromIds(playerIDs);
-					banTime = Instant.parse(data[5]);
-					banDuration = Duration.parse(data[6]);
-					banExpire = Instant.parse(data[7]);
-					banReason = data[8];
-					banCount = Integer.parseInt(data[9]);
+					banTime = Instant.parse(csvRecord.get(5));
+					banDuration = Duration.parse(csvRecord.get(6));
+					banExpire = Instant.parse(csvRecord.get(7));
+					banReason = csvRecord.get(8);
+					banCount = Integer.parseInt(csvRecord.get(9));
 					
 					preferences.parsePreferences(discord, discordId, notifyThreshold, notifyFrequency, profiles, banTime, banDuration, banExpire, banReason, banCount);
 					
@@ -269,7 +263,8 @@ public class DiscordUser implements OutputCSV{
 						discordUser = new DiscordUser(jdaUser);
 					}
 					else {
-						discordUser = new UnknownDiscordUser(discordId);
+						System.out.println("Could not find JDA user for " + discordId);
+						continue;
 					}
 					discordUser.preferences = preferences;
 					
