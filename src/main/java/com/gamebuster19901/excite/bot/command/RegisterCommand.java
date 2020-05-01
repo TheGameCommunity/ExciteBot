@@ -66,7 +66,7 @@ public class RegisterCommand extends WiimmfiCommand {
 	
 	@SuppressWarnings("rawtypes")
 	private static void sendInfo(MessageContext context, DiscordUser discordUser, Player desiredProfile, String securityCode) {
-		context.sendMessage(
+		context.getAuthor().sendMessage(
 				discordUser.getJDAUser().getAsMention() + 
 				", you have requested registration of the following profile:\n\n"
 				+ desiredProfile 
