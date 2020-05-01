@@ -56,7 +56,7 @@ public class DurationPreference extends Preference<Duration>{
 
 	@Override
 	public String toString() {
-		return value.toMinutes() + "";
+		return value.toString() + "";
 	} 
 
 }
