@@ -75,21 +75,7 @@ public class BanCommand extends WiimmfiCommand {
 		return 1;
 	}
 	
-	private static boolean isSeconds(String timeUnit) {
-		return timeUnit.equalsIgnoreCase("s") || timeUnit.equalsIgnoreCase("sec") || timeUnit.equalsIgnoreCase("secs") || timeUnit.equalsIgnoreCase("second") || timeUnit.equalsIgnoreCase("seconds");
-	}
-	
-	private static boolean isMinutes(String timeUnit) {
-		return timeUnit.equalsIgnoreCase("m") || timeUnit.equalsIgnoreCase("min") || timeUnit.equalsIgnoreCase("mins") ||  timeUnit.equalsIgnoreCase("minute") || timeUnit.equalsIgnoreCase("minutes");
-	}
-	
-	private static boolean isHours(String timeUnit) {
-		return timeUnit.equalsIgnoreCase("h") || timeUnit.equalsIgnoreCase("hr") || timeUnit.equalsIgnoreCase("hrs") ||  timeUnit.equalsIgnoreCase("hour") || timeUnit.equalsIgnoreCase("hours");
-	}
-	
-	private static boolean isDays(String timeUnit) {
-		return timeUnit.equalsIgnoreCase("d") || timeUnit.equalsIgnoreCase("day");
-	}
+
 	
 	private static String parseReason(Duration duration, String reason) {
 		if(ChronoUnit.FOREVER.getDuration().equals(duration)) {
