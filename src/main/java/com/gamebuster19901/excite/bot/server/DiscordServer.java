@@ -102,7 +102,9 @@ public class DiscordServer implements OutputCSV{
 				servers.put(s.id, server);
 				System.out.println("Loaded previously unloaded server " + server.getGuild().getName());
 			}
+			return;
 		}
+		servers.put(server.id, server);
 	}
 	
 	public static DiscordServer getServer(long serverId) {
