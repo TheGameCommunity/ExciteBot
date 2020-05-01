@@ -103,15 +103,7 @@ public class UserPreferences implements OutputCSV{
 		notifyThreshold.setValue(threshold);
 	}
 	
-	public void setNotifyThreshold(String threshold) {
-		notifyThreshold.setValue(threshold);
-	}
-	
 	public void setNotifyFrequency(Duration duration) {
-		notifyFrequency.setValue(duration);
-	}
-	
-	public void setNotifyFrequency(String duration) {
 		notifyFrequency.setValue(duration);
 	}
 	
@@ -211,8 +203,17 @@ public class UserPreferences implements OutputCSV{
 	}
 	
 	private void register() {
+		DiscordUser user = DiscordUser.getDiscordUser(this.discordId.getValue());
+		Player desiredPlayer = Player.getPlayerByID(desiredProfile.getValue());
+		user.sendMessage(user.getJDAUser().getAsMention() + "You have successfully registered the following profile:\n\n" + desiredPlayer + "\n\nYou may change it's name back to what it was before.");
 		this.profiles.addProfile(desiredProfile.getValue());
-		clearRegistration();
+		desiredPlayer.setDiscord(user.getId());
+		if(this.getProfiles().contains(desiredPlayer)) {
+			clearRegistration();
+		}
+		else {
+			throw new AssertionError();
+		}
 	}
 	
 	private final String generatePassword() {
@@ -231,7 +232,7 @@ public class UserPreferences implements OutputCSV{
 				if(desiredProfile > -1) {
 					if(preferences.registrationTimer.getValue().isAfter(Instant.now())) {
 						for(Player player : Wiimmfi.getOnlinePlayers()) {
-							if(player.getName().equals(preferences.registrationCode.getValue())) {
+							if(player.getName().equals(preferences.registrationCode.getValue().toString())) {
 								if(player.getPlayerID() == desiredProfile) {
 									preferences.register();
 								}

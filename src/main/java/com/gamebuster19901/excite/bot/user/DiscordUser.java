@@ -103,6 +103,25 @@ public class DiscordUser implements OutputCSV{
 		return preferences.isBanned();
 	}
 	
+	public void setNotifyThreshold(int threshold) {
+		if(threshold > 0 || threshold == -1) {
+			preferences.setNotifyThreshold(threshold);
+		}
+		else {
+			throw new IndexOutOfBoundsException(threshold + " < 1");
+		}
+	}
+	
+	public void setNotifyFrequency(Duration frequency) {
+		Duration min = Duration.ofMinutes(5);
+		if(frequency.compareTo(min) > -1) {
+			preferences.setNotifyFrequency(frequency);
+		}
+		else {
+			throw new IllegalArgumentException("Frequency is less than 5 minutes!");
+		}
+	}
+	
 	public String requestRegistration(Player desiredProfile) {
 		return preferences.requestRegistration(desiredProfile);
 	}
