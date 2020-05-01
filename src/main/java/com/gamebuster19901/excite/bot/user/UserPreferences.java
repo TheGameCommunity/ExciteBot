@@ -226,30 +226,32 @@ public class UserPreferences implements OutputCSV{
 	
 	public static void attemptRegister() {
 		for(DiscordUser user : DiscordUser.getKnownUsers()) {
-			UserPreferences preferences = user.preferences;
-			if(preferences.requestingRegistration()) {
-				int desiredProfile = preferences.desiredProfile.getValue();
-				if(desiredProfile > -1) {
-					if(preferences.registrationTimer.getValue().isAfter(Instant.now())) {
-						for(Player player : Wiimmfi.getOnlinePlayers()) {
-							if(player.getName().equals(preferences.registrationCode.getValue().toString())) {
-								if(player.getPlayerID() == desiredProfile) {
-									preferences.register();
-								}
-								else {
-									user.sendMessage("Registration aborted:\n\nYou selected the following account ID for registration:\n`" + desiredProfile + "`\nbut logged in with\n`" + player.getPlayerID() + "`");
-									preferences.clearRegistration();
+			if(!(user instanceof UnloadedDiscordUser)) {
+				UserPreferences preferences = user.preferences;
+				if(preferences.requestingRegistration()) {
+					int desiredProfile = preferences.desiredProfile.getValue();
+					if(desiredProfile > -1) {
+						if(preferences.registrationTimer.getValue().isAfter(Instant.now())) {
+							for(Player player : Wiimmfi.getOnlinePlayers()) {
+								if(player.getName().equals(preferences.registrationCode.getValue().toString())) {
+									if(player.getPlayerID() == desiredProfile) {
+										preferences.register();
+									}
+									else {
+										user.sendMessage("Registration aborted:\n\nYou selected the following account ID for registration:\n`" + desiredProfile + "`\nbut logged in with\n`" + player.getPlayerID() + "`");
+										preferences.clearRegistration();
+									}
 								}
 							}
 						}
+						else {
+							user.sendMessage("Registration for \n" + Player.getPlayerByID(desiredProfile).toString() + "\n has expired!");
+							preferences.clearRegistration();
+						}
 					}
 					else {
-						user.sendMessage("Registration for \n" + Player.getPlayerByID(desiredProfile).toString() + "\n has expired!");
-						preferences.clearRegistration();
+						throw new IllegalStateException("No profile to register!");
 					}
-				}
-				else {
-					throw new IllegalStateException("No profile to register!");
 				}
 			}
 		}

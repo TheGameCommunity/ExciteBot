@@ -9,8 +9,9 @@ import java.io.IOError;
 import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import javax.annotation.Nullable;
@@ -31,15 +32,17 @@ public class DiscordUser implements OutputCSV{
 	
 	private static final File USER_PREFS = new File("./run/userPreferences.csv");
 	private static final File OLD_USER_PREFS = new File("./run/userPreferences.csv.old");
-	private static HashSet<DiscordUser> users;
+	private static HashMap<Long, DiscordUser> users = new HashMap<Long, DiscordUser>();
 	
 	static {
 		try {
 			if(!USER_PREFS.exists()) {
 				USER_PREFS.getParentFile().mkdirs();
 				USER_PREFS.createNewFile();
+				for(DiscordUser user : getEncounteredUsersFromFile()) {
+					addUser(user);
+				}
 			}
-			users = new HashSet<DiscordUser>(Arrays.asList(getEncounteredUsersFromFile()));
 		}
 		catch(IOException e) {
 			throw new IOError(e);
@@ -57,8 +60,9 @@ public class DiscordUser implements OutputCSV{
 		this.preferences = new UserPreferences(this);
 	}
 	
-	public DiscordUser(String name, String discriminator) {
-		this(getJDAUser(name, discriminator));
+	protected DiscordUser(long userId) {
+		this.id = userId;
+		this.preferences = new UserPreferences(this);
 	}
 	
 	@Nullable
@@ -157,9 +161,19 @@ public class DiscordUser implements OutputCSV{
 	}
 	
 	public static void addUser(DiscordUser user) {
-		if(!users.contains(user)) {
-			users.add(user);
+		for(Entry<Long, DiscordUser> userEntry : users.entrySet()) {
+			DiscordUser u = userEntry.getValue();
+			if(user.equals(u)) {
+				if(u instanceof UnloadedDiscordUser && !(user instanceof UnloadedDiscordUser)) {
+					UserPreferences preferences = u.preferences;
+					user.preferences = preferences;
+					users.put(u.id, user);
+					System.out.println("Loaded previously unloaded user " + user.getJDAUser().getAsTag());
+				}
+				return;
+			}
 		}
+		users.put(user.id, user);
 	}
 	
 	public static final User getJDAUser(long id) {
@@ -175,44 +189,32 @@ public class DiscordUser implements OutputCSV{
 	
 	public static final User getJDAUser(String discriminator) {
 		if(Main.discordBot != null) {
-			System.out.println(discriminator);
 			return Main.discordBot.jda.getUserByTag(discriminator);
 		}
 		return null;
 	}
 	
 	public static final DiscordUser getDiscordUser(long id) {
-		for(DiscordUser user : users) {
-			if(user.getId() == id) {
-				return user;
-			}
+		DiscordUser discordUser = users.get(id);
+		if(discordUser == null || discordUser instanceof UnloadedDiscordUser) {
+			return null;
 		}
-		User JDAUser = getJDAUser(id);
-		if(JDAUser != null) {
-			DiscordUser user = new DiscordUser(JDAUser);
-			addUser(user);
-			return user;
-		}
-		return null;
+		return discordUser;
 	}
 	
 	public static final DiscordUser getDiscordUser(String discriminator) {
-		for(DiscordUser user : users) {
-			if(user.getJDAUser().getAsTag().equalsIgnoreCase(discriminator)) {
-				return user;
+		for(Entry<Long, DiscordUser> userEntry : users.entrySet()) {
+			DiscordUser discordUser = userEntry.getValue();
+			if(discordUser == null || discordUser instanceof UnloadedDiscordUser) {
+				return null;
 			}
-		}
-		User JDAUser = getJDAUser(discriminator);
-		if(JDAUser != null) {
-			DiscordUser user = new DiscordUser(JDAUser);
-			addUser(user);
-			return user;
+			return discordUser;
 		}
 		return null;
 	}
 	
 	public static final DiscordUser[] getKnownUsers() {
-		return users.toArray(new DiscordUser[]{});
+		return users.values().toArray(new DiscordUser[]{});
 	}
 	
 	public static void updateCooldowns() {
@@ -223,7 +225,7 @@ public class DiscordUser implements OutputCSV{
 	
 	public static void updateUserList() {
 		for(User user : Main.discordBot.jda.getUsers()) {
-			addUser(new DiscordUser(user));
+			addUser(new DiscordUser(user.getIdLong()));
 		}
 	}
 	
@@ -238,8 +240,8 @@ public class DiscordUser implements OutputCSV{
 			}
 			USER_PREFS.createNewFile();
 			writer = new BufferedWriter(new FileWriter(USER_PREFS));
-			for(DiscordUser discordUser : users) {
-				writer.write(discordUser.toCSV());
+			for(Entry<Long, DiscordUser> discordUser : users.entrySet()) {
+				writer.write(discordUser.getValue().toCSV());
 				writer.newLine();
 			}
 		}
@@ -304,7 +306,8 @@ public class DiscordUser implements OutputCSV{
 						discordUser = new DiscordUser(jdaUser);
 					}
 					else {
-						System.out.println("Could not find JDA user for " + discordId);
+						System.out.println("Could not find JDA user for " + discord + "(" + discordId + ")");
+						discordUser = new UnloadedDiscordUser(discordId);
 						continue;
 					}
 					discordUser.preferences = preferences;

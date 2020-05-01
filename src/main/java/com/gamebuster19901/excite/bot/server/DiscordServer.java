@@ -7,8 +7,9 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOError;
 import java.io.IOException;
-import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map.Entry;
 
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
@@ -24,15 +25,17 @@ public class DiscordServer implements OutputCSV{
 
 	private static final File SERVER_PREFS = new File("./run/serverPreferences.csv");
 	private static final File OLD_SERVER_PREFS = new File("./run/serverPreferences.csv.old");
-	private static HashSet<DiscordServer> servers;
+	private static HashMap<Long, DiscordServer> servers = new HashMap<Long, DiscordServer>();
 	
 	static {
 		try {
 			if(!SERVER_PREFS.exists()) {
 				SERVER_PREFS.getParentFile().mkdirs();
 				SERVER_PREFS.createNewFile();
+				for(DiscordServer server : getEncounteredServersFromFile()) {
+					addServer(server);
+				}
 			}
-			servers = new HashSet<DiscordServer>(Arrays.asList(getEncounteredServersFromFile()));
 		}
 		catch(IOException e) {
 			throw new IOError(e);
@@ -91,19 +94,23 @@ public class DiscordServer implements OutputCSV{
 	}
 	
 	public static void addServer(DiscordServer server) {
-		if(!servers.contains(server)) {
-			servers.add(server);
-			System.out.println("New server found! " + server.getGuild().getName());
+		for(Entry<Long, DiscordServer> serverEntry : servers.entrySet()) {
+			DiscordServer s = serverEntry.getValue();
+			if(s instanceof UnloadedDiscordServer && !(server instanceof UnloadedDiscordServer)) {
+				RolePreference adminRoles = s.adminRoles;
+				server.adminRoles = adminRoles;
+				servers.put(s.id, server);
+				System.out.println("Loaded previously unloaded server " + server.getGuild().getName());
+			}
 		}
 	}
 	
 	public static DiscordServer getServer(long serverId) {
-		for(DiscordServer server : servers) {
-			if(server.id == serverId) {
-				return server;
-			}
+		DiscordServer discordServer = servers.get(serverId);
+		if(discordServer == null || discordServer instanceof UnloadedDiscordServer) {
+			return null;
 		}
-		return null;
+		return discordServer;
 	}
 	
 	public static void updateServerList() {
@@ -123,8 +130,8 @@ public class DiscordServer implements OutputCSV{
 			}
 			SERVER_PREFS.createNewFile();
 			writer = new BufferedWriter(new FileWriter(SERVER_PREFS));
-			for(DiscordServer discordServer : servers) {
-				writer.write(discordServer.toCSV());
+			for(Entry<Long, DiscordServer> discordServer : servers.entrySet()) {
+				writer.write(discordServer.getValue().toCSV());
 				writer.newLine();
 			}
 		}
@@ -149,10 +156,17 @@ public class DiscordServer implements OutputCSV{
 			BufferedReader reader = new BufferedReader(new FileReader(SERVER_PREFS));
 			CSVParser csvParser = new CSVParser(reader, CSVFormat.DEFAULT);
 			try {
-				
 				for(CSVRecord csvRecord : csvParser) {
+					String name = csvRecord.get(0);
 					long guildId = Long.parseLong(csvRecord.get(1));
-					DiscordServer discordServer = new DiscordServer(guildId);
+					DiscordServer discordServer;
+					if(Main.discordBot.jda.getGuildById(guildId) != null) {
+						discordServer = new DiscordServer(guildId);
+					}
+					else {
+						discordServer = new UnloadedDiscordServer(guildId);
+						System.out.println("Could not find Guild for server " + name + " (" + guildId + ")");
+					}
 					String adminRoleString = csvRecord.get(2);
 					if(!adminRoleString.isEmpty()) {
 						String[] adminRoleIdStrings = csvRecord.get(2).replaceAll("\"", "").replaceAll("'", "").split(",");
