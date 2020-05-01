@@ -1,8 +1,12 @@
 package com.gamebuster19901.excite.bot.command;
 
+import java.util.List;
+
 import com.gamebuster19901.excite.Main;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
 
+import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.events.message.priv.PrivateMessageReceivedEvent;
 
@@ -52,6 +56,16 @@ public class MessageContext<E>{
 		return null;
 	}
 	
+	private Member getMember() {
+		if(isConsoleMessage()) {
+			return null;
+		}
+		if(event instanceof GuildMessageReceivedEvent) {
+			return ((GuildMessageReceivedEvent)event).getMessage().getMember();
+		}
+		return null;
+	}
+	
 	public boolean isAdmin() {
 		return isConsoleMessage() || 
 				getAuthor()
@@ -86,5 +100,20 @@ public class MessageContext<E>{
 			return "CONSOLE";
 		}
 		return getAuthor().getJDAUser().getAsTag();
+	}
+	
+	public long getSenderId() {
+		if(isConsoleMessage()) {
+			return -1;
+		}
+		return getAuthor().getJDAUser().getIdLong();
+	}
+	
+	public List<Role> getRoles() {
+		return getMember().getRoles();
+	}
+	
+	private boolean isAdmin(GuildMessageReceivedEvent e) {
+		return false;
 	}
 }

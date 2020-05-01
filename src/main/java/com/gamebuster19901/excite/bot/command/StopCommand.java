@@ -1,5 +1,7 @@
 package com.gamebuster19901.excite.bot.command;
 
+import com.gamebuster19901.excite.Main;
+import com.gamebuster19901.excite.bot.user.DiscordUser;
 import com.mojang.brigadier.CommandDispatcher;
 
 public class StopCommand {
@@ -15,13 +17,19 @@ public class StopCommand {
 	private static int stop(MessageContext context) {
 		if(context.isAdmin()) {
 			try {
+				System.out.println(context.getTag() + "(" + context.getSenderId() + ") Stopped the bot!");
 				context.sendMessage("Stopping!");
-				System.out.println(context.getTag() + " Stopped the bot!");
+				if(Main.botOwner != null) {
+					DiscordUser botOwner = DiscordUser.getDiscordUser(Main.botOwner);
+					botOwner.sendMessage(botOwner.getJDAUser().getAsMention() + ", " + context.getTag() + "(" + context.getSenderId() + ") Stopped the bot!");
+				}
 			}
 			catch (Throwable t) {
 				t.printStackTrace();
 			}
-			System.exit(1);
+			finally {
+				System.exit(1);
+			}
 		}
 		else {
 			context.sendMessage("You do not have permission to execute this command");
