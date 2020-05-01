@@ -38,29 +38,43 @@ public class DiscordServer implements OutputCSV{
 			throw new IOError(e);
 		}
 	}
-	
-	private final Guild server;
 	private final long id;
 	
 	RolePreference adminRoles;
 	
-	public DiscordServer(Guild guild) {
-		this.server = guild;
-		this.id = guild.getIdLong();
+	public DiscordServer(long guildId) {
+		this.id = guildId;
 		this.adminRoles = new RolePreference(this);
 	}
 
 	@Override
 	public String toCSV() {
-		return server.getName() + "," + server.getId() + "," + adminRoles;
+		final Guild guild = getGuild();
+		return guild.getName() + "," + guild.getId() + "," + adminRoles;
 	}
 
 	public Guild getGuild() {
-		return server;
+		return Main.discordBot.jda.getGuildById(id);
 	}
 	
 	public Role getRoleById(long id) {
-		return server.getRoleById(id);
+		return getGuild().getRoleById(id);
+	}
+	
+	public Role[] getAdminRoles() {
+		return adminRoles.getValue().toArray(new Role[]{});
+	}
+	
+	public Role[] getRoles() {
+		return getGuild().getRoles().toArray(new Role[]{});
+	}
+	
+	public void addAdminRole(Role role) {
+		this.adminRoles.addRole(role);
+	}
+	
+	public void removeAdminRole(Role role) {
+		this.adminRoles.removeRole(role);
 	}
 	
 	@Override
@@ -83,9 +97,18 @@ public class DiscordServer implements OutputCSV{
 		}
 	}
 	
+	public static DiscordServer getServer(long serverId) {
+		for(DiscordServer server : servers) {
+			if(server.id == serverId) {
+				return server;
+			}
+		}
+		return null;
+	}
+	
 	public static void updateServerList() {
 		for(Guild guild : Main.discordBot.jda.getGuilds()) {
-			addServer(new DiscordServer(guild));
+			addServer(new DiscordServer(guild.getIdLong()));
 		}
 	}
 	
@@ -129,25 +152,19 @@ public class DiscordServer implements OutputCSV{
 				
 				for(CSVRecord csvRecord : csvParser) {
 					long guildId = Long.parseLong(csvRecord.get(1));
-					Guild guild = Main.discordBot.jda.getGuildById(guildId);
-					if(guild != null) {
-						DiscordServer discordServer = new DiscordServer(Main.discordBot.jda.getGuildById(csvRecord.get(1)));
-						String adminRoleString = csvRecord.get(2);
-						if(!adminRoleString.isEmpty()) {
-							String[] adminRoleIdStrings = csvRecord.get(2).replaceAll("\"", "").split(",");
-							long[] adminRoleIds = new long[adminRoleIdStrings.length];
-							for(int i = 0; i < adminRoleIdStrings.length; i++) {
-								if(!adminRoleIdStrings[i].isEmpty()) {
-									adminRoleIds[i] = Long.parseLong(adminRoleIdStrings[i]);
-								}
+					DiscordServer discordServer = new DiscordServer(guildId);
+					String adminRoleString = csvRecord.get(2);
+					if(!adminRoleString.isEmpty()) {
+						String[] adminRoleIdStrings = csvRecord.get(2).replaceAll("\"", "").replaceAll("'", "").split(",");
+						long[] adminRoleIds = new long[adminRoleIdStrings.length];
+						for(int i = 0; i < adminRoleIdStrings.length; i++) {
+							if(!adminRoleIdStrings[i].isEmpty()) {
+								adminRoleIds[i] = Long.parseLong(adminRoleIdStrings[i]);
 							}
-							discordServer.adminRoles.setFromIds(adminRoleIds);
 						}
-						discordServers.add(discordServer);
+						discordServer.adminRoles.setFromIds(adminRoleIds);
 					}
-					else {
-						System.out.println("Could not find server (" + guildId + ")");
-					}
+					discordServers.add(discordServer);
 				}
 			}
 			finally {
