@@ -39,9 +39,9 @@ public class DiscordUser implements OutputCSV{
 			if(!USER_PREFS.exists()) {
 				USER_PREFS.getParentFile().mkdirs();
 				USER_PREFS.createNewFile();
-				for(DiscordUser user : getEncounteredUsersFromFile()) {
-					addUser(user);
-				}
+			}
+			for(DiscordUser user : getEncounteredUsersFromFile()) {
+				addUser(user);
 			}
 		}
 		catch(IOException e) {

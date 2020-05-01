@@ -32,9 +32,9 @@ public class DiscordServer implements OutputCSV{
 			if(!SERVER_PREFS.exists()) {
 				SERVER_PREFS.getParentFile().mkdirs();
 				SERVER_PREFS.createNewFile();
-				for(DiscordServer server : getEncounteredServersFromFile()) {
-					addServer(server);
-				}
+			}
+			for(DiscordServer server : getEncounteredServersFromFile()) {
+				addServer(server);
 			}
 		}
 		catch(IOException e) {
