@@ -24,6 +24,7 @@ public class Commands extends EventReceiver{
 		RegisterCommand.register(dispatcher);
 		NotifyCommand.register(dispatcher);
 		StopCommand.register(dispatcher);
+		AdminRoleCommand.register(dispatcher);
 	}
 	
 	public void handleCommand(String command) {

@@ -15,6 +15,14 @@ public class RolePreference extends SetPreference<Role>{
 		this.server = server;
 	}
 	
+	public void addRole(Role role) {
+		this.value.add(role);
+	}
+	
+	public void removeRole(Role role) {
+		this.value.remove(role);
+	}
+	
 	@Override
 	public Set<Role> convertString(String value) {
 		HashSet<Role> roles = new HashSet<Role> ();
