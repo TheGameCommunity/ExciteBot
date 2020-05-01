@@ -67,6 +67,6 @@ public final class TimeUtils {
 	}
 	
 	private static boolean isDays(String timeUnit) {
-		return timeUnit.equalsIgnoreCase("d") || timeUnit.equalsIgnoreCase("day");
+		return timeUnit.equalsIgnoreCase("d") || timeUnit.equalsIgnoreCase("day") || timeUnit.equalsIgnoreCase("days");
 	}
 }
