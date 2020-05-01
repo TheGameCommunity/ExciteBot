@@ -1,8 +1,7 @@
 package com.gamebuster19901.excite.bot.command;
 
-import java.util.List;
-
 import com.gamebuster19901.excite.Main;
+import com.gamebuster19901.excite.bot.server.DiscordServer;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
 
 import net.dv8tion.jda.api.entities.Member;
@@ -56,22 +55,22 @@ public class MessageContext<E>{
 		return null;
 	}
 	
-	private Member getMember() {
-		if(isConsoleMessage()) {
-			return null;
-		}
-		if(event instanceof GuildMessageReceivedEvent) {
-			return ((GuildMessageReceivedEvent)event).getMessage().getMember();
-		}
-		return null;
-	}
-	
 	public boolean isAdmin() {
-		return isConsoleMessage() || 
-				getAuthor()
-				.getJDAUser()
-				.getAsTag()
-				.equalsIgnoreCase(Main.botOwner);
+		if (isConsoleMessage() || getAuthor().getJDAUser().getAsTag().equalsIgnoreCase(Main.botOwner)){
+			return true;
+		}
+		else if(event instanceof GuildMessageReceivedEvent) {
+			GuildMessageReceivedEvent e = (GuildMessageReceivedEvent) event;
+			DiscordServer server = getServer();
+			Role[] adminRoles = server.getAdminRoles();
+			Member member = e.getMessage().getMember();
+			for(Role role : adminRoles) {
+				if(member.getRoles().contains(role)) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 	
 	public void sendMessage(String message) {
@@ -109,11 +108,10 @@ public class MessageContext<E>{
 		return getAuthor().getJDAUser().getIdLong();
 	}
 	
-	public List<Role> getRoles() {
-		return getMember().getRoles();
-	}
-	
-	private boolean isAdmin(GuildMessageReceivedEvent e) {
-		return false;
+	public DiscordServer getServer() {
+		if(event instanceof GuildMessageReceivedEvent) {
+			return DiscordServer.getServer(((GuildMessageReceivedEvent)event).getMessage().getGuild().getIdLong());
+		}
+		return null;
 	}
 }

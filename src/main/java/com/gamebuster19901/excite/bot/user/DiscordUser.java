@@ -46,7 +46,6 @@ public class DiscordUser implements OutputCSV{
 		}
 	}
 	
-	private final User user;
 	private final long id;
 	UserPreferences preferences;
 	
@@ -54,7 +53,6 @@ public class DiscordUser implements OutputCSV{
 		if(user == null) {
 			throw new NullPointerException();
 		}
-		this.user = user;
 		this.id = user.getIdLong();
 		this.preferences = new UserPreferences(this);
 	}
@@ -65,11 +63,7 @@ public class DiscordUser implements OutputCSV{
 	
 	@Nullable
 	public User getJDAUser() {
-		return user;
-	}
-	
-	public boolean isValid() {
-		return user != null;
+		return Main.discordBot.jda.getUserById(id);
 	}
 	
 	public long getId() {
@@ -131,7 +125,7 @@ public class DiscordUser implements OutputCSV{
 	}
 	
 	public void sendMessage(String message) {
-		user.openPrivateChannel().complete().sendMessage(message).complete();
+		getJDAUser().openPrivateChannel().complete().sendMessage(message).complete();
 	}
 	
 	@SuppressWarnings("rawtypes")
@@ -286,10 +280,10 @@ public class DiscordUser implements OutputCSV{
 					UserPreferences preferences = new UserPreferences();
 
 					discord = csvRecord.get(0);
-					discordId = Long.parseLong(csvRecord.get(1));
+					discordId = Long.parseLong(csvRecord.get(1).replaceFirst("'", ""));
 					notifyThreshold = Integer.parseInt(csvRecord.get(2));
 					notifyFrequency = Duration.parse(csvRecord.get(3));
-					String[] players = csvRecord.get(4).replaceAll("\"", "").split(",");
+					String[] players = csvRecord.get(4).replaceAll("\"", "").replaceFirst("'", "").split(",");
 					int[] playerIDs = new int[players.length];
 					for(int i = 0; i < players.length; i++) {
 						if(!players[i].isEmpty()) {

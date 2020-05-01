@@ -30,37 +30,35 @@ public class RegisterCommand extends WiimmfiCommand {
 			context.sendMessage("You are already trying to register a profile! Please wait until registration is complete or the registration code expires.");
 			return;
 		}
-		if(context.getAuthor().isValid()) {
-			for(Player p : Player.getEncounteredPlayers()) {
-				if((p.getPlayerID() + "").equals(player)) {
-					String securityCode = discordUser.requestRegistration(p);
-					sendInfo(context, discordUser, p, securityCode);
-					return;
-				}
-				if(p.getName().equalsIgnoreCase(player)) {
-					players.add(p);
-				}
+		for(Player p : Player.getEncounteredPlayers()) {
+			if((p.getPlayerID() + "").equals(player)) {
+				String securityCode = discordUser.requestRegistration(p);
+				sendInfo(context, discordUser, p, securityCode);
+				return;
 			}
-		
+			if(p.getName().equalsIgnoreCase(player)) {
+				players.add(p);
+			}
+		}
+	
 
-			switch(players.size()) {
-				case 0:
-					context.sendMessage("Could not find a player with name or PID of " + player);
-					break;
-				case 1:
-					Player desiredProfile = players.toArray(new Player[]{})[0];
-					String securityCode = discordUser.requestRegistration(desiredProfile);
-					sendInfo(context, discordUser, desiredProfile, securityCode);
-					break;
-				default:
-					String ambiguities = "";
-					for(Player p : players) {
-						ambiguities += p + "\n";
-					}
-					context.sendMessage(player + " is ambiguous as there is more than one profile known with that name. Please supply your account's PID instead of it's name." 
-						+ "\n\nAmbiguities:\n\n" + ambiguities);
-					break;
-			}
+		switch(players.size()) {
+			case 0:
+				context.sendMessage("Could not find a player with name or PID of " + player);
+				break;
+			case 1:
+				Player desiredProfile = players.toArray(new Player[]{})[0];
+				String securityCode = discordUser.requestRegistration(desiredProfile);
+				sendInfo(context, discordUser, desiredProfile, securityCode);
+				break;
+			default:
+				String ambiguities = "";
+				for(Player p : players) {
+					ambiguities += p + "\n";
+				}
+				context.sendMessage(player + " is ambiguous as there is more than one profile known with that name. Please supply your account's PID instead of it's name." 
+					+ "\n\nAmbiguities:\n\n" + ambiguities);
+				break;
 		}
 	}
 	
