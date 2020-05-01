@@ -7,7 +7,7 @@ import com.gamebuster19901.excite.bot.common.preferences.SetPreference;
 
 import net.dv8tion.jda.api.entities.Role;
 
-public class RolePreference extends SetPreference<Role>{
+public class RolePreference extends SetPreference<Long>{
 
 	private final DiscordServer server;
 	
@@ -16,26 +16,28 @@ public class RolePreference extends SetPreference<Role>{
 	}
 	
 	public void addRole(Role role) {
-		this.value.add(role);
+		this.value.add(role.getIdLong());
+	}
+	
+	public void addRole(long id) {
+		this.value.add(id);
 	}
 	
 	public void removeRole(Role role) {
-		this.value.remove(role);
+		this.value.remove(role.getIdLong());
+	}
+	
+	public void removeRole(long id) {
+		this.value.remove(id);
 	}
 	
 	@Override
-	public Set<Role> convertString(String value) {
-		HashSet<Role> roles = new HashSet<Role> ();
+	public Set<Long> convertString(String value) {
+		HashSet<Long> roles = new HashSet<Long> ();
 		value = value.replaceAll("\"", "");
 		String[] values = value.split(",");
 		for(String id : values) {
-			Role role = server.getRoleById(Long.parseLong(id));
-			if(role != null) {
-				roles.add(server.getRoleById(Long.parseLong(id)));
-			}
-			else {
-				System.out.println("Could not find role (" + role + ") in server (" + server.getGuild().getIdLong() + ")");
-			}
+			roles.add(Long.parseLong(id));
 		}
 		return roles;
 	}
@@ -43,8 +45,8 @@ public class RolePreference extends SetPreference<Role>{
 	@Override
 	public String toString() {
 		String value = "\"'";
-		for(Role role : getValue()) {
-			value += role.getIdLong() + ",";
+		for(Long role : getValue()) {
+			value += role + ",";
 		}
 		if(value.length() > 0 && value.charAt(value.length() - 1) == ',') {
 			value = value.substring(0, value.length() - 1);
@@ -55,15 +57,9 @@ public class RolePreference extends SetPreference<Role>{
 	}
 
 	public void setFromIds(long[] ids) {
-		HashSet<Role> roles = new HashSet<Role>();
+		HashSet<Long> roles = new HashSet<Long>();
 		for(long id : ids) {
-			Role role = this.server.getGuild().getRoleById(id);
-			if(role != null) {
-				roles.add(role);
-			}
-			else {
-				System.out.println("Could not find role (" + id + ") in " + server.getGuild().getName());
-			}
+			roles.add(id);
 		}
 		setValue(roles);
 	}
