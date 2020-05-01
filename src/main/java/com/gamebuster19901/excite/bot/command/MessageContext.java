@@ -73,4 +73,11 @@ public class MessageContext<E>{
 			System.out.println(message);
 		}
 	}
+	
+	public String getMention() {
+		if(isConsoleMessage()) {
+			return "@ CONSOLE";
+		}
+		return getAuthor().getJDAUser().getAsMention();
+	}
 }
