@@ -14,9 +14,7 @@ public class BanCommand extends WiimmfiCommand {
 
 	@SuppressWarnings("rawtypes")
 	public static void register(CommandDispatcher<MessageContext> dispatcher) {
-		dispatcher.register(Commands.literal("!ban").requires((permission) -> {
-			return permission.isAdmin();
-		}).then(Commands.argument("discordUser", StringArgumentType.word()).then((Commands.argument("discriminator", StringArgumentType.string()).executes((context) -> {
+		dispatcher.register(Commands.literal("!ban").then(Commands.argument("discordUser", StringArgumentType.word()).then((Commands.argument("discriminator", StringArgumentType.string()).executes((context) -> {
 			return banUserForever(context.getSource(), getDiscordUser(context.getArgument("discordUser", String.class), context.getArgument("discriminator", String.class)));
 		}).then(Commands.argument("reason", StringArgumentType.greedyString()).executes((context) -> {
 			return banUserForever(context.getSource(), getDiscordUser(context.getArgument("discordUser", String.class), context.getArgument("discriminator", String.class)), context.getArgument("reason", String.class));
@@ -59,11 +57,16 @@ public class BanCommand extends WiimmfiCommand {
 	
 	@SuppressWarnings("rawtypes")
 	private static int banUserForever(MessageContext context, DiscordUser user, String reason) {
-		if(user != null) {
-			Duration duration = ChronoUnit.FOREVER.getDuration();
-			if(duration != null) {
-				user.ban(context, duration, parseReason(duration, reason));
+		if(context.isAdmin()) {
+			if(user != null) {
+				Duration duration = ChronoUnit.FOREVER.getDuration();
+				if(duration != null) {
+					user.ban(context, duration, parseReason(duration, reason));
+				}
 			}
+		}
+		else {
+			context.sendMessage("You do not have permission to execute this command");
 		}
 		return 0;
 	}
@@ -71,7 +74,12 @@ public class BanCommand extends WiimmfiCommand {
 	
 	@SuppressWarnings("rawtypes")
 	private static int banUser(MessageContext context, DiscordUser user, Duration duration, String reason) {
-		user.ban(new MessageContext(), duration, parseReason(duration, reason));
+		if(context.isAdmin()) {
+			user.ban(new MessageContext(), duration, parseReason(duration, reason));
+		}
+		else {
+			context.sendMessage("You do not have permission to execute this command");
+		}
 		return 1;
 	}
 	
