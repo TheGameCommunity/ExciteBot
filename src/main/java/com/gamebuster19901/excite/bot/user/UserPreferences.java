@@ -136,16 +136,19 @@ public class UserPreferences implements OutputCSV{
 		this.banReason.setValue(reason);
 		banCount.setValue(banCount.getValue() + 1);
 		DiscordUser discordUser = DiscordUser.getDiscordUser(this.discordId.getValue());
-		discordUser.sendMessage(discordUser.getJDAUser().getAsMention() + " " + (String)banReason.getValue());
+		discordUser.sendMessage(context, discordUser.getJDAUser().getAsMention() + " " + (String)banReason.getValue());
 	}
 	
-	public void pardon() {
+	public void pardon(int amount) {
 		this.banTime.setValue(Instant.MIN);
 		this.banDuration.setValue(Duration.ZERO);
 		this.banExpire.setValue(Instant.MIN);
 		this.banReason.setValue("");
 		if(this.banCount.getValue() > 0) {
-			this.banCount.setValue(this.banCount.getValue() - 1);
+			this.banCount.setValue(this.banCount.getValue() - amount);
+		}
+		if(this.banCount.getValue() < 0) {
+			this.banCount.setValue(0);
 		}
 	}
 	
@@ -159,10 +162,10 @@ public class UserPreferences implements OutputCSV{
 		return desiredProfile.getValue() != -1;
 	}
 	
-	public String prepareRegistration(Player desiredProfile) {
+	public String requestRegistration(Player desiredProfile) {
 		this.desiredProfile.setValue(desiredProfile.getPlayerID());
 		this.registrationCode.setValue(generatePassword());
-		this.registrationTimer.setValue(Instant.now().plus(Duration.ofMinutes(15)));
+		this.registrationTimer.setValue(Instant.now().plus(Duration.ofMinutes(5)));
 		return (String) registrationCode.getValue();
 	}
 	
@@ -226,7 +229,7 @@ public class UserPreferences implements OutputCSV{
 			if(preferences.requestingRegistration()) {
 				int desiredProfile = preferences.desiredProfile.getValue();
 				if(desiredProfile > -1) {
-					if(preferences.registrationTimer.getValue().isBefore(Instant.now())) {
+					if(preferences.registrationTimer.getValue().isAfter(Instant.now())) {
 						for(Player player : Wiimmfi.getOnlinePlayers()) {
 							if(player.getName().equals(preferences.registrationCode.getValue())) {
 								if(player.getPlayerID() == desiredProfile) {
@@ -244,7 +247,9 @@ public class UserPreferences implements OutputCSV{
 						preferences.clearRegistration();
 					}
 				}
-				throw new IllegalStateException("No profile to register!");
+				else {
+					throw new IllegalStateException("No profile to register!");
+				}
 			}
 		}
 	}

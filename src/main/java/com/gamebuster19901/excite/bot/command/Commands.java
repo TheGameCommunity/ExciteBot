@@ -21,6 +21,7 @@ public class Commands extends EventReceiver{
 		WhoIsCommand.register(dispatcher);
 		BanCommand.register(dispatcher);
 		PardonCommand.register(dispatcher);
+		RegisterCommand.register(dispatcher);
 	}
 	
 	public void handleCommand(String command) {

@@ -15,6 +15,10 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.CSVRecord;
+
 import com.gamebuster19901.excite.Main;
 import com.gamebuster19901.excite.Player;
 import com.gamebuster19901.excite.bot.command.MessageContext;
@@ -97,6 +101,14 @@ public class DiscordUser implements OutputCSV{
 	
 	public boolean isBanned() {
 		return preferences.isBanned();
+	}
+	
+	public String requestRegistration(Player desiredProfile) {
+		return preferences.requestRegistration(desiredProfile);
+	}
+	
+	public boolean requestingRegistration() {
+		return preferences.requestingRegistration();
 	}
 	
 	@SuppressWarnings("rawtypes")
