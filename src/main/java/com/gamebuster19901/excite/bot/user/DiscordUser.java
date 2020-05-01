@@ -46,8 +46,8 @@ public class DiscordUser implements OutputCSV{
 		}
 	}
 	
-	private User user;
-	protected final long id;
+	private final User user;
+	private final long id;
 	UserPreferences preferences;
 	
 	public DiscordUser(User user) {
@@ -61,11 +61,6 @@ public class DiscordUser implements OutputCSV{
 	
 	public DiscordUser(String name, String discriminator) {
 		this(getJDAUser(name, discriminator));
-	}
-	
-	protected DiscordUser(long id) {
-		this.id = id;
-		this.preferences = new UserPreferences();
 	}
 	
 	@Nullable
