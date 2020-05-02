@@ -84,7 +84,7 @@ public class Player implements OutputCSV{
 	}
 	
 	public String toCSV() {
-		return playerID + "," + friendCode + "," +  name + "," + discord + "," + zeroLoss;
+		return playerID + "," + friendCode + "," +  name + ",'" + discord + "," + zeroLoss;
 	}
 	
 	public String getName() {
@@ -280,6 +280,7 @@ public class Player implements OutputCSV{
 					if(line.startsWith("pid")) {
 						continue;
 					}
+					line = line.replaceAll("'", "");
 					
 					int playerID = Integer.MIN_VALUE;
 					String friendCode = null;

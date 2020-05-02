@@ -33,6 +33,7 @@ public class ProfilePreference extends SetPreference<Player>{
 	public Set<Player> convertString(String value) {
 		HashSet<Player> profiles = new HashSet<Player>();
 		value = value.replaceAll("\"", "");
+		value = value.replaceAll("'", "");
 		String[] values = value.split(",");
 		for(String pid : values) {
 			profiles.add(Player.getPlayerByID(Integer.parseInt(pid)));
