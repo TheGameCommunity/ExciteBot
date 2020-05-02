@@ -13,7 +13,7 @@ public class HelpCommand {
 	
 	@SuppressWarnings("rawtypes")
 	private static int sendHelpInfo(MessageContext context) {
-		context.sendMessage("For help, see <https://github.com/gamebuster19901/ExciteBot/wiki>\n\nTo report a bug, go to <https://gamebuster19901.com/ExciteBot/issues> or notify the bot owner");
+		context.sendMessage("For help, see <https://github.com/gamebuster19901/ExciteBot/wiki>\n\nTo report a bug, create a new issue at <https://gamebuster19901.com/ExciteBot/issues> or notify the bot owner");
 		return 1;
 	}
 	
