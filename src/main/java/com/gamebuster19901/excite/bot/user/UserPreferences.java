@@ -221,13 +221,15 @@ public class UserPreferences implements OutputCSV{
 						dippedBelowThreshold.setValue(false);
 						long discordId = this.discordId.getValue();
 						DiscordUser user = DiscordUser.getDiscordUser(discordId);
-						for(Player player : Wiimmfi.getOnlinePlayers()) {
-							if(player.getDiscord() == discordId) {
-								return;
+						if(user != null) {
+							for(Player player : Wiimmfi.getOnlinePlayers()) {
+								if(player.getDiscord() == discordId) {
+									return;
+								}
 							}
+							user.sendMessage(user.getJDAUser().getAsMention() + ", there are " + playerCount + " players online!");
+							lastNotification.setValue(Instant.now());
 						}
-						user.sendMessage("@" + discord.getValue() + " there are " + playerCount + " players online!");
-						lastNotification.setValue(Instant.now());
 					}
 				}
 			}
