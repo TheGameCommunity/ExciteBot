@@ -278,6 +278,8 @@ public class DiscordUser implements OutputCSV{
 				Instant banExpire;
 				String banReason;
 				int banCount;
+				Instant lastNotification;
+				boolean dippedBelowThreshold;
 				
 				for(CSVRecord csvRecord : csvParser) {
 					DiscordUser discordUser;
@@ -301,7 +303,21 @@ public class DiscordUser implements OutputCSV{
 					banReason = csvRecord.get(8);
 					banCount = Integer.parseInt(csvRecord.get(9));
 					
-					preferences.parsePreferences(discord, discordId, notifyThreshold, notifyFrequency, profiles, banTime, banDuration, banExpire, banReason, banCount);
+					if(csvRecord.size() > 10) { //legacy data may not have this record
+						lastNotification = Instant.parse(csvRecord.get(10));
+					}
+					else {
+						lastNotification = Instant.MIN;
+					}
+					
+					if(csvRecord.size() > 11) { //legacy data may not have this record
+						dippedBelowThreshold = Boolean.parseBoolean(csvRecord.get(11));
+					}
+					else {
+						dippedBelowThreshold = false;
+					}
+					
+					preferences.parsePreferences(discord, discordId, notifyThreshold, notifyFrequency, profiles, banTime, banDuration, banExpire, banReason, banCount, lastNotification, dippedBelowThreshold);
 					
 					User jdaUser = getJDAUser(discordId);
 					if(jdaUser != null) {
@@ -310,7 +326,6 @@ public class DiscordUser implements OutputCSV{
 					else {
 						System.out.println("Could not find JDA user for " + discord + "(" + discordId + ")");
 						discordUser = new UnloadedDiscordUser(discordId);
-						continue;
 					}
 					discordUser.preferences = preferences;
 					
