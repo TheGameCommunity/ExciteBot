@@ -41,7 +41,7 @@ public class DiscordServer implements OutputCSV{
 			throw new IOError(e);
 		}
 	}
-	private final long id;
+	protected final long id;
 	
 	RolePreference adminRoles;
 	
@@ -96,13 +96,15 @@ public class DiscordServer implements OutputCSV{
 	public static void addServer(DiscordServer server) {
 		for(Entry<Long, DiscordServer> serverEntry : servers.entrySet()) {
 			DiscordServer s = serverEntry.getValue();
-			if(s instanceof UnloadedDiscordServer && !(server instanceof UnloadedDiscordServer)) {
-				RolePreference adminRoles = s.adminRoles;
-				server.adminRoles = adminRoles;
-				servers.put(s.id, server);
-				System.out.println("Loaded previously unloaded server " + server.getGuild().getName());
+			if(server.equals(s)) {
+				if(s instanceof UnloadedDiscordServer && !(server instanceof UnloadedDiscordServer)) {
+					RolePreference adminRoles = s.adminRoles;
+					server.adminRoles = adminRoles;
+					servers.put(s.id, server);
+					System.out.println("Loaded previously unloaded server " + server.getGuild().getName());
+				}
+				return;
 			}
-			return;
 		}
 		servers.put(server.id, server);
 	}
