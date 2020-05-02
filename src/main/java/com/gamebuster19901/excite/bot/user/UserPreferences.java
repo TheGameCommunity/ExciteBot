@@ -201,7 +201,7 @@ public class UserPreferences implements OutputCSV{
 		}
 	}
 	
-	@SuppressWarnings("rawtypes")
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	void updateCooldowns() {
 		if(messageCountPastFifteenSeconds.getValue() > 0) {
 			messageCountPastFifteenSeconds.setValue(messageCountPastFifteenSeconds.getValue() - 1);
