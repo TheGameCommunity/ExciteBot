@@ -9,6 +9,7 @@ import java.util.Set;
 import com.gamebuster19901.excite.Player;
 import com.gamebuster19901.excite.Wiimmfi;
 import com.gamebuster19901.excite.bot.command.MessageContext;
+import com.gamebuster19901.excite.bot.common.preferences.BooleanPreference;
 import com.gamebuster19901.excite.bot.common.preferences.IntegerPreference;
 import com.gamebuster19901.excite.bot.common.preferences.LongPreference;
 import com.gamebuster19901.excite.bot.common.preferences.StringPreference;
@@ -29,6 +30,8 @@ public class UserPreferences implements OutputCSV{
 	private InstantPreference banExpire = new InstantPreference(Instant.MIN);
 	private StringPreference banReason = new StringPreference("");
 	private IntegerPreference banCount = new IntegerPreference(0);
+	private InstantPreference lastNotification = new InstantPreference(Instant.MIN);
+	private BooleanPreference dippedBelowThreshold = new BooleanPreference(true);
 	
 	private transient IntegerPreference desiredProfile = new IntegerPreference(-1);
 	private transient StringPreference registrationCode = new StringPreference("");
@@ -49,7 +52,7 @@ public class UserPreferences implements OutputCSV{
 		
 	}
 	
-	public void parsePreferences(String discord, long discordId, int notifyThreshold, Duration notifyFrequency, Player[] profiles, Instant banTime, Duration banDuration, Instant banExpire, String banReason, int banCount) {
+	public void parsePreferences(String discord, long discordId, int notifyThreshold, Duration notifyFrequency, Player[] profiles, Instant banTime, Duration banDuration, Instant banExpire, String banReason, int banCount, Instant lastNotification, boolean dippedBelowThreshold) {
 		this.discord = new StringPreference(discord);
 		this.discordId = new LongPreference(discordId);
 		this.notifyThreshold = new IntegerPreference(notifyThreshold);
@@ -60,11 +63,13 @@ public class UserPreferences implements OutputCSV{
 		this.banExpire = new InstantPreference(banExpire);
 		this.banReason = new StringPreference(banReason);
 		this.banCount = new IntegerPreference(banCount);
+		this.lastNotification = new InstantPreference(lastNotification);
+		this.dippedBelowThreshold = new BooleanPreference(dippedBelowThreshold);
 	}
 	
 	@Override
 	public String toCSV() {
-		return discord + "," + discordId + "," + notifyThreshold + "," + notifyFrequency + "," + profiles + "," + banTime + "," + banDuration + "," + banExpire + "," + banReason + "," + banCount;
+		return discord + "," + discordId + "," + notifyThreshold + "," + notifyFrequency + "," + profiles + "," + banTime + "," + banDuration + "," + banExpire + "," + banReason + "," + banCount + "," + lastNotification + "," + dippedBelowThreshold;
 	}
 	
 	public int getNotifyThreshold() {
@@ -199,6 +204,27 @@ public class UserPreferences implements OutputCSV{
 	void updateCooldowns() {
 		if(messageCountPastFifteenSeconds.getValue() > 0) {
 			messageCountPastFifteenSeconds.setValue(messageCountPastFifteenSeconds.getValue() - 1);
+		}
+		if(!isBanned()) {
+			int playerCount = Wiimmfi.getOnlinePlayers().length;
+			int threshold = notifyThreshold.getValue();
+			if(threshold == -1) {
+				return;
+			}
+			if(playerCount < threshold) {
+				dippedBelowThreshold.setValue(true);
+				return;
+			}
+			else {
+				if(lastNotification.getValue().plus(notifyFrequency.getValue()).isBefore(Instant.now())) {
+					if(dippedBelowThreshold.getValue()) {
+						dippedBelowThreshold.setValue(false);
+						DiscordUser user = DiscordUser.getDiscordUser(discordId.getValue());
+						user.sendMessage("@" + discord.getValue() + " there are " + playerCount + " players online!");
+						lastNotification.setValue(Instant.now());
+					}
+				}
+			}
 		}
 	}
 	
