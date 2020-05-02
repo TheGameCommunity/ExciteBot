@@ -20,7 +20,7 @@ public class AdminRoleCommand {
 	
 	@SuppressWarnings("rawtypes")
 	private static int addAdminRole(MessageContext context, String role) {
-		if(context.isAdmin()) {
+		if(context.isOperator()) {
 			if(!context.isConsoleMessage()) {
 				if(context.isGuildMessage()) {
 					DiscordServer server = context.getServer();

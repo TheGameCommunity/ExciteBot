@@ -56,7 +56,7 @@ public class MessageContext<E>{
 	}
 	
 	public boolean isAdmin() {
-		if (isConsoleMessage() || getAuthor().getJDAUser().getAsTag().equalsIgnoreCase(Main.botOwner)){
+		if (isOperator()){
 			return true;
 		}
 		else if(event instanceof GuildMessageReceivedEvent) {
@@ -71,6 +71,10 @@ public class MessageContext<E>{
 			}
 		}
 		return false;
+	}
+	
+	public boolean isOperator() {
+		return isConsoleMessage() || getAuthor().getJDAUser().getAsTag().equalsIgnoreCase(Main.botOwner);
 	}
 	
 	public void sendMessage(String message) {
