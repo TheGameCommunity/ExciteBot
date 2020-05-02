@@ -36,13 +36,13 @@ public class UserPreferences implements OutputCSV{
 	private transient IntegerPreference messageCountPastFifteenSeconds = new IntegerPreference(0);
 
 	public UserPreferences(DiscordUser discordUser) {
-		discord = new StringPreference(discordUser.getJDAUser().getAsTag());
+		if(discordUser.getJDAUser() == null) {
+			discord = new StringPreference("UNKNOWN USER");
+		}
+		else {
+			discord = new StringPreference(discordUser.getJDAUser().getAsTag());
+		}
 		discordId = new LongPreference(discordUser.getId());
-	}
-	
-	public UserPreferences(String discord, long discordId) {
-		this.discord = new StringPreference(discord);
-		this.discordId = new LongPreference(discordId);
 	}
 	
 	public UserPreferences() {
