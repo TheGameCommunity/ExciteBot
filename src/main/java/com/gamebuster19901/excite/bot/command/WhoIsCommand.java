@@ -13,7 +13,7 @@ public class WhoIsCommand extends WiimmfiCommand{
 	public static void register(CommandDispatcher<MessageContext> dispatcher) {
 		dispatcher.register(Commands.literal("!whois")
 			.then(
-				Commands.argument("player", StringArgumentType.word())
+				Commands.argument("player", StringArgumentType.greedyString())
 					.executes(
 						(command) -> {
 							send(getResponse(command.getSource(), command.getArgument("player", String.class)), command.getSource().getEvent());
