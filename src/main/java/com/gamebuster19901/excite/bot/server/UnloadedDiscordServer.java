@@ -23,5 +23,10 @@ public class UnloadedDiscordServer extends DiscordServer{
 	public Role[] getRoles() {
 		throw new AssertionError();
 	}
+	
+	@Override
+	public String toCSV() {
+		return "UNKNOWN_GUILD" + "," + id + "," + adminRoles;
+	}
 
 }
