@@ -12,6 +12,8 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import com.gamebuster19901.excite.bot.command.MessageContext;
+
 public class Wiimmfi {
 	
 	private static final Logger logger = Logger.getLogger(Wiimmfi.class.getName());
@@ -112,6 +114,23 @@ public class Wiimmfi {
 		return players.toArray(new Player[]{});
 	}
 	
+	@SuppressWarnings("rawtypes")
+	public static String getOnlinePlayerList(MessageContext messageContext) {
+		Player[] players = Wiimmfi.getOnlinePlayers();
+		String response = "Players Online: (" + players.length + ")" + "\n\n";
+		int maxLines = 10000;
+		if(messageContext.isGuildMessage() || messageContext.isPrivateMessage()) {
+			maxLines = 24;
+		}
+		
+		for(int i = 0; i < players.length && i < maxLines; i++) {
+			response += players[i].toString() + '\n';
+			if (i == maxLines - 1 && players.length > maxLines) {
+				response += "and (" + (players.length - 24) + ") others";
+			}
+		}
+		return response;
+	}
 	
 	public Throwable getError() {
 		return error;

@@ -201,6 +201,7 @@ public class UserPreferences implements OutputCSV{
 		}
 	}
 	
+	@SuppressWarnings("rawtypes")
 	void updateCooldowns() {
 		if(messageCountPastFifteenSeconds.getValue() > 0) {
 			messageCountPastFifteenSeconds.setValue(messageCountPastFifteenSeconds.getValue() - 1);
@@ -227,7 +228,9 @@ public class UserPreferences implements OutputCSV{
 									return;
 								}
 							}
-							user.sendMessage(user.getJDAUser().getAsMention() + ", there are " + playerCount + " players online!");
+							user.sendMessage(user.getJDAUser().getAsMention() + ", there are " + playerCount + " players online!\n\n" +
+								Wiimmfi.getOnlinePlayerList(new MessageContext(user))
+							);
 							lastNotification.setValue(Instant.now());
 						}
 					}

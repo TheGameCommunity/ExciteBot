@@ -14,7 +14,7 @@ public class MessageContext<E>{
 	private E event;
 	
 	public MessageContext(E e) {
-		if(e == null || e instanceof GuildMessageReceivedEvent || e instanceof PrivateMessageReceivedEvent) {
+		if(e == null || e instanceof GuildMessageReceivedEvent || e instanceof PrivateMessageReceivedEvent || e instanceof DiscordUser) {
 			this.event = e;
 		}
 		else {
@@ -31,7 +31,7 @@ public class MessageContext<E>{
 	}
 	
 	public boolean isPrivateMessage() {
-		return event instanceof PrivateMessageReceivedEvent;
+		return event instanceof PrivateMessageReceivedEvent || event instanceof DiscordUser;
 	}
 	
 	public boolean isConsoleMessage() {
@@ -51,6 +51,9 @@ public class MessageContext<E>{
 		}
 		else if (event instanceof PrivateMessageReceivedEvent) {
 			return DiscordUser.getDiscordUser(((PrivateMessageReceivedEvent)event).getMessage().getAuthor().getIdLong());
+		}
+		else if (event instanceof DiscordUser) {
+			return (DiscordUser) event;
 		}
 		return null;
 	}
@@ -84,6 +87,9 @@ public class MessageContext<E>{
 			}
 			else if (event instanceof PrivateMessageReceivedEvent) {
 				((PrivateMessageReceivedEvent)event).getChannel().sendMessage(message).complete();
+			}
+			else if (event instanceof DiscordUser) {
+				((DiscordUser) event).sendMessage(message);
 			}
 		}
 		else {
