@@ -19,3 +19,15 @@ dependencies {
     }
     compile 'com.mojang:brigadier:1.0.17'
 }
+
+jar {
+    manifest {
+        attributes(
+            'Class-Path': configurations.compile.collect { it.getName() }.join(' '),
+            'Main-Class': 'com.gamebuster19901.excite.Main'
+        )
+    }
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+}
