@@ -24,6 +24,7 @@ import com.gamebuster19901.excite.Main;
 import com.gamebuster19901.excite.Player;
 import com.gamebuster19901.excite.bot.command.MessageContext;
 import com.gamebuster19901.excite.output.OutputCSV;
+import com.gamebuster19901.excite.util.FileUtils;
 
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
@@ -39,6 +40,13 @@ public class DiscordUser implements OutputCSV{
 			if(!USER_PREFS.exists()) {
 				USER_PREFS.getParentFile().mkdirs();
 				USER_PREFS.createNewFile();
+			}
+			else {
+				if(OLD_USER_PREFS.exists()) {
+					if(!FileUtils.contentEquals(USER_PREFS, OLD_USER_PREFS)) {
+						throw new IOException("File content differs!");
+					}
+				}
 			}
 			for(DiscordUser user : getEncounteredUsersFromFile()) {
 				addUser(user);

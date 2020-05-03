@@ -13,6 +13,7 @@ import java.util.logging.Logger;
 
 import com.gamebuster19901.excite.bot.user.DiscordUser;
 import com.gamebuster19901.excite.output.OutputCSV;
+import com.gamebuster19901.excite.util.FileUtils;
 
 import net.dv8tion.jda.api.entities.User;
 
@@ -32,6 +33,13 @@ public class Player implements OutputCSV{
 			if(!KNOWN_PLAYERS.exists()) {
 				KNOWN_PLAYERS.getParentFile().mkdirs();
 				KNOWN_PLAYERS.createNewFile();
+			}
+			else {
+				if(OLD_KNOWN_PLAYERS.exists()) {
+					if(!FileUtils.contentEquals(KNOWN_PLAYERS, OLD_KNOWN_PLAYERS)) {
+						throw new IOException("File content differs!");
+					}
+				}
 			}
 			knownPlayers = new HashSet<Player>(Arrays.asList(getEncounteredPlayersFromFile()));
 		}
