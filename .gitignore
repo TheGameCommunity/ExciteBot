@@ -21,6 +21,7 @@ hs_err_pid*.log
 
 #Run
 /run
+/backups
 
 # secrets
 **.secret

@@ -11,8 +11,10 @@ import java.util.logging.Logger;
 
 import javax.security.auth.login.LoginException;
 
+import com.gamebuster19901.excite.backup.Backup;
 import com.gamebuster19901.excite.bot.DiscordBot;
 import com.gamebuster19901.excite.bot.command.Commands;
+import com.gamebuster19901.excite.bot.command.MessageContext;
 import com.gamebuster19901.excite.bot.server.DiscordServer;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
 import com.gamebuster19901.excite.bot.user.UserPreferences;
@@ -31,6 +33,7 @@ public class Main {
 	
 	private static ConcurrentLinkedDeque<String> consoleCommandsAwaitingProcessing = new ConcurrentLinkedDeque<String>();
 	
+	@SuppressWarnings("rawtypes")
 	public static void main(String[] args) throws InterruptedException {
 	
 		if(args.length % 2 != 0) {
@@ -57,6 +60,7 @@ public class Main {
 		Instant nextWiimmfiPing = Instant.now();
 		Instant nextDiscordPing = Instant.now();
 		Instant updateCooldowns = Instant.now();
+		Instant nextBackupTime = Instant.now();
 		startConsole();
 		
 		try {
@@ -64,6 +68,10 @@ public class Main {
 				Throwable error = wiimmfi.getError();
 				while(!consoleCommandsAwaitingProcessing.isEmpty()) {
 					Commands.DISPATCHER.handleCommand(consoleCommandsAwaitingProcessing.pollFirst());
+				}
+				if(nextBackupTime.isBefore(Instant.now())) {
+					Backup.backup(new MessageContext());
+					nextBackupTime = nextBackupTime.plus(Duration.ofHours(1));
 				}
 				if(nextWiimmfiPing.isBefore(Instant.now())) {
 					wiimmfi.update();
