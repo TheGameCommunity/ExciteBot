@@ -64,7 +64,7 @@ public class DiscordServer implements OutputCSV{
 		if(guild != null) {
 			return guild.getName() + "," + guild.getId() + "," + adminRoles;
 		}
-		return  "UNKNOWN_GUILD" + "," + id + adminRoles;
+		return "UNKNOWN_GUILD" + "," + id + "," + adminRoles;
 	}
 
 	public Guild getGuild() {
