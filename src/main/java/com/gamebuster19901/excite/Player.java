@@ -68,27 +68,27 @@ public class Player implements OutputCSV{
 	}
 	
 	public String toString() {
-		String prefix = "";
+		String suffix = "";
 		if(isZeroLoss()) {
-			prefix += ZEROLOSS;
+			suffix += ZEROLOSS;
 		}
 		if(isLegacy()) {
-			prefix += LEGACY;
+			suffix += LEGACY;
 		}
 		if(isVerified()) {
 			DiscordUser user = DiscordUser.getDiscordUser(discord);
 			if(!user.isBanned()) {
-				prefix += VERIFIED;
+				suffix += VERIFIED;
 			}
 			else {
-				prefix += BANNED;
+				suffix += BANNED;
 			}
-			return String.format(prefix + " " + getPrettyDiscord() + "(" + name + ") - FC:[" + friendCode +  "] - PID:["  + playerID + "]");
+			return String.format(name +  " - FC:[" + friendCode +  "] - PID:["  + playerID + "] - Discord:[" + getPrettyDiscord() + "]" + suffix);
 		}
-		if(!prefix.isEmpty()) {
-			prefix = prefix + " ";
+		if(!suffix.isEmpty()) {
+			suffix = suffix + " ";
 		}
-		return String.format(prefix + name + " - FC:[" + friendCode +  "] - PID:["  + playerID + "]");
+		return String.format(name + " - FC:[" + friendCode +  "] - PID:["  + playerID + "]" + suffix);
 	}
 	
 	public String toCSV() {
