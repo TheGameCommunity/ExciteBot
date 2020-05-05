@@ -22,6 +22,7 @@ import com.gamebuster19901.excite.bot.user.UserPreferences;
 import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.entities.Activity.ActivityType;
+import net.dv8tion.jda.api.entities.User;
 
 public class Main {
 	
@@ -124,6 +125,12 @@ public class Main {
 			t.printStackTrace();
 			if(discordBot != null) {
 				discordBot.jda.getPresence().setPresence(OnlineStatus.DO_NOT_DISTURB, Activity.of(ActivityType.DEFAULT, "Bot Crashed"));
+				if(botOwner != null) {
+					User user = discordBot.jda.getUserByTag(botOwner);
+					if(user != null) {
+						user.openPrivateChannel().complete().sendMessage(t.toString()).complete();
+					}
+				}
 				while(true) {Thread.sleep(1000);}
 			}
 		}
