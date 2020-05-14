@@ -28,7 +28,7 @@ public class StopCommand {
 				t.printStackTrace();
 			}
 			finally {
-				System.exit(1);
+				System.exit(0);
 			}
 		}
 		else {
