@@ -76,7 +76,14 @@ public class DiscordServer implements OutputCSV{
 	}
 	
 	public Role[] getAdminRoles() {
-		return adminRoles.getValue().toArray(new Role[]{});
+		HashSet<Role> roles = new HashSet<Role>();
+		for(Long roleID : adminRoles.getValue()) {
+			Role role = getRoleById(roleID);
+			if(role != null) {
+				roles.add(role);
+			}
+		}
+		return roles.toArray(new Role[]{});
 	}
 	
 	public Role[] getRoles() {
