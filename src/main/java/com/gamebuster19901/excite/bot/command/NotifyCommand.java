@@ -52,7 +52,7 @@ public class NotifyCommand extends WiimmfiCommand{
 				Duration min = Duration.ofMinutes(5);
 				if(frequency.compareTo(min) >= 0) {
 					context.getAuthor().setNotifyFrequency(frequency);
-					context.sendMessage(context.getMention() + "You will now be notified of online players a maximum of once every " + TimeUtils.readableDuration(frequency));
+					context.sendMessage(context.getMention() + ", You will now be notified of online players a maximum of once every " + TimeUtils.readableDuration(frequency));
 				}
 				else {
 					context.sendMessage("Notification frequency must be 5 minutes or longer");
