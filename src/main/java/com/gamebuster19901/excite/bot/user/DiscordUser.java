@@ -268,6 +268,14 @@ public class DiscordUser implements OutputCSV{
 		for(User user : Main.discordBot.jda.getUsers()) {
 			addUser(new DiscordUser(user.getIdLong()));
 		}
+		for(DiscordUser discordUser : DiscordUser.getKnownUsers()) {
+			if(discordUser.getClass() == DiscordUser.class && discordUser.getJDAUser() == null) {
+				UnloadedDiscordUser unloadedUser = new UnloadedDiscordUser(discordUser.id);
+				unloadedUser.preferences = discordUser.preferences;
+				users.put(discordUser.id, unloadedUser);
+				System.out.println("Unloaded previously loaded user with id (" + discordUser.id + ")");
+			}
+		}
 	}
 	
 	public static void updateUserPreferencesFile() {
