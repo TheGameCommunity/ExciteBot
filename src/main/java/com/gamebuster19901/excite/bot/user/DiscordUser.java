@@ -104,6 +104,14 @@ public class DiscordUser implements OutputCSV{
 		return preferences.isBanned();
 	}
 	
+	public String getBanReason() {
+		return preferences.getBanReason();
+	}
+	
+	public Instant getBanExpireTime() {
+		return preferences.getBanExpireTime();
+	}
+	
 	public void setNotifyThreshold(int threshold) {
 		if(threshold > 0 || threshold == -1) {
 			preferences.setNotifyThreshold(threshold);
@@ -138,7 +146,9 @@ public class DiscordUser implements OutputCSV{
 	
 	public void sendMessage(String message) {
 		if(Main.discordBot != null && !getJDAUser().equals(Main.discordBot.jda.getSelfUser())) {
-			getJDAUser().openPrivateChannel().complete().sendMessage(message).complete();
+			if(!getJDAUser().isBot() && !getJDAUser().isFake()) {
+				getJDAUser().openPrivateChannel().complete().sendMessage(message).complete();
+			}
 		}
 	}
 	
