@@ -2,6 +2,7 @@ package com.gamebuster19901.excite.bot.command;
 
 import com.gamebuster19901.excite.bot.EventReceiver;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
+import com.gamebuster19901.excite.util.StacktraceUtil;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
@@ -33,18 +34,27 @@ public class Commands extends EventReceiver{
 	}
 	
 	public void handleCommand(String command) {
+		MessageContext context = new MessageContext();
 		try {
-			MessageContext context = new MessageContext();
 			this.dispatcher.execute(command, context);
 		}
 		catch (CommandSyntaxException e) {
-			System.out.println(e.getRawMessage());
+			context.sendMessage(e.getRawMessage().getString());
+		}
+		catch(Throwable t) {
+			context.sendMessage(StacktraceUtil.getStackTrace(t));
+			if(!context.isConsoleMessage()) {
+				t.printStackTrace();
+			}
+			if(t instanceof Error) {
+				throw t;
+			}
 		}
 	}
 	
 	public void handleCommand(GuildMessageReceivedEvent e) {
+		MessageContext<GuildMessageReceivedEvent> context = new MessageContext<GuildMessageReceivedEvent>(e);
 		try {
-			MessageContext<GuildMessageReceivedEvent> context = new MessageContext<GuildMessageReceivedEvent>(e);
 			if(e.getMessage().getContentRaw().startsWith("!")) {
 				DiscordUser sender = DiscordUser.getDiscordUser(e.getAuthor().getIdLong());
 				if(!sender.isBanned()) {
@@ -57,18 +67,23 @@ public class Commands extends EventReceiver{
 		}
 		catch (CommandSyntaxException ex) {
 			if(ex.getMessage() != null && !ex.getMessage().startsWith("Unknown command at position")) {
-				e.getChannel().sendMessage(ex.getClass() + " " + ex.getMessage()).complete();
+				context.sendMessage(ex.getClass() + " " + ex.getMessage());
 			}
 		}
-		catch (Exception ex) {
-			ex.printStackTrace();
-			e.getChannel().sendMessage(ex.getClass() + " " + ex.getMessage()).complete();
+		catch(Throwable t) {
+			context.sendMessage(StacktraceUtil.getStackTrace(t));
+			if(!context.isConsoleMessage()) {
+				t.printStackTrace();
+			}
+			if(t instanceof Error) {
+				throw t;
+			}
 		}
 	}
 	
 	public void handleCommand(PrivateMessageReceivedEvent e) {
+		MessageContext<PrivateMessageReceivedEvent> context = new MessageContext<PrivateMessageReceivedEvent>(e);
 		try {
-			MessageContext<PrivateMessageReceivedEvent> context = new MessageContext<PrivateMessageReceivedEvent>(e);
 			DiscordUser sender = DiscordUser.getDiscordUser(e.getAuthor().getIdLong());
 			if(!sender.isBanned()) {
 				sender.sentCommand(context);
@@ -78,7 +93,16 @@ public class Commands extends EventReceiver{
 			}
 		}
 		catch (CommandSyntaxException ex) {
-			e.getChannel().sendMessage(ex.getMessage()).complete();
+			context.sendMessage(ex.getMessage());
+		}
+		catch(Throwable t) {
+			context.sendMessage(StacktraceUtil.getStackTrace(t));
+			if(!context.isConsoleMessage()) {
+				t.printStackTrace();
+			}
+			if(t instanceof Error) {
+				throw t;
+			}
 		}
 	}
 	
