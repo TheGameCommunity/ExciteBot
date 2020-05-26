@@ -168,6 +168,11 @@ public class DiscordUser implements OutputCSV{
 		return false;
 	}
 	
+	@Override
+	public String toString() {
+		return this.getJDAUser().getAsTag() + " (" + id + ")";
+	}
+	
 	public static void addUser(DiscordUser user) {
 		for(Entry<Long, DiscordUser> userEntry : users.entrySet()) {
 			DiscordUser u = userEntry.getValue();
@@ -210,12 +215,26 @@ public class DiscordUser implements OutputCSV{
 		return discordUser;
 	}
 	
+	public static final DiscordUser getDiscordUserIncludingUnloaded(long id) {
+		return users.get(id);
+	}
+	
 	public static final DiscordUser getDiscordUser(String discriminator) {
 		for(Entry<Long, DiscordUser> userEntry : users.entrySet()) {
-			DiscordUser discordUser = userEntry.getValue();
-			if(discordUser == null || discordUser instanceof UnloadedDiscordUser) {
-				return null;
+			if(userEntry.getValue().getClass() == DiscordUser.class) {
+				DiscordUser discordUser = userEntry.getValue();
+				if(discordUser.getJDAUser().getAsTag().trim().equalsIgnoreCase(discriminator)) {
+					return discordUser;
+				}
 			}
+		}
+		return null;
+	}
+	
+	@Deprecated
+	public static final DiscordUser getDiscordUserIncludingUnloaded(String discriminator) {
+		for(Entry<Long, DiscordUser> userEntry : users.entrySet()) {
+			DiscordUser discordUser = userEntry.getValue();
 			if(discordUser.getJDAUser().getAsTag().trim().equalsIgnoreCase(discriminator)) {
 				return discordUser;
 			}

@@ -15,4 +15,8 @@ public class UnloadedDiscordUser extends DiscordUser{
 	@Override
 	public void sendMessage(MessageContext context, String message) {}
 	
+	@Override
+	public String toString() {
+		return "UNLOADED_DISCORD_USER#???? + (" + getId() + ")"; 
+	}
 }

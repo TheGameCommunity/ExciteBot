@@ -132,8 +132,8 @@ public class UserPreferences implements OutputCSV{
 		}
 		this.banReason.setValue(reason);
 		banCount.setValue(banCount.getValue() + 1);
-		DiscordUser discordUser = DiscordUser.getDiscordUser(this.discordId.getValue());
-		discordUser.sendMessage(context, discordUser.getJDAUser().getAsMention() + " " + (String)banReason.getValue());
+		DiscordUser discordUser = DiscordUser.getDiscordUserIncludingUnloaded(this.discordId.getValue());
+		discordUser.sendMessage(context, discordUser.toString() + " " + (String)banReason.getValue());
 	}
 	
 	public void pardon(int amount) {

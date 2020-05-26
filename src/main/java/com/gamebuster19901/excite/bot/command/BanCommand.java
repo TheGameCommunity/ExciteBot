@@ -5,6 +5,7 @@ import java.time.temporal.ChronoUnit;
 
 import com.gamebuster19901.excite.bot.WiimmfiCommand;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
+import com.gamebuster19901.excite.bot.user.UnknownDiscordUser;
 import com.gamebuster19901.excite.util.TimeUtils;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
@@ -29,7 +30,15 @@ public class BanCommand extends WiimmfiCommand {
 	private static DiscordUser getDiscordUser(String username, String discriminator) {
 		DiscordUser user = DiscordUser.getDiscordUser(username + "#" + discriminator);
 		if(user == null) {
-			throw new IllegalArgumentException(username + "#" + discriminator);
+			user = new UnknownDiscordUser(username, discriminator);
+		}
+		return user;
+	}
+	
+	private static DiscordUser getDiscordUser(long id) {
+		DiscordUser user = DiscordUser.getDiscordUserIncludingUnloaded(id);
+		if(user == null) {
+			user = new UnknownDiscordUser(id);
 		}
 		return user;
 	}
@@ -47,6 +56,11 @@ public class BanCommand extends WiimmfiCommand {
 				return banUser(context, user, duration, reason);
 			}
 		}
+		else {
+			if(context.isAdmin()) {
+				context.sendMessage("There is no user known as " + user);
+			}
+		}
 		return 0;
 	}
 	
@@ -58,11 +72,13 @@ public class BanCommand extends WiimmfiCommand {
 	@SuppressWarnings("rawtypes")
 	private static int banUserForever(MessageContext context, DiscordUser user, String reason) {
 		if(context.isAdmin()) {
-			if(user != null) {
-				Duration duration = ChronoUnit.FOREVER.getDuration();
-				if(duration != null) {
-					user.ban(context, duration, parseReason(duration, reason));
-				}
+			if(user instanceof UnknownDiscordUser && !((UnknownDiscordUser) user).hasID()) {
+				context.sendMessage("There is no discord user known as " + user);
+				return 0;
+			}
+			Duration duration = ChronoUnit.FOREVER.getDuration();
+			if(duration != null) {
+				user.ban(context, duration, parseReason(duration, reason));
 			}
 		}
 		else {
