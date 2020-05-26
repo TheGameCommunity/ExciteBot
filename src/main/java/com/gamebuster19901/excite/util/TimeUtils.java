@@ -1,9 +1,16 @@
 package com.gamebuster19901.excite.util;
 
 import java.time.Duration;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
 import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalAccessor;
+import java.util.Locale;
 
 public final class TimeUtils {
+	public static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM).withLocale(Locale.US).withZone(ZoneId.of("UTC"));
+	
 	public static String readableDuration(Duration duration) {
 		String time = "";
 		
@@ -15,7 +22,18 @@ public final class TimeUtils {
 			time = "-";
 			duration = duration.abs();
 		}
-		
+		if(duration.toDays() / 365 > 0) {
+			time += duration.toDays() / 365 + " years#";
+			duration = duration.minus(Duration.ofDays((duration.toDays() / 365) * 365));
+		}
+		if(duration.toDays() / 30 > 0) {
+			time += duration.toDays() / 30 + " months#";
+			duration = duration.minus(Duration.ofDays((duration.toDays() / 30) * 30));
+		}
+		if (duration.toDays() / 7 > 0) {
+			time += duration.toDays() / 7 + " weeks#";
+			duration = duration.minus(Duration.ofDays((duration.toDays() / 7) * 30));
+		}
 		if(duration.toDays() > 0) {
 			time += duration.toDays() + " days#";
 			duration = duration.minus(Duration.ofDays(duration.toDays()));
@@ -51,7 +69,20 @@ public final class TimeUtils {
 		else if (isDays(timeUnit)) {
 			duration = Duration.ofDays(amount);
 		}
+		else if (isWeeks(timeUnit)) {
+			duration = Duration.ofDays(amount * 7);
+		}
+		else if (isMonths(timeUnit)) {
+			duration = Duration.ofDays(amount * 30);
+		}
+		else if (isYears(timeUnit)) {
+			duration = Duration.ofDays(amount * 365);
+		}
 		return duration;
+	}
+	
+	public static String getDate(TemporalAccessor temporal) {
+		return DATE_FORMATTER.format(temporal);
 	}
 	
 	private static boolean isSeconds(String timeUnit) {
@@ -68,5 +99,17 @@ public final class TimeUtils {
 	
 	private static boolean isDays(String timeUnit) {
 		return timeUnit.equalsIgnoreCase("d") || timeUnit.equalsIgnoreCase("day") || timeUnit.equalsIgnoreCase("days");
+	}
+	
+	private static boolean isWeeks(String timeUnit) {
+		return timeUnit.equalsIgnoreCase("w") || timeUnit.equalsIgnoreCase("week") || timeUnit.equalsIgnoreCase("weeks");
+	}
+	
+	private static boolean isMonths(String timeUnit ) {
+		return timeUnit.equalsIgnoreCase("mo") || timeUnit.equalsIgnoreCase("month") || timeUnit.equalsIgnoreCase("months");
+	}
+	
+	private static boolean isYears(String timeUnit) {
+		return timeUnit.equalsIgnoreCase("y") || timeUnit.equalsIgnoreCase("yr") || timeUnit.equalsIgnoreCase("yrs") || timeUnit.equalsIgnoreCase("year") || timeUnit.equalsIgnoreCase("years");
 	}
 }

@@ -29,9 +29,10 @@ public class UserPreferences implements OutputCSV{
 	private DurationPreference banDuration = new DurationPreference();
 	private InstantPreference banExpire = new InstantPreference(Instant.MIN);
 	private StringPreference banReason = new StringPreference("");
-	private IntegerPreference banCount = new IntegerPreference(0);
+	private IntegerPreference unpardonedBanCount = new IntegerPreference(0);
 	private InstantPreference lastNotification = new InstantPreference(Instant.MIN);
 	private BooleanPreference dippedBelowThreshold = new BooleanPreference(true);
+	private IntegerPreference totalBanCount = new IntegerPreference(0);
 	
 	private transient IntegerPreference desiredProfile = new IntegerPreference(-1);
 	private transient StringPreference registrationCode = new StringPreference("");
@@ -52,7 +53,7 @@ public class UserPreferences implements OutputCSV{
 		
 	}
 	
-	public void parsePreferences(String discord, long discordId, int notifyThreshold, Duration notifyFrequency, Player[] profiles, Instant banTime, Duration banDuration, Instant banExpire, String banReason, int banCount, Instant lastNotification, boolean dippedBelowThreshold) {
+	public void parsePreferences(String discord, long discordId, int notifyThreshold, Duration notifyFrequency, Player[] profiles, Instant banTime, Duration banDuration, Instant banExpire, String banReason, int unpardonedBanCount, Instant lastNotification, boolean dippedBelowThreshold, int totalBanCount) {
 		this.discord = new StringPreference(discord);
 		this.discordId = new LongPreference(discordId);
 		this.notifyThreshold = new IntegerPreference(notifyThreshold);
@@ -62,14 +63,15 @@ public class UserPreferences implements OutputCSV{
 		this.banDuration = new DurationPreference(banDuration);
 		this.banExpire = new InstantPreference(banExpire);
 		this.banReason = new StringPreference(banReason);
-		this.banCount = new IntegerPreference(banCount);
+		this.unpardonedBanCount = new IntegerPreference(unpardonedBanCount);
 		this.lastNotification = new InstantPreference(lastNotification);
 		this.dippedBelowThreshold = new BooleanPreference(dippedBelowThreshold);
+		this.totalBanCount = new IntegerPreference(totalBanCount);
 	}
 	
 	@Override
 	public String toCSV() {
-		return discord + "," + discordId + "," + notifyThreshold + "," + notifyFrequency + "," + profiles + "," + banTime + "," + banDuration + "," + banExpire + "," + banReason + "," + banCount + "," + lastNotification + "," + dippedBelowThreshold;
+		return discord + "," + discordId + "," + notifyThreshold + "," + notifyFrequency + "," + profiles + "," + banTime + "," + banDuration + "," + banExpire + "," + banReason + "," + unpardonedBanCount + "," + lastNotification + "," + dippedBelowThreshold + "," + totalBanCount;
 	}
 	
 	public int getNotifyThreshold() {
@@ -104,6 +106,14 @@ public class UserPreferences implements OutputCSV{
 		return (String) banReason.getValue();
 	}
 	
+	public int getUnpardonedBanCount() {
+		return unpardonedBanCount.getValue();
+	}
+	
+	public int getTotalBanCount() {
+		return totalBanCount.getValue();
+	}
+	
 	public void setNotifyThreshold(int threshold) {
 		notifyThreshold.setValue(threshold);
 	}
@@ -131,7 +141,8 @@ public class UserPreferences implements OutputCSV{
 			this.banExpire.setValue(Instant.MAX);
 		}
 		this.banReason.setValue(reason);
-		banCount.setValue(banCount.getValue() + 1);
+		unpardonedBanCount.setValue(unpardonedBanCount.getValue() + 1);
+		totalBanCount.setValue(totalBanCount.getValue() + 1);
 		DiscordUser discordUser = DiscordUser.getDiscordUserIncludingUnloaded(this.discordId.getValue());
 		discordUser.sendMessage(context, discordUser.toString() + " " + (String)banReason.getValue());
 	}
@@ -141,11 +152,11 @@ public class UserPreferences implements OutputCSV{
 		this.banDuration.setValue(Duration.ZERO);
 		this.banExpire.setValue(Instant.MIN);
 		this.banReason.setValue("");
-		if(this.banCount.getValue() > 0) {
-			this.banCount.setValue(this.banCount.getValue() - amount);
+		if(this.unpardonedBanCount.getValue() > 0) {
+			this.unpardonedBanCount.setValue(this.unpardonedBanCount.getValue() - amount);
 		}
-		if(this.banCount.getValue() < 0) {
-			this.banCount.setValue(0);
+		if(this.unpardonedBanCount.getValue() < 0) {
+			this.unpardonedBanCount.setValue(0);
 		}
 	}
 	
@@ -175,7 +186,7 @@ public class UserPreferences implements OutputCSV{
 		}
 		if(messageCount > 5) {
 			Duration banTime;
-			switch(banCount.getValue()) {
+			switch(unpardonedBanCount.getValue()) {
 				case 0:
 					banTime = Duration.ofSeconds(30);
 					break;

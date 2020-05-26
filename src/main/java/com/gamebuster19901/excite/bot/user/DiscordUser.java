@@ -112,6 +112,14 @@ public class DiscordUser implements OutputCSV{
 		return preferences.getBanExpireTime();
 	}
 	
+	public int getUnpardonedBanCount() {
+		return preferences.getUnpardonedBanCount();
+	}
+	
+	public int getTotalBanCount() {
+		return preferences.getTotalBanCount();
+	}
+	
 	public void setNotifyThreshold(int threshold) {
 		if(threshold > 0 || threshold == -1) {
 			preferences.setNotifyThreshold(threshold);
@@ -207,7 +215,7 @@ public class DiscordUser implements OutputCSV{
 	
 	public static final User getJDAUser(String name, String discriminator) {
 		if(Main.discordBot != null) {
-			return Main.discordBot.jda.getUserByTag(name, discriminator);
+			User user = Main.discordBot.jda.getUserByTag(name, discriminator);
 		}
 		return null;
 	}
@@ -324,9 +332,10 @@ public class DiscordUser implements OutputCSV{
 				Duration banDuration;
 				Instant banExpire;
 				String banReason;
-				int banCount;
+				int unpardonedBanCount;
 				Instant lastNotification;
 				boolean dippedBelowThreshold;
+				int totalBanCount;
 				
 				for(CSVRecord csvRecord : csvParser) {
 					DiscordUser discordUser;
@@ -348,7 +357,7 @@ public class DiscordUser implements OutputCSV{
 					banDuration = Duration.parse(csvRecord.get(6));
 					banExpire = Instant.parse(csvRecord.get(7));
 					banReason = csvRecord.get(8);
-					banCount = Integer.parseInt(csvRecord.get(9));
+					unpardonedBanCount = Integer.parseInt(csvRecord.get(9));
 					
 					if(csvRecord.size() > 10) { //legacy data may not have this record
 						lastNotification = Instant.parse(csvRecord.get(10));
@@ -364,7 +373,14 @@ public class DiscordUser implements OutputCSV{
 						dippedBelowThreshold = false;
 					}
 					
-					preferences.parsePreferences(discord, discordId, notifyThreshold, notifyFrequency, profiles, banTime, banDuration, banExpire, banReason, banCount, lastNotification, dippedBelowThreshold);
+					if(csvRecord.size() > 12) { //legacy data may not have this record
+						totalBanCount = Integer.parseInt(csvRecord.get(12));
+					}
+					else {
+						totalBanCount = unpardonedBanCount;
+					}
+					
+					preferences.parsePreferences(discord, discordId, notifyThreshold, notifyFrequency, profiles, banTime, banDuration, banExpire, banReason, unpardonedBanCount, lastNotification, dippedBelowThreshold, totalBanCount);
 					
 					User jdaUser = getJDAUser(discordId);
 					if(jdaUser != null) {
