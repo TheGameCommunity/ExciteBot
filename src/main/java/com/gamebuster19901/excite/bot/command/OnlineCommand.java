@@ -10,18 +10,21 @@ public class OnlineCommand extends WiimmfiCommand{
 
 	public static void register(CommandDispatcher<MessageContext> dispatcher) {
 		dispatcher.register(Commands.literal("!online").executes((command) -> {
-			send(getResponse(command.getSource()), command.getSource().getEvent());
-			return 1;
+			return sendResponse(command.getSource());
 		}));
 	}
 	
-	public static String getResponse(MessageContext messageContext) {
+	public static int sendResponse(MessageContext context) {
 		Wiimmfi wiimmfi = Main.discordBot.getWiimmfi();
-		if(checkNotErrored(messageContext)) {
-			String response = Wiimmfi.getOnlinePlayerList(messageContext);
-			return response;
+		String response;
+		if(checkNotErrored(context)) {
+			response = Wiimmfi.getOnlinePlayerList(context);
 		}
-		return "Bot offline due to an error: " + wiimmfi.getError().getClass().getCanonicalName() + ": " + wiimmfi.getError().getMessage();
+		else {
+			response = "Bot offline due to an error: " + wiimmfi.getError().getClass().getCanonicalName() + ": " + wiimmfi.getError().getMessage();
+		}
+		context.sendMessage(response);
+		return 1;
 	}
 	
 }

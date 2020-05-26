@@ -16,8 +16,7 @@ public class WhoIsCommand extends WiimmfiCommand{
 				Commands.argument("player", StringArgumentType.greedyString())
 					.executes(
 						(command) -> {
-							send(getResponse(command.getSource(), command.getArgument("player", String.class)), command.getSource().getEvent());
-							return 0;
+							return sendResponse(command.getSource(), command.getArgument("player", String.class));
 						}
 					)
 			)
@@ -25,12 +24,12 @@ public class WhoIsCommand extends WiimmfiCommand{
 	}
 	
 	@SuppressWarnings("static-access")
-	public static String getResponse(MessageContext messageContext, String lookingFor) {
+	public static int sendResponse(MessageContext context, String lookingFor) {
 		Wiimmfi wiimmfi = Main.discordBot.getWiimmfi();
-		if(checkNotErrored(messageContext)) {
+		String response = "";
+		if(checkNotErrored(context)) {
 			Player[] players = wiimmfi.getKnownPlayers();
 			
-			String response = "";
 			if(!lookingFor.isEmpty()) {
 				for(Player p : players) {
 					if(p.getName().equalsIgnoreCase(lookingFor)) {
@@ -52,17 +51,17 @@ public class WhoIsCommand extends WiimmfiCommand{
 				if(response.isEmpty()) {
 					response = "No players found.";
 				}
-				else if(response.length() > 2000) {
-					response = "There are too many players known as " + response + " to display them all. + \n" +
-						"Sorry this is a limitation with discord, this bot could get banned for sending too many messages.";
-				}
+				
 			}
 			else  {
 				response = "Usage: !whois <Player>";
 			}
-			return response;
 		}
-		return "Bot offline due to an error: " + wiimmfi.getError().getClass().getCanonicalName() + ": " + wiimmfi.getError().getMessage();
+		else {
+			response = "Bot offline due to an error: " + wiimmfi.getError().getClass().getCanonicalName() + ": " + wiimmfi.getError().getMessage();
+		}
+		context.sendMessage(response);
+		return 1;
 	}
 	
 }

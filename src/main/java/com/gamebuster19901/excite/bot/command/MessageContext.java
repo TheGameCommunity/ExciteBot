@@ -3,6 +3,7 @@ package com.gamebuster19901.excite.bot.command;
 import com.gamebuster19901.excite.Main;
 import com.gamebuster19901.excite.bot.server.DiscordServer;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
+import com.gamebuster19901.excite.util.MessageUtil;
 
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
@@ -83,13 +84,19 @@ public class MessageContext<E>{
 	public void sendMessage(String message) {
 		if(!isConsoleMessage()) {
 			if(event instanceof GuildMessageReceivedEvent) {
-				((GuildMessageReceivedEvent)event).getChannel().sendMessage(message).complete();
+				for(String submessage : MessageUtil.toMessages(message)) {
+					((GuildMessageReceivedEvent)event).getChannel().sendMessage(submessage).complete();
+				}
 			}
 			else if (event instanceof PrivateMessageReceivedEvent) {
-				((PrivateMessageReceivedEvent)event).getChannel().sendMessage(message).complete();
+				for(String submessage : MessageUtil.toMessages(message)) {
+					((PrivateMessageReceivedEvent)event).getChannel().sendMessage(submessage).complete();
+				}
 			}
 			else if (event instanceof DiscordUser) {
-				((DiscordUser) event).sendMessage(message);
+				for(String submessage : MessageUtil.toMessages(message)) {
+					((DiscordUser) event).sendMessage(submessage);
+				}
 			}
 		}
 		else {
