@@ -81,6 +81,9 @@ public class BanInfoCommand extends WiimmfiCommand {
 				context.sendMessage("This command must be executed in a private message or in the console");
 			}
 		}
+		else {
+			context.sendMessage("You do not have permission to execute that command");
+		}
 		return 1;
 	}
 	
