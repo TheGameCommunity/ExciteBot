@@ -9,6 +9,7 @@ import com.gamebuster19901.excite.bot.user.UnknownDiscordUser;
 import com.gamebuster19901.excite.util.TimeUtils;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
+import com.mojang.brigadier.arguments.LongArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 
 public class BanCommand extends WiimmfiCommand {
@@ -24,7 +25,17 @@ public class BanCommand extends WiimmfiCommand {
 			return banUser(context.getSource(), getDiscordUser(context.getArgument("discordUser", String.class), context.getArgument("discriminator", String.class)), context.getArgument("amount", Integer.class), context.getArgument("timeUnit", String.class));
 		}).then(Commands.argument("reason", StringArgumentType.greedyString()).executes((context) -> {
 			return banUser(context.getSource(), getDiscordUser(context.getArgument("discordUser", String.class), context.getArgument("discriminator", String.class)), context.getArgument("amount", Integer.class), context.getArgument("timeUnit", String.class), context.getArgument("reason", String.class));
-		}))))))));
+		})))))))
+		.then(Commands.argument("discordId", LongArgumentType.longArg()).executes((context) -> {
+			return banUserForever(context.getSource(), getDiscordUser(context.getArgument("discordId", Long.class)));
+		}).then(Commands.argument("reason", StringArgumentType.greedyString()).executes((context) -> {
+			return banUserForever(context.getSource(), getDiscordUser(context.getArgument("discordId", Long.class)), context.getArgument("reason", String.class));
+		}))
+		.then(Commands.argument("amount", IntegerArgumentType.integer(1)).then(Commands.argument("timeUnit", StringArgumentType.string()).executes((context) -> {
+			return banUser(context.getSource(), getDiscordUser(context.getArgument("discordId", Long.class)), context.getArgument("amount", Integer.class), context.getArgument("timeUnit", String.class));
+		}).then(Commands.argument("reason", StringArgumentType.greedyString()).executes((context) -> {
+			return banUser(context.getSource(), getDiscordUser(context.getArgument("discordId", Long.class)), context.getArgument("amount", Integer.class), context.getArgument("timeUnit", String.class), context.getArgument("reason", String.class));
+		}))))));
 	}
 	
 	private static DiscordUser getDiscordUser(String username, String discriminator) {
