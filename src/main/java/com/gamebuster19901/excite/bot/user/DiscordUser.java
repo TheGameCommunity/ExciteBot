@@ -139,6 +139,10 @@ public class DiscordUser implements OutputCSV{
 		}
 	}
 	
+	public void setNotifyContinuously(boolean continuous) {
+		preferences.setNotifyContinuously(continuous);
+	}
+	
 	public String requestRegistration(Player desiredProfile) {
 		return preferences.requestRegistration(desiredProfile);
 	}
@@ -336,6 +340,7 @@ public class DiscordUser implements OutputCSV{
 				Instant lastNotification;
 				boolean dippedBelowThreshold;
 				int totalBanCount;
+				boolean notifyContinuously;
 				
 				for(CSVRecord csvRecord : csvParser) {
 					DiscordUser discordUser;
@@ -380,7 +385,14 @@ public class DiscordUser implements OutputCSV{
 						totalBanCount = unpardonedBanCount;
 					}
 					
-					preferences.parsePreferences(discord, discordId, notifyThreshold, notifyFrequency, profiles, banTime, banDuration, banExpire, banReason, unpardonedBanCount, lastNotification, dippedBelowThreshold, totalBanCount);
+					if(csvRecord.size() > 13) {
+						notifyContinuously = Boolean.parseBoolean(csvRecord.get(13));
+					}
+					else {
+						notifyContinuously = false;
+					}
+					
+					preferences.parsePreferences(discord, discordId, notifyThreshold, notifyFrequency, profiles, banTime, banDuration, banExpire, banReason, unpardonedBanCount, lastNotification, dippedBelowThreshold, totalBanCount, notifyContinuously);
 					
 					User jdaUser = getJDAUser(discordId);
 					if(jdaUser != null) {

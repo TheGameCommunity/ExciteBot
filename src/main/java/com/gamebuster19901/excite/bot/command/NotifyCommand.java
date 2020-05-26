@@ -5,6 +5,7 @@ import java.time.Duration;
 import com.gamebuster19901.excite.bot.WiimmfiCommand;
 import com.gamebuster19901.excite.util.TimeUtils;
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 
@@ -18,6 +19,9 @@ public class NotifyCommand extends WiimmfiCommand{
 		.then(Commands.literal("frequency").then(Commands.argument("amount", IntegerArgumentType.integer()).then(Commands.argument("timeUnit", StringArgumentType.word()).executes((context) -> {
 			return setFrequency(context.getSource(), context.getArgument("amount", Integer.class), context.getArgument("timeUnit", String.class));
 		}))))
+		.then(Commands.literal("continuous").then(Commands.argument("continuous", BoolArgumentType.bool()).executes((context) -> {
+			return setContinuous(context.getSource(), context.getArgument("continuous", Boolean.class));
+		})))
 		.then(Commands.literal("disable").executes((context) -> {
 			return setThreshold(context.getSource(), -1);
 		})));
@@ -61,6 +65,18 @@ public class NotifyCommand extends WiimmfiCommand{
 			else {
 				context.sendMessage("[" + amount + " " +  timeUnit + "] is not a valid duration");
 			}
+		}
+		else {
+			context.sendMessage("This command must be executed from discord");
+		}
+		return 1;
+	}
+	
+	@SuppressWarnings("rawtypes")
+	private static int setContinuous(MessageContext context, boolean continuous) {
+		if(!context.isConsoleMessage()) {
+			context.getAuthor().setNotifyContinuously(continuous);
+			context.sendMessage(context.getAuthor().getJDAUser().getAsMention() + ", you have set continuous notifications to " + continuous);
 		}
 		else {
 			context.sendMessage("This command must be executed from discord");

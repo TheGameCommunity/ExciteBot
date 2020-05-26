@@ -33,6 +33,7 @@ public class UserPreferences implements OutputCSV{
 	private InstantPreference lastNotification = new InstantPreference(Instant.MIN);
 	private BooleanPreference dippedBelowThreshold = new BooleanPreference(true);
 	private IntegerPreference totalBanCount = new IntegerPreference(0);
+	private BooleanPreference notifyContinuously = new BooleanPreference(false);
 	
 	private transient IntegerPreference desiredProfile = new IntegerPreference(-1);
 	private transient StringPreference registrationCode = new StringPreference("");
@@ -53,7 +54,7 @@ public class UserPreferences implements OutputCSV{
 		
 	}
 	
-	public void parsePreferences(String discord, long discordId, int notifyThreshold, Duration notifyFrequency, Player[] profiles, Instant banTime, Duration banDuration, Instant banExpire, String banReason, int unpardonedBanCount, Instant lastNotification, boolean dippedBelowThreshold, int totalBanCount) {
+	public void parsePreferences(String discord, long discordId, int notifyThreshold, Duration notifyFrequency, Player[] profiles, Instant banTime, Duration banDuration, Instant banExpire, String banReason, int unpardonedBanCount, Instant lastNotification, boolean dippedBelowThreshold, int totalBanCount, boolean notifyContinuously) {
 		this.discord = new StringPreference(discord);
 		this.discordId = new LongPreference(discordId);
 		this.notifyThreshold = new IntegerPreference(notifyThreshold);
@@ -67,11 +68,12 @@ public class UserPreferences implements OutputCSV{
 		this.lastNotification = new InstantPreference(lastNotification);
 		this.dippedBelowThreshold = new BooleanPreference(dippedBelowThreshold);
 		this.totalBanCount = new IntegerPreference(totalBanCount);
+		this.notifyContinuously = new BooleanPreference(notifyContinuously);
 	}
 	
 	@Override
 	public String toCSV() {
-		return discord + "," + discordId + "," + notifyThreshold + "," + notifyFrequency + "," + profiles + "," + banTime + "," + banDuration + "," + banExpire + "," + banReason + "," + unpardonedBanCount + "," + lastNotification + "," + dippedBelowThreshold + "," + totalBanCount;
+		return discord + "," + discordId + "," + notifyThreshold + "," + notifyFrequency + "," + profiles + "," + banTime + "," + banDuration + "," + banExpire + "," + banReason + "," + unpardonedBanCount + "," + lastNotification + "," + dippedBelowThreshold + "," + totalBanCount + "," + notifyContinuously;
 	}
 	
 	public int getNotifyThreshold() {
@@ -120,6 +122,13 @@ public class UserPreferences implements OutputCSV{
 	
 	public void setNotifyFrequency(Duration duration) {
 		notifyFrequency.setValue(duration);
+	}
+	
+	public void setNotifyContinuously(boolean continuous) {
+		notifyContinuously.setValue(continuous);
+		if(continuous) {
+			dippedBelowThreshold.setValue(false);
+		}
 	}
 	
 	public void addProfile(int profileID) {
@@ -230,7 +239,9 @@ public class UserPreferences implements OutputCSV{
 			else {
 				if(lastNotification.getValue().plus(notifyFrequency.getValue()).isBefore(Instant.now())) {
 					if(dippedBelowThreshold.getValue()) {
-						dippedBelowThreshold.setValue(false);
+						if(!notifyContinuously.getValue()) {
+							dippedBelowThreshold.setValue(false);
+						}
 						long discordId = this.discordId.getValue();
 						DiscordUser user = DiscordUser.getDiscordUser(discordId);
 						if(user != null) {
