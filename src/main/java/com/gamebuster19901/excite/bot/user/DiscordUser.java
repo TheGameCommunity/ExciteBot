@@ -137,7 +137,9 @@ public class DiscordUser implements OutputCSV{
 	}
 	
 	public void sendMessage(String message) {
-		getJDAUser().openPrivateChannel().complete().sendMessage(message).complete();
+		if(Main.discordBot != null && !getJDAUser().equals(Main.discordBot.jda.getSelfUser())) {
+			getJDAUser().openPrivateChannel().complete().sendMessage(message).complete();
+		}
 	}
 	
 	@SuppressWarnings("rawtypes")
