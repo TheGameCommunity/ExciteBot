@@ -17,7 +17,7 @@ import com.gamebuster19901.excite.output.OutputCSV;
 import com.gamebuster19901.excite.util.TimeUtils;
 
 public class UserPreferences implements OutputCSV{
-	private static final String validPasswordChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890,.!?";
+	private static final String validPasswordChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNPQRSTUVWXYZ123456789,.!?";
 	private Random random = new Random();
 	
 	private StringPreference discord;
