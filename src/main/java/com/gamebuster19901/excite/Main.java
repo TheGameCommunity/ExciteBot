@@ -67,9 +67,6 @@ public class Main {
 		try {
 			while(true) {
 				Throwable error = wiimmfi.getError();
-				while(!consoleCommandsAwaitingProcessing.isEmpty()) {
-					Commands.DISPATCHER.handleCommand(consoleCommandsAwaitingProcessing.pollFirst());
-				}
 				if(nextBackupTime.isBefore(Instant.now())) {
 					Backup.backup(new MessageContext());
 					nextBackupTime = nextBackupTime.plus(Duration.ofHours(1));
@@ -116,6 +113,9 @@ public class Main {
 						updateCooldowns = Instant.now().plus(Duration.ofSeconds(4));
 						DiscordUser.updateCooldowns();
 					}
+				}
+				while(!consoleCommandsAwaitingProcessing.isEmpty()) {
+					Commands.DISPATCHER.handleCommand(consoleCommandsAwaitingProcessing.pollFirst());
 				}
 				prevError = error;
 				Thread.sleep(1000);
