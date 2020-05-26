@@ -28,6 +28,7 @@ public class Commands extends EventReceiver{
 		HelpCommand.register(dispatcher);
 		BackupCommand.register(dispatcher);
 		BanlistCommand.register(dispatcher);
+		RestartCommand.register(dispatcher);
 	}
 	
 	public void handleCommand(String command) {
