@@ -243,6 +243,15 @@ public class DiscordUser implements OutputCSV{
 		return users.get(id);
 	}
 	
+	public static final DiscordUser getDiscordUserIncludingUnknown(long id) {
+		DiscordUser user;
+		user = users.get(id);
+		if(user == null) {
+			user = new UnknownDiscordUser(id);
+		}
+		return user;
+	}
+	
 	public static final DiscordUser getDiscordUser(String discriminator) {
 		for(Entry<Long, DiscordUser> userEntry : users.entrySet()) {
 			if(userEntry.getValue().getClass() == DiscordUser.class) {

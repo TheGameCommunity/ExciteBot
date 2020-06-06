@@ -76,7 +76,7 @@ public class Player implements OutputCSV{
 			suffix += LEGACY;
 		}
 		if(isVerified()) {
-			DiscordUser user = DiscordUser.getDiscordUser(discord);
+			DiscordUser user = DiscordUser.getDiscordUserIncludingUnknown(discord);
 			if(!user.isBanned()) {
 				suffix += VERIFIED;
 			}
