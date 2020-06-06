@@ -7,9 +7,15 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOError;
 import java.io.IOException;
+import java.io.StringWriter;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.logging.Logger;
+
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.CSVPrinter;
+import org.apache.commons.csv.CSVRecord;
 
 import com.gamebuster19901.excite.bot.user.DiscordUser;
 import com.gamebuster19901.excite.output.OutputCSV;
@@ -92,7 +98,17 @@ public class Player implements OutputCSV{
 	}
 	
 	public String toCSV() {
-		return playerID + "," + friendCode + "," +  name + ",'" + discord + "," + zeroLoss;
+		try (
+			StringWriter writer = new StringWriter();
+			CSVPrinter printer = new CSVPrinter(writer, CSVFormat.EXCEL);
+		)
+		{
+			printer.printRecord(playerID, friendCode, name, "`" + discord, zeroLoss);
+			printer.flush();
+			return writer.toString();
+		} catch (IOException e) {
+			throw new IOError(e);
+		}
 	}
 	
 	public String getName() {
@@ -128,13 +144,7 @@ public class Player implements OutputCSV{
 	}
 	
 	public String getPrettyDiscord() {
-		if(Main.discordBot != null) {
-			User user = DiscordUser.getJDAUser(discord);
-			if(user != null) {
-				return user.getAsTag();
-			}
-		}
-		return "<" + getDiscord() + ">"; //if for some reason we cannot get the user's account
+		return DiscordUser.getDiscordUserIncludingUnknown(discord).toString();
 	}
 	
 	public void setDiscord(long discordId) {
@@ -244,7 +254,6 @@ public class Player implements OutputCSV{
 			writer = new BufferedWriter(new FileWriter(KNOWN_PLAYERS));
 			for(Player p : knownPlayers) {
 				writer.write(p.toCSV());
-				writer.newLine();
 			}
 		}
 		catch(IOException e) {
@@ -279,39 +288,27 @@ public class Player implements OutputCSV{
 	private static Player[] getEncounteredPlayersFromFile() {
 		HashSet<Player> players = new HashSet<Player>();
 		try {
-			BufferedReader reader = null;
+			BufferedReader reader = new BufferedReader(new FileReader(KNOWN_PLAYERS));
+			CSVParser csvParser = new CSVParser(reader, CSVFormat.DEFAULT.withTrim(false));
 			try {
 				reader = new BufferedReader(new FileReader(KNOWN_PLAYERS));
 				
-				while(reader.ready()) {
-					String line = reader.readLine();
-					if(line.startsWith("pid")) {
-						continue;
+				int playerID = Integer.MIN_VALUE;
+				String friendCode = null;
+				String name = null;
+				long discord = -1;
+				boolean zeroLoss = false;
+				
+				for(CSVRecord csvRecord : csvParser ) {
+					playerID = Integer.parseInt(csvRecord.get(0));
+					friendCode = csvRecord.get(1);
+					name = csvRecord.get(2);
+					String discordId = csvRecord.get(3);
+					if(discordId.isEmpty()) {
+						discord = -1;
 					}
-					line = line.replaceAll("'", "");
-					
-					int playerID = Integer.MIN_VALUE;
-					String friendCode = null;
-					String name = null;
-					long discord = -1;
-					boolean zeroLoss = false;
-					
-					String[] data = line.split(",");
-					
-					for(int i = 0; i < data.length; i++) {
-						if (data[i] == null) {
-							throw new IllegalArgumentException("argument " + i + " in \"" + line + "\"");
-						}
-					}
-					
-					playerID = Integer.parseInt(data[0]);
-					friendCode = data[1];
-					name = data[2];
-					if(data[3].isEmpty()) {
-						data[3] = "-1";
-					}
-					discord = Long.parseLong(data[3]);
-					zeroLoss = Boolean.parseBoolean(data[4]);
+					discord = Long.parseLong(discordId.substring(1));
+					zeroLoss = Boolean.parseBoolean(csvRecord.get(4));
 					
 					players.add(new Player(name, friendCode, playerID, discord, zeroLoss));
 				}
@@ -319,6 +316,9 @@ public class Player implements OutputCSV{
 			finally {
 				if(reader != null) {
 					reader.close();
+				}
+				if(csvParser != null) {
+					csvParser.close();
 				}
 			}
 		}

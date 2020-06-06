@@ -7,12 +7,14 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOError;
 import java.io.IOException;
+import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map.Entry;
 
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.csv.CSVRecord;
 
 import com.gamebuster19901.excite.Main;
@@ -61,10 +63,17 @@ public class DiscordServer implements OutputCSV{
 	@Override
 	public String toCSV() {
 		final Guild guild = getGuild();
-		if(guild != null) {
-			return guild.getName() + "," + guild.getId() + "," + adminRoles;
+		try (
+			StringWriter writer = new StringWriter();
+			CSVPrinter printer = new CSVPrinter(writer, CSVFormat.DEFAULT.withTrim(false));
+		)
+		{
+			printer.printRecord(guild.getName(), guild.getId(), adminRoles);
+			printer.flush();
+			return writer.toString();
+		} catch (IOException e) {
+			throw new IOError(e);
 		}
-		return "UNKNOWN_GUILD" + "," + id + "," + adminRoles;
 	}
 
 	public Guild getGuild() {
@@ -154,7 +163,6 @@ public class DiscordServer implements OutputCSV{
 			writer = new BufferedWriter(new FileWriter(SERVER_PREFS));
 			for(Entry<Long, DiscordServer> discordServer : servers.entrySet()) {
 				writer.write(discordServer.getValue().toCSV());
-				writer.newLine();
 			}
 		}
 		catch(IOException e) {
@@ -191,7 +199,7 @@ public class DiscordServer implements OutputCSV{
 					}
 					String adminRoleString = csvRecord.get(2);
 					if(!adminRoleString.isEmpty()) {
-						String[] adminRoleIdStrings = csvRecord.get(2).replaceAll("\"", "").replaceAll("'", "").split(",");
+						String[] adminRoleIdStrings = csvRecord.get(2).split(",");
 						long[] adminRoleIds = new long[adminRoleIdStrings.length];
 						for(int i = 0; i < adminRoleIdStrings.length; i++) {
 							if(!adminRoleIdStrings[i].isEmpty()) {

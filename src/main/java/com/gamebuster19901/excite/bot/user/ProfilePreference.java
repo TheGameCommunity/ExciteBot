@@ -32,8 +32,6 @@ public class ProfilePreference extends SetPreference<Player>{
 	@Override
 	public Set<Player> convertString(String value) {
 		HashSet<Player> profiles = new HashSet<Player>();
-		value = value.replaceAll("\"", "");
-		value = value.replaceAll("'", "");
 		String[] values = value.split(",");
 		for(String pid : values) {
 			profiles.add(Player.getPlayerByID(Integer.parseInt(pid)));
@@ -43,16 +41,10 @@ public class ProfilePreference extends SetPreference<Player>{
 
 	@Override
 	public String toString() {
-		String value = "\"'";
+		String value = "";
 		for(Player profile : getValue()) {
 			value += profile.getPlayerID() + ",";
 		}
-		
-		if(value.length() > 0 && value.charAt(value.length() - 1) == ',') {
-			value = value.substring(0, value.length() - 1);
-		}
-		value += "\"";
-		
 		return value;
 	}
 	

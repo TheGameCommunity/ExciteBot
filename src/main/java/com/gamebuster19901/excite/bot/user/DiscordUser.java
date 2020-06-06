@@ -312,7 +312,6 @@ public class DiscordUser implements OutputCSV{
 			writer = new BufferedWriter(new FileWriter(USER_PREFS));
 			for(Entry<Long, DiscordUser> discordUser : users.entrySet()) {
 				writer.write(discordUser.getValue().toCSV());
-				writer.newLine();
 			}
 		}
 		catch(IOException e) {

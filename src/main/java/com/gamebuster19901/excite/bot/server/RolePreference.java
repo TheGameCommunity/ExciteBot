@@ -34,7 +34,6 @@ public class RolePreference extends SetPreference<Long>{
 	@Override
 	public Set<Long> convertString(String value) {
 		HashSet<Long> roles = new HashSet<Long> ();
-		value = value.replaceAll("\"", "");
 		String[] values = value.split(",");
 		for(String id : values) {
 			roles.add(Long.parseLong(id));
@@ -44,14 +43,10 @@ public class RolePreference extends SetPreference<Long>{
 
 	@Override
 	public String toString() {
-		String value = "\"'";
+		String value = "";
 		for(Long role : getValue()) {
 			value += role + ",";
 		}
-		if(value.length() > 0 && value.charAt(value.length() - 1) == ',') {
-			value = value.substring(0, value.length() - 1);
-		}
-		value += "\"";
 		
 		return value;
 	}

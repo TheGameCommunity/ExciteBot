@@ -1,10 +1,16 @@
 package com.gamebuster19901.excite.bot.user;
 
+import java.io.IOError;
+import java.io.IOException;
+import java.io.StringWriter;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Random;
 import java.util.Set;
+
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVPrinter;
 
 import com.gamebuster19901.excite.Player;
 import com.gamebuster19901.excite.Wiimmfi;
@@ -73,7 +79,17 @@ public class UserPreferences implements OutputCSV{
 	
 	@Override
 	public String toCSV() {
-		return discord + "," + discordId + "," + notifyThreshold + "," + notifyFrequency + "," + profiles + "," + banTime + "," + banDuration + "," + banExpire + "," + banReason + "," + unpardonedBanCount + "," + lastNotification + "," + dippedBelowThreshold + "," + totalBanCount + "," + notifyContinuously;
+		try (
+			StringWriter writer = new StringWriter();
+			CSVPrinter printer = new CSVPrinter(writer, CSVFormat.DEFAULT.withTrim(false));
+		)
+		{
+			printer.printRecord(discord, discordId, notifyThreshold, notifyFrequency, profiles, banTime, banDuration, banExpire, banReason, unpardonedBanCount, lastNotification, dippedBelowThreshold, totalBanCount, notifyContinuously);
+			printer.flush();
+			return writer.toString();
+		} catch (IOException e) {
+			throw new IOError(e);
+		}
 	}
 	
 	public int getNotifyThreshold() {
