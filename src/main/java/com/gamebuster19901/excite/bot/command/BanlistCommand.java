@@ -27,7 +27,7 @@ public class BanlistCommand extends WiimmfiCommand{
 			int amount = 0;
 			for(DiscordUser user : DiscordUser.getKnownUsers()) {
 				if(user.isBanned()) {
-					response += user.toString() + "\n";
+					response += user.toDetailedString() + "\n";
 					amount++;
 				}
 			}

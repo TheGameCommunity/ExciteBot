@@ -194,6 +194,10 @@ public class DiscordUser implements OutputCSV{
 	
 	@Override
 	public String toString() {
+		return this.getJDAUser().getAsTag();
+	}
+	
+	public String toDetailedString() {
 		return this.getJDAUser().getAsTag() + " (" + id + ")";
 	}
 	
