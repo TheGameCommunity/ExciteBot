@@ -143,6 +143,7 @@ public class Main {
 				ConsoleUser.INSTANCE.sendMessage(StacktraceUtil.getStackTrace(t));
 			}
 		}
+		System.exit(-1);
 	}
 
 	private static Wiimmfi startWiimmfi(String[] args) {
