@@ -47,7 +47,10 @@ public class UserPreferences implements OutputCSV{
 	private transient IntegerPreference messageCountPastFifteenSeconds = new IntegerPreference(0);
 
 	public UserPreferences(DiscordUser discordUser) {
-		if(discordUser.getJDAUser() == null) {
+		if(discordUser instanceof ConsoleUser) {
+			discord = new StringPreference("CONSOLE");
+		}
+		else if(discordUser instanceof UnknownDiscordUser || discordUser.getJDAUser() == null) {
 			discord = new StringPreference("UNKNOWN USER");
 		}
 		else {

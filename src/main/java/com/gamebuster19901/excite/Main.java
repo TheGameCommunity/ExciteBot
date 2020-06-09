@@ -16,13 +16,14 @@ import com.gamebuster19901.excite.bot.DiscordBot;
 import com.gamebuster19901.excite.bot.command.Commands;
 import com.gamebuster19901.excite.bot.command.MessageContext;
 import com.gamebuster19901.excite.bot.server.DiscordServer;
+import com.gamebuster19901.excite.bot.user.ConsoleUser;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
 import com.gamebuster19901.excite.bot.user.UserPreferences;
+import com.gamebuster19901.excite.util.StacktraceUtil;
 
 import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.entities.Activity.ActivityType;
-import net.dv8tion.jda.api.entities.User;
 
 public class Main {
 	
@@ -126,12 +127,20 @@ public class Main {
 			if(discordBot != null) {
 				discordBot.jda.getPresence().setPresence(OnlineStatus.DO_NOT_DISTURB, Activity.of(ActivityType.DEFAULT, "Bot Crashed"));
 				if(botOwner != null) {
-					User user = discordBot.jda.getUserByTag(botOwner);
-					if(user != null) {
-						user.openPrivateChannel().complete().sendMessage(t.toString()).complete();
+					try {
+						DiscordUser user = DiscordUser.getDiscordUser(botOwner);
+						if(user != null) {
+							user.sendMessage(StacktraceUtil.getStackTrace(t));
+						}
+					}
+					catch(Throwable t2) {
+						ConsoleUser.INSTANCE.sendMessage(StacktraceUtil.getStackTrace(t));
 					}
 				}
 				while(true) {Thread.sleep(1000);}
+			}
+			else {
+				ConsoleUser.INSTANCE.sendMessage(StacktraceUtil.getStackTrace(t));
 			}
 		}
 	}
