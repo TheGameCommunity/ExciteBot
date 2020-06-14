@@ -18,6 +18,8 @@ import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.csv.CSVRecord;
 
 import com.gamebuster19901.excite.Main;
+import com.gamebuster19901.excite.bot.common.preferences.LongPreference;
+import com.gamebuster19901.excite.bot.common.preferences.StringPreference;
 import com.gamebuster19901.excite.output.OutputCSV;
 import com.gamebuster19901.excite.util.FileUtils;
 
@@ -51,12 +53,13 @@ public class DiscordServer implements OutputCSV{
 			throw new IOError(e);
 		}
 	}
-	protected final long id;
 	
+	StringPreference name;
+	protected final LongPreference id;
 	RolePreference adminRoles;
 	
-	public DiscordServer(long guildId) {
-		this.id = guildId;
+	public DiscordServer(String name, long guildId) {
+		this.id = new LongPreference(guildId);
 		this.adminRoles = new RolePreference(this);
 	}
 
@@ -68,7 +71,7 @@ public class DiscordServer implements OutputCSV{
 			CSVPrinter printer = new CSVPrinter(writer, CSVFormat.DEFAULT.withTrim(false));
 		)
 		{
-			printer.printRecord(guild.getName(), guild.getId(), adminRoles);
+			printer.printRecord(name, id, adminRoles);
 			printer.flush();
 			return writer.toString();
 		} catch (IOException e) {
@@ -77,11 +80,15 @@ public class DiscordServer implements OutputCSV{
 	}
 
 	public Guild getGuild() {
-		return Main.discordBot.jda.getGuildById(id);
+		return Main.discordBot.jda.getGuildById(getId());
 	}
 	
 	public Role getRoleById(long id) {
 		return getGuild().getRoleById(id);
+	}
+	
+	public long getId() {
+		return id.getValue();
 	}
 	
 	public Role[] getAdminRoles() {
@@ -107,9 +114,13 @@ public class DiscordServer implements OutputCSV{
 		this.adminRoles.removeRole(role);
 	}
 	
+	public String getName() {
+		return name.toString();
+	}
+	
 	@Override
 	public int hashCode() {
-		return Long.valueOf(id).hashCode();
+		return Long.valueOf(getId()).hashCode();
 	}
 	
 	@Override
@@ -127,13 +138,13 @@ public class DiscordServer implements OutputCSV{
 				if(s instanceof UnloadedDiscordServer && !(server instanceof UnloadedDiscordServer)) {
 					RolePreference adminRoles = s.adminRoles;
 					server.adminRoles = adminRoles;
-					servers.put(s.id, server);
+					servers.put(s.getId(), server);
 					System.out.println("Loaded previously unloaded server " + server.getGuild().getName());
 				}
 				return;
 			}
 		}
-		servers.put(server.id, server);
+		servers.put(server.getId(), server);
 	}
 	
 	public static DiscordServer getServer(long serverId) {
@@ -146,7 +157,7 @@ public class DiscordServer implements OutputCSV{
 	
 	public static void updateServerList() {
 		for(Guild guild : Main.discordBot.jda.getGuilds()) {
-			addServer(new DiscordServer(guild.getIdLong()));
+			addServer(new DiscordServer(guild.getName(), guild.getIdLong()));
 		}
 	}
 	
@@ -191,7 +202,7 @@ public class DiscordServer implements OutputCSV{
 					long guildId = Long.parseLong(csvRecord.get(1));
 					DiscordServer discordServer;
 					if(Main.discordBot.jda.getGuildById(guildId) != null) {
-						discordServer = new DiscordServer(guildId);
+						discordServer = new DiscordServer(name, guildId);
 					}
 					else {
 						discordServer = new UnloadedDiscordServer(guildId);

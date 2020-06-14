@@ -13,7 +13,7 @@ import net.dv8tion.jda.api.entities.Role;
 public class UnloadedDiscordServer extends DiscordServer{
 
 	public UnloadedDiscordServer(long guildId) {
-		super(guildId);
+		super("UNLOADED_DISCORD_SERVER", guildId);
 	}
 	
 	@Override
