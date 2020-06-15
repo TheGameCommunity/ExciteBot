@@ -118,16 +118,9 @@ public class Wiimmfi {
 	public static String getOnlinePlayerList(MessageContext messageContext) {
 		Player[] players = Wiimmfi.getOnlinePlayers();
 		String response = "Players Online: (" + players.length + ")" + "\n\n";
-		int maxLines = 10000;
-		if(messageContext.isGuildMessage() || messageContext.isPrivateMessage()) {
-			maxLines = 24;
-		}
 		
-		for(int i = 0; i < players.length && i < maxLines; i++) {
+		for(int i = 0; i < players.length; i++) {
 			response += players[i].toString() + '\n';
-			if (i == maxLines - 1 && players.length > maxLines) {
-				response += "and (" + (players.length - 24) + ") others";
-			}
 		}
 		return response;
 	}
