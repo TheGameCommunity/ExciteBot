@@ -43,7 +43,7 @@ public class BanInfoCommand extends WiimmfiCommand {
 	}
 	
 	private static DiscordUser getDiscordUser(long discordId) {
-		return DiscordUser.getDiscordUserIncludingUnloaded(discordId);
+		return DiscordUser.getDiscordUserIncludingUnknown(discordId);
 	}
 	
 	@SuppressWarnings("rawtypes")

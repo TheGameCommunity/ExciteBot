@@ -106,7 +106,7 @@ public class MessageContext<E>{
 	
 	public String getMention() {
 		if(isConsoleMessage()) {
-			return "@ CONSOLE";
+			return "@CONSOLE";
 		}
 		return getAuthor().getJDAUser().getAsMention();
 	}
