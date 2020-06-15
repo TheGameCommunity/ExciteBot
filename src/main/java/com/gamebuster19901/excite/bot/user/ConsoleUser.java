@@ -1,0 +1,117 @@
+package com.gamebuster19901.excite.bot.user;
+
+import java.time.Duration;
+import java.time.Instant;
+import java.util.Set;
+
+import com.gamebuster19901.excite.Player;
+import com.gamebuster19901.excite.bot.command.MessageContext;
+
+import net.dv8tion.jda.api.entities.User;
+
+public class ConsoleUser extends UnloadedDiscordUser{
+
+	public static final ConsoleUser INSTANCE = new ConsoleUser();
+	
+	private final String name = "CONSOLE";
+	
+	private ConsoleUser() {
+		super(-1);
+	}
+	
+	@Override
+	public User getJDAUser() {
+		throw new AssertionError();
+	}
+	
+	@Override
+	@SuppressWarnings("rawtypes")
+	public void ban(MessageContext context, Duration duration, String reason) {
+		throw new AssertionError();
+	}
+	
+	@Override
+	public void pardon(int amount) {
+		throw new AssertionError();
+	}
+	
+	@Override
+	public String toCSV() {
+		throw new AssertionError();
+	}
+	
+	@Override
+	public Set<Player> getProfiles() {
+		throw new AssertionError();
+	}
+	
+	@Override
+	public boolean isBanned() {
+		return false;
+	}
+	
+	@Override
+	public String getBanReason() {
+		throw new AssertionError();
+	}
+	
+	@Override
+	public Instant getBanExpireTime() {
+		throw new AssertionError();
+	}
+	
+	@Override
+	public int getUnpardonedBanCount() {
+		throw new AssertionError();
+	}
+	
+	@Override
+	public int getTotalBanCount() {
+		throw new AssertionError();
+	}
+	
+	@Override
+	public void setNotifyThreshold(int threshold) {
+		throw new AssertionError();
+	}
+	
+	@Override
+	public void setNotifyFrequency(Duration frequency) {
+		throw new AssertionError();
+	}
+	
+	@Override
+	public void setNotifyContinuously(boolean continuous) {
+		throw new AssertionError();
+	}
+	
+	@Override
+	public String requestRegistration(Player desiredProfile) {
+		throw new AssertionError();
+	}
+	
+	@Override
+	public boolean requestingRegistration() {
+		throw new AssertionError();
+	}
+	
+	@SuppressWarnings("rawtypes")
+	public void sentCommand(MessageContext context) {}
+	
+	@Override
+	public void sendMessage(String message) {
+		System.out.println(message);
+	}
+	
+	@SuppressWarnings("rawtypes")
+	@Override
+	public void sendMessage(MessageContext context, String message) {
+		System.out.println(message);
+	}
+	
+	@Override
+	public String toString() {
+		return name + "(" + getId() + ")"; 
+	}
+
+}
