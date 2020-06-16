@@ -246,7 +246,7 @@ public class UserPreferences implements OutputCSV{
 			messageCountPastFifteenSeconds.setValue(messageCountPastFifteenSeconds.getValue() - 1);
 		}
 		if(!isBanned()) {
-			int playerCount = Wiimmfi.getOnlinePlayers().length;
+			int playerCount = Wiimmfi.getOnlinePlayers().size();
 			int threshold = notifyThreshold.getValue();
 			if(threshold == -1) {
 				return;

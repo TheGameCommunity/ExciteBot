@@ -20,6 +20,7 @@ public class Wiimmfi {
 	
 	private static final URL EXCITEBOTS;
 	private static Document document;
+	private static HashSet<Player> ONLINE_PLAYERS = new HashSet<Player>();
 	static {
 		try {
 			EXCITEBOTS = new URL("https://wiimmfi.de/game/exciteracewii");
@@ -80,7 +81,7 @@ public class Wiimmfi {
 		}
 	}
 	
-	public static Player[] getOnlinePlayers() {
+	public static Player[] updateOnlinePlayers() {
 		HashSet<Player> players = new HashSet<Player>();
 		if(document != null) {
 			document.getElementsByAttributeValueContaining("id", "game").remove();
@@ -111,15 +112,20 @@ public class Wiimmfi {
 				}
 			}
 		}
+		ONLINE_PLAYERS = players;
 		return players.toArray(new Player[]{});
+	}
+	
+	public static HashSet<Player> getOnlinePlayers() {
+		return ONLINE_PLAYERS;
 	}
 	
 	@SuppressWarnings("rawtypes")
 	public static String getOnlinePlayerList(MessageContext messageContext) {
-		Player[] players = Wiimmfi.getOnlinePlayers();
+		Player[] players = getOnlinePlayers().toArray(new Player[]{});
 		String response = "Players Online: (" + players.length + ")" + "\n\n";
 		
-		for(int i = 0; i < players.length; i++) {
+		for(int i = 0; i < players.length ; i++) {
 			response += players[i].toString() + '\n';
 		}
 		return response;
