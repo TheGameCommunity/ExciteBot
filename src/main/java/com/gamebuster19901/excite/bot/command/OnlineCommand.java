@@ -6,7 +6,6 @@ import com.gamebuster19901.excite.bot.WiimmfiCommand;
 import com.gamebuster19901.excite.util.StacktraceUtil;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import com.mojang.brigadier.tree.LiteralCommandNode;
 
 @SuppressWarnings("rawtypes") 
 public class OnlineCommand extends WiimmfiCommand{
@@ -16,6 +15,7 @@ public class OnlineCommand extends WiimmfiCommand{
 			return sendResponse(command.getSource());
 		});
 		
+		dispatcher.register(builder);
 		dispatcher.register(Commands.literal("!o").executes(builder.getCommand()));
 	}
 	
