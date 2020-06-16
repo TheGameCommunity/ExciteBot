@@ -3,6 +3,7 @@ package com.gamebuster19901.excite.bot.command;
 import com.gamebuster19901.excite.Main;
 import com.gamebuster19901.excite.Wiimmfi;
 import com.gamebuster19901.excite.bot.WiimmfiCommand;
+import com.gamebuster19901.excite.util.StacktraceUtil;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 
@@ -24,7 +25,7 @@ public class OnlineCommand extends WiimmfiCommand{
 			response = Wiimmfi.getOnlinePlayerList(context);
 		}
 		else {
-			response = "Bot offline due to an error: " + wiimmfi.getError().getClass().getCanonicalName() + ": " + wiimmfi.getError().getMessage();
+			response = "Bot offline due to an error: \n\n" + StacktraceUtil.getStackTrace(wiimmfi.getError());
 		}
 		context.sendMessage(response);
 		return 1;
