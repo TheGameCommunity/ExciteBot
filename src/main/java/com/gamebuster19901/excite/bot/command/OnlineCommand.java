@@ -4,14 +4,17 @@ import com.gamebuster19901.excite.Main;
 import com.gamebuster19901.excite.Wiimmfi;
 import com.gamebuster19901.excite.bot.WiimmfiCommand;
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.tree.LiteralCommandNode;
 
 @SuppressWarnings("rawtypes") 
 public class OnlineCommand extends WiimmfiCommand{
 
 	public static void register(CommandDispatcher<MessageContext> dispatcher) {
-		dispatcher.register(Commands.literal("!online").executes((command) -> {
+		LiteralCommandNode<MessageContext> node = dispatcher.register(Commands.literal("!online").executes((command) -> {
 			return sendResponse(command.getSource());
 		}));
+		
+		dispatcher.register(Commands.literal("!o").redirect(node));
 	}
 	
 	public static int sendResponse(MessageContext context) {
