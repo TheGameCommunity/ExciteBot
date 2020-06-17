@@ -31,6 +31,7 @@ public class Commands extends EventReceiver{
 		BanlistCommand.register(dispatcher);
 		RestartCommand.register(dispatcher);
 		BanInfoCommand.register(dispatcher);
+		UsersCommand.register(dispatcher);
 	}
 	
 	public void handleCommand(String command) {
@@ -58,10 +59,8 @@ public class Commands extends EventReceiver{
 			if(e.getMessage().getContentRaw().startsWith("!")) {
 				DiscordUser sender = DiscordUser.getDiscordUser(e.getAuthor().getIdLong());
 				if(!sender.isBanned()) {
+					this.dispatcher.execute(e.getMessage().getContentRaw(), context);
 					sender.sentCommand(context);
-					if(!sender.isBanned()) {
-						this.dispatcher.execute(e.getMessage().getContentRaw(), context);
-					}
 				}
 			}
 		}

@@ -156,6 +156,11 @@ public class DiscordUser implements OutputCSV{
 		this.preferences.sentCommand(context);
 	}
 	
+	@SuppressWarnings("rawtypes")
+	public void sentCommand(MessageContext context, int amount) {
+		this.preferences.sentCommand(context, amount);
+	}
+	
 	public void sendMessage(String message) {
 		if(Main.discordBot != null && !getJDAUser().equals(Main.discordBot.jda.getSelfUser())) {
 			if(!getJDAUser().isBot() && !getJDAUser().isFake()) {
@@ -281,6 +286,12 @@ public class DiscordUser implements OutputCSV{
 	
 	public static final DiscordUser[] getKnownUsers() {
 		return users.values().toArray(new DiscordUser[]{});
+	}
+	
+	public static void updateWarningCooldowns() {
+		for(DiscordUser user : getKnownUsers()) {
+			user.preferences.updateWarningCooldown();
+		}
 	}
 	
 	public static void updateCooldowns() {

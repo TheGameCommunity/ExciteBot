@@ -62,6 +62,7 @@ public class Main {
 		Instant nextWiimmfiPing = Instant.now();
 		Instant nextDiscordPing = Instant.now();
 		Instant updateCooldowns = Instant.now();
+		Instant updateWarningCooldowns = Instant.now();
 		Instant nextBackupTime = Instant.now();
 		startConsole();
 		
@@ -113,6 +114,10 @@ public class Main {
 					if(updateCooldowns.isBefore(Instant.now())) {
 						updateCooldowns = Instant.now().plus(Duration.ofSeconds(4));
 						DiscordUser.updateCooldowns();
+					}
+					if(updateWarningCooldowns.isBefore(Instant.now())) {
+						updateWarningCooldowns = Instant.now().plus(Duration.ofSeconds(15));
+						DiscordUser.updateWarningCooldowns();
 					}
 				}
 				while(!consoleCommandsAwaitingProcessing.isEmpty()) {

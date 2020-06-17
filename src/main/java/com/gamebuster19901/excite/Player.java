@@ -70,8 +70,6 @@ public class Player implements OutputCSV{
 	private boolean zeroLoss = false;
 	private long discord = -1;
 	
-	private transient Status status;
-	
 	public Player(String name, String friendCode, int playerID) {
 		this(name, friendCode, playerID, -1, false);
 	}
@@ -140,18 +138,6 @@ public class Player implements OutputCSV{
 	
 	public int getPlayerID() {
 		return playerID;
-	}
-	
-	public Status getStatus() {
-		return this.status;
-	}
-	
-	public boolean isOnline() {
-		return getStatus() != OFFLINE;
-	}
-	
-	public boolean isHosting() {
-		return status == HOSTING;
 	}
 	
 	public boolean isLegacy() {

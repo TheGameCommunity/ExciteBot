@@ -172,7 +172,7 @@ public class UserPreferences implements OutputCSV{
 		unpardonedBanCount.setValue(unpardonedBanCount.getValue() + 1);
 		totalBanCount.setValue(totalBanCount.getValue() + 1);
 		DiscordUser discordUser = DiscordUser.getDiscordUserIncludingUnloaded(this.discordId.getValue());
-		discordUser.sendMessage(context, discordUser.toString() + " " + (String)banReason.getValue());
+		discordUser.sendMessage(context, discordUser.getJDAUser().getAsMention() + " " + (String)banReason.getValue());
 	}
 	
 	public void pardon(int amount) {
@@ -207,12 +207,17 @@ public class UserPreferences implements OutputCSV{
 	
 	@SuppressWarnings("rawtypes")
 	void sentCommand(MessageContext context) {
-		int messageCount = messageCountPastFifteenSeconds.setValue(messageCountPastFifteenSeconds.getValue() + 1);
-		if(messageCount == 3) {
+		sentCommand(context, 1);
+	}
+	
+	@SuppressWarnings("rawtypes")
+	void sentCommand(MessageContext context, int amount) {
+		int messageCount = messageCountPastFifteenSeconds.setValue(messageCountPastFifteenSeconds.getValue() + amount);
+		if(messageCount >= 5 && messageCount <= 7) {
 			DiscordUser user = DiscordUser.getDiscordUser(this.discordId.getValue());
-			user.sendMessage(context, user.getJDAUser().getAsMention() + " Slow down! Spamming the bot will result in loss of privilages.");
+			user.sendMessage(context, user.getJDAUser().getAsMention() + " Slow down! Spamming the bot will result in loss of privilages. (" + messageCount + ")");
 		}
-		if(messageCount > 5) {
+		else if(messageCount > 7) {
 			Duration banTime;
 			switch(unpardonedBanCount.getValue()) {
 				case 0:
@@ -240,11 +245,14 @@ public class UserPreferences implements OutputCSV{
 		}
 	}
 	
+	void updateWarningCooldown() {
+		if(messageCountPastFifteenSeconds.getValue() > 0) {
+			messageCountPastFifteenSeconds.setValue(0);
+		}
+	}
+	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	void updateCooldowns() {
-		if(messageCountPastFifteenSeconds.getValue() > 0) {
-			messageCountPastFifteenSeconds.setValue(messageCountPastFifteenSeconds.getValue() - 1);
-		}
 		if(!isBanned()) {
 			int playerCount = Wiimmfi.getOnlinePlayers().size();
 			int threshold = notifyThreshold.getValue();
