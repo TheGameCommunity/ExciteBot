@@ -155,6 +155,25 @@ public class DiscordServer implements OutputCSV{
 		return discordServer;
 	}
 	
+	public static HashSet<DiscordServer> getLoadedDiscordServers() {
+		HashSet<DiscordServer> servers = new HashSet<DiscordServer>();
+		for(Entry<Long, DiscordServer> serverEntry : DiscordServer.servers.entrySet()) {
+			DiscordServer server = serverEntry.getValue();
+			if(!(server instanceof UnloadedDiscordServer)) {
+				servers.add(server);
+			}
+		}
+		return servers;
+	}
+	
+	public static HashSet<DiscordServer> getKnownDiscordServers() {
+		HashSet<DiscordServer> servers = new HashSet<DiscordServer>();
+		for(Entry<Long, DiscordServer> serverEntry : DiscordServer.servers.entrySet()) {
+			servers.add(serverEntry.getValue());
+		}
+		return servers;
+	}
+	
 	public static void updateServerList() {
 		for(Guild guild : Main.discordBot.jda.getGuilds()) {
 			addServer(new DiscordServer(guild.getName(), guild.getIdLong()));
