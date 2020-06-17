@@ -4,11 +4,11 @@ import com.gamebuster19901.excite.Player;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
 import com.mojang.brigadier.CommandDispatcher;
 
-public class UsersCommand {
+public class PlayersCommand {
 	
 	@SuppressWarnings("rawtypes")
 	public static void register(CommandDispatcher<MessageContext> dispatcher) {
-		dispatcher.register(Commands.literal("!users").executes((command) -> {
+		dispatcher.register(Commands.literal("!players").executes((command) -> {
 			return sendResponse(command.getSource());
 		}));	
 	}
@@ -17,7 +17,7 @@ public class UsersCommand {
 	public static int sendResponse(MessageContext context) {
 		if(context.isAdmin() || context.isPrivateMessage()) {
 			Player[] players = Player.getEncounteredPlayers();
-			String response = "Known users: (" + players.length + ") \n\n";
+			String response = "Known players: (" + players.length + ") \n\n";
 			for(Player player : players) {
 				response += player + "\n";
 			}

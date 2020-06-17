@@ -31,7 +31,7 @@ public class Commands extends EventReceiver{
 		BanlistCommand.register(dispatcher);
 		RestartCommand.register(dispatcher);
 		BanInfoCommand.register(dispatcher);
-		UsersCommand.register(dispatcher);
+		PlayersCommand.register(dispatcher);
 	}
 	
 	public void handleCommand(String command) {
