@@ -17,6 +17,7 @@ import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.csv.CSVRecord;
 
+import com.gamebuster19901.excite.bot.server.emote.Emote;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
 import com.gamebuster19901.excite.output.OutputCSV;
 import com.gamebuster19901.excite.util.FileUtils;
@@ -26,10 +27,18 @@ import net.dv8tion.jda.api.entities.User;
 public class Player implements OutputCSV{
 	private static final Logger LOGGER = Logger.getLogger(Player.class.getName());
 	
-	protected static final String LEGACY = new String(Character.toChars(0x1F396));
-	protected static final String VERIFIED = new String(Character.toChars(0x2705));
+	protected static final String LEGACY = new String("legacy");
+	protected static final String VERIFIED = new String("verified");
 	protected static final String ZEROLOSS = new String(Character.toChars(0x2B50));
-	protected static final String BANNED = new String(Character.toChars(0x274C));
+	protected static final String BANNED = new String("banned");
+	protected static final String ONLINE = new String("online");
+	protected static final String OFFLINE = new String("offline");
+	protected static final String HOSTING = new String("hosting");
+	protected static final String RACING = new String("playing");
+	protected static final String SEARCHING = new String("searching");
+	protected static final String SPECTATING = new String("spectating");
+	protected static final String FRIENDS_LIST = new String("friend_list");
+	protected static final String BOT = new String(Character.toChars(0x1F916));
 	protected static final File KNOWN_PLAYERS = new File("./run/encounteredPlayers.csv");
 	protected static final File OLD_KNOWN_PLAYERS = new File("./run/encounteredPlayers.csv.old");
 	
@@ -61,6 +70,8 @@ public class Player implements OutputCSV{
 	private boolean zeroLoss = false;
 	private long discord = -1;
 	
+	private transient Status status;
+	
 	public Player(String name, String friendCode, int playerID) {
 		this(name, friendCode, playerID, -1, false);
 	}
@@ -71,23 +82,27 @@ public class Player implements OutputCSV{
 		this.playerID = playerID;
 		this.discord = discord;
 		this.zeroLoss = zeroLoss;
+		
 	}
 	
 	public String toString() {
 		String suffix = "";
 		if(isZeroLoss()) {
-			suffix += ZEROLOSS;
+			suffix += Emote.getEmote(ZEROLOSS);
+		}
+		if(isBot()) {
+			suffix += BOT;
 		}
 		if(isLegacy()) {
-			suffix += LEGACY;
+			suffix += Emote.getEmote(LEGACY);
 		}
 		if(isVerified()) {
 			DiscordUser user = DiscordUser.getDiscordUserIncludingUnknown(discord);
 			if(!user.isBanned()) {
-				suffix += VERIFIED;
+				suffix += Emote.getEmote(VERIFIED);
 			}
 			else {
-				suffix += BANNED;
+				suffix += Emote.getEmote(BANNED);
 			}
 			return String.format(name +  " - FC:[" + friendCode +  "] - PID:["  + playerID + "] - Discord:[" + getPrettyDiscord() + "]" + suffix);
 		}
@@ -127,12 +142,35 @@ public class Player implements OutputCSV{
 		return playerID;
 	}
 	
+	public Status getStatus() {
+		return this.status;
+	}
+	
+	public boolean isOnline() {
+		return getStatus() != OFFLINE;
+	}
+	
+	public boolean isHosting() {
+		return status == HOSTING;
+	}
+	
 	public boolean isLegacy() {
 		return playerID < 600000000;
 	}
 	
 	public boolean isVerified() {
 		return getDiscord() != -1;
+	}
+	
+	public boolean isBot() {
+		DiscordUser discordUser = DiscordUser.getDiscordUser(getDiscord());
+		if(discordUser != null) {
+			User user = discordUser.getJDAUser();
+			if(user != null) {
+				return user.isBot();
+			}
+		}
+		return false;
 	}
 	
 	public boolean isZeroLoss() {
