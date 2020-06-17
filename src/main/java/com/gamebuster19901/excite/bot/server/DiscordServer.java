@@ -59,6 +59,7 @@ public class DiscordServer implements OutputCSV{
 	RolePreference adminRoles;
 	
 	public DiscordServer(String name, long guildId) {
+		this.name = new StringPreference(name);
 		this.id = new LongPreference(guildId);
 		this.adminRoles = new RolePreference(this);
 	}
@@ -131,6 +132,10 @@ public class DiscordServer implements OutputCSV{
 		return false;
 	}
 	
+	public String toString() {
+		return getName() + " (" + getId() + ")";
+	}
+	
 	public static void addServer(DiscordServer server) {
 		for(Entry<Long, DiscordServer> serverEntry : servers.entrySet()) {
 			DiscordServer s = serverEntry.getValue();
@@ -153,6 +158,25 @@ public class DiscordServer implements OutputCSV{
 			return null;
 		}
 		return discordServer;
+	}
+	
+	public static HashSet<DiscordServer> getLoadedDiscordServers() {
+		HashSet<DiscordServer> servers = new HashSet<DiscordServer>();
+		for(Entry<Long, DiscordServer> serverEntry : DiscordServer.servers.entrySet()) {
+			DiscordServer server = serverEntry.getValue();
+			if(!(server instanceof UnloadedDiscordServer)) {
+				servers.add(server);
+			}
+		}
+		return servers;
+	}
+	
+	public static HashSet<DiscordServer> getKnownDiscordServers() {
+		HashSet<DiscordServer> servers = new HashSet<DiscordServer>();
+		for(Entry<Long, DiscordServer> serverEntry : DiscordServer.servers.entrySet()) {
+			servers.add(serverEntry.getValue());
+		}
+		return servers;
 	}
 	
 	public static void updateServerList() {
