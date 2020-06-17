@@ -6,21 +6,19 @@ import com.gamebuster19901.excite.Wiimmfi;
 import com.gamebuster19901.excite.bot.WiimmfiCommand;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
+import com.mojang.brigadier.tree.LiteralCommandNode;
 
 @SuppressWarnings("rawtypes")
 public class WhoIsCommand extends WiimmfiCommand{
 
 	public static void register(CommandDispatcher<MessageContext> dispatcher) {
-		dispatcher.register(Commands.literal("!whois")
-			.then(
-				Commands.argument("player", StringArgumentType.greedyString())
-					.executes(
-						(command) -> {
-							return sendResponse(command.getSource(), command.getArgument("player", String.class));
-						}
-					)
-			)
-		);
+		LiteralCommandNode<MessageContext> builder = dispatcher.register(Commands.literal("!whois")
+			.then(Commands.argument("player", StringArgumentType.greedyString()).executes((command) -> {
+				return sendResponse(command.getSource(), command.getArgument("player", String.class));
+			}
+		)));
+		
+		dispatcher.register(Commands.literal("!wi").redirect(builder));
 	}
 	
 	@SuppressWarnings("static-access")
