@@ -24,6 +24,10 @@ labels:
         color: "bfdadc"
         description: "This is working as intended"
     -
+        name: "Category - Upstream"
+        color: "c5def5"
+        description: "This is an issue that soley within another program that the program relies on"
+    -
         name: "Priority - Blocker  ⟰⊘⟰"
         color: "ff009d"
         description: "This issue blocks development or is so important it must be addressed immediately"
