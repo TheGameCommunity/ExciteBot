@@ -26,7 +26,7 @@ labels:
     -
         name: "Category - Upstream"
         color: "c5def5"
-        description: "This is an issue that soley within another program that the program relies on"
+        description: "This is an issue that soley within another program that the bot relies on"
     -
         name: "Priority - Blocker  ⟰⊘⟰"
         color: "ff009d"
