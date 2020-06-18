@@ -6,7 +6,7 @@ labels:
     -
         name: "Category - Conflict"
         color: "f9b848"
-        description: "A conflict with another bot"
+        description: "A conflict with another bot or program"
     -
         name: "Category - Enhancement"
         color: "84b6eb"
