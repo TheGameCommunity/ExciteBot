@@ -102,12 +102,12 @@ public class Player implements OutputCSV{
 			else {
 				suffix += Emote.getEmote(BANNED);
 			}
-			return String.format(name +  " - FC:[" + friendCode +  "] - PID:["  + playerID + "] - Discord:[" + getPrettyDiscord() + "]" + suffix);
+			return String.format(name +  " - FC❲" + friendCode +  "❳ - PID❲"  + playerID + "❳ - Discord❲" + getPrettyDiscord() + "❳" + suffix);
 		}
 		if(!suffix.isEmpty()) {
 			suffix = suffix + " ";
 		}
-		return String.format(name + " - FC:[" + friendCode +  "] - PID:["  + playerID + "]" + suffix);
+		return String.format(name + " - FC❲" + friendCode +  "❳ - PID❲"  + playerID + "❳" + suffix);
 	}
 	
 	public String toCSV() {
