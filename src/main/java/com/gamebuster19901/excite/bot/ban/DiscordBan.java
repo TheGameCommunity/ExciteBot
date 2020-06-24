@@ -1,123 +1,121 @@
 package com.gamebuster19901.excite.bot.ban;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOError;
-import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.HashMap;
+import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map.Entry;
 
-import com.gamebuster19901.excite.Player;
+import org.apache.commons.csv.CSVRecord;
+
 import com.gamebuster19901.excite.bot.command.MessageContext;
-import com.gamebuster19901.excite.bot.common.preferences.BooleanPreference;
 import com.gamebuster19901.excite.bot.common.preferences.LongPreference;
 import com.gamebuster19901.excite.bot.common.preferences.StringPreference;
-import com.gamebuster19901.excite.bot.user.ConsoleUser;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
-import com.gamebuster19901.excite.bot.user.DurationPreference;
-import com.gamebuster19901.excite.bot.user.InstantPreference;
-import com.gamebuster19901.excite.bot.user.UnknownDiscordUser;
-import com.gamebuster19901.excite.output.OutputCSV;
-import com.gamebuster19901.excite.util.FileUtils;
+import com.gamebuster19901.excite.util.TimeUtils;
 
-public class DiscordBan extends Verdict implements OutputCSV {
+public class DiscordBan extends Ban {
+
+	private static final int DB_VERSION = 0;
 	
 	private LongPreference bannedDiscordId;
 	private StringPreference bannedUsername;
 	
 	@SuppressWarnings("rawtypes")
-	public DiscordBan(MessageContext context, DiscordUser discordUser, Duration duration) {
-		this(context, discordUser.toString(), discordUser.getId(), duration);
+	public DiscordBan(MessageContext context, DiscordUser bannedDiscordUser) {
+		this(context, "", bannedDiscordUser);
 	}
 	
 	@SuppressWarnings("rawtypes")
-	public DiscordBan(MessageContext context, long discordId, Duration duration) {
-		this(context, new UnknownDiscordUser(discordId).toString(), discordId, duration);
+	public DiscordBan(MessageContext context, String reason, DiscordUser bannedDiscordUser) {
+		this(context, reason, TimeUtils.FOREVER, bannedDiscordUser);
 	}
 	
 	@SuppressWarnings("rawtypes")
-	public DiscordBan(MessageContext context, String name, long discordId, Duration duration) {
-		super(context);
-		//banDuration = new DurationPreference(duration);
-		//banExpire = new InstantPreference(Instant.now().plus(duration));
-		bannedDiscordId = new LongPreference(discordId);
-		bannedUsername = new StringPreference(name);
+	public DiscordBan(MessageContext context, Duration banDuration, DiscordUser bannedDiscordUser) {
+		this(context, "", banDuration, bannedDiscordUser);
 	}
 	
+	@SuppressWarnings("rawtypes")
+	public DiscordBan(MessageContext context, String reason, Duration banDuration, DiscordUser bannedDiscordUser) {
+		this(context, reason, banDuration, TimeUtils.fromNow(banDuration), bannedDiscordUser);
+	}
 	
-	private DiscordBan() {
-		super();
+	@SuppressWarnings("rawtypes")
+	public DiscordBan(MessageContext context, String reason, Duration banDuration, Instant banExpire, DiscordUser bannedDiscordUser) {
+		this(context, reason, banDuration, banExpire, NotPardoned.INSTANCE.verdictId.getValue(), bannedDiscordUser);
+	}
+	
+	@SuppressWarnings("rawtypes")
+	public DiscordBan(MessageContext context, String reason, Duration banDuration, Instant banExpire, long pardon, DiscordUser bannedDiscordUser) {
+		this(context, reason, Instant.now(), banDuration, banExpire, pardon, bannedDiscordUser);
+	}
+	
+	@SuppressWarnings("rawtypes")
+	public DiscordBan(MessageContext context, String reason, Instant dateIssued, Duration banDuration, Instant banExpire, long pardon, DiscordUser bannedDiscordUser) {
+		super(context, reason, dateIssued, banDuration, banExpire, pardon);
+		bannedDiscordId = new LongPreference(bannedDiscordUser.getId());
+		bannedUsername = new StringPreference(bannedDiscordUser.toString());
 	}
 	
 	@Override
-	public String toCSV() {
-		// TODO Auto-generated method stub
-		return null;
+	public DiscordBan parseVerdict(CSVRecord record) {
+		super.parseVerdict(record);
+		
+		//0-6 is Verdict
+		//7-11 is Ban
+		//12 is discordBan version
+		bannedDiscordId.setValue(Long.parseLong(record.get(13)));
+		bannedUsername.setValue(record.get(14));
+		
+		return this;
 	}
 	
-	public static boolean isUserBanned(DiscordUser user) {
-		for(Entry<Long, Verdict> banEntry : Verdict.VERDICTS.entrySet()) {
-			Verdict ban = banEntry.getValue();
-			if(ban.getVerdictType() == DiscordBan.class) {
-				/*if(banEntry.bannedDiscordId.getValue() == user.getId()) {
-					if(!banEntry.getValue().pardoned.getValue()) {
-						return true;
-					}
-				}*/
-			}
-		}
-		return false;
-	}
-	
-	public static boolean isUserBanned(long discordId) {
-		return isUserBanned(DiscordUser.getDiscordUserIncludingUnknown(discordId));
-	}
-	
-	public static boolean isProfileBanned(Player profile) {
-		if(profile.getDiscord() != -1) {
-			if(isUserBanned(profile.getDiscord())) {
-				return true;
-			}
-		}
-		return isUserBanned(profile.getDiscord());
-	}
-	
-	public DiscordBan[] getBansOfUser(DiscordUser user) {
-		return getBansOfUser(user.getId());
-	}
-	
-	public DiscordBan[] getBansOfUser(long id) {
-		if(id == -1 || id == -2) {
-			throw new AssertionError();
-		}
-		HashSet<DiscordBan> bans = new HashSet<DiscordBan>();
-		/*for(Entry<Long,DiscordBan> banEntry : VERDICTS.entrySet()) {
-			DiscordBan ban = banEntry.getValue();
-			if(ban.bannedDiscordId.getValue() == id) {
-				bans.add(ban);
-			}
-		}*/
-		return bans.toArray(new DiscordBan[]{});
-	}
 	
 	public long getBannedDiscordId() {
 		return bannedDiscordId.getValue();
 	}
 	
-	public DiscordUser getBannedDiscord() {
-		return DiscordUser.getDiscordUserIncludingUnknown(bannedDiscordId.getValue());
+	@Override
+	public List<Object> getParameters() {
+		List<Object> params = super.getParameters();
+		params.addAll(Arrays.asList(new Object[] {DB_VERSION, bannedDiscordId, bannedUsername}));
+		return params;
 	}
 	
-	public DiscordUser getBannerDiscord() {
-		if(verdictId.getValue() == -1) {
-			return ConsoleUser.INSTANCE;
+	public static boolean isUserBanned(DiscordUser user) {
+		for(Entry<Long, DiscordBan> banEntry : Verdict.DISCORD_BANS.entrySet()) {
+			DiscordBan ban = banEntry.getValue();
+			if(ban.bannedDiscordId.getValue() == user.getId()) {
+				if(!ban.isPardoned()) {
+					return true;
+				}
+			}
 		}
-		return DiscordUser.getDiscordUser(getBannerDiscordId());
+		return false;
+	}
+	
+	public static boolean isDiscordBanned(long discordId) {
+		return isUserBanned(DiscordUser.getDiscordUserIncludingUnknown(discordId));
+	}
+	
+	public static DiscordBan[] getBansOfUser(DiscordUser user) {
+		return getBansOfUser(user.getId());
+	}
+	
+	public static DiscordBan[] getBansOfUser(long id) {
+		if(id == -1 || id == -2) {
+			throw new AssertionError();
+		}
+		HashSet<DiscordBan> bans = new HashSet<DiscordBan>();
+		for(Entry<Long, DiscordBan> verdict : DISCORD_BANS.entrySet()) {
+			DiscordBan ban = (DiscordBan) verdict.getValue();
+			if(ban.bannedDiscordId.getValue() == id) {
+				bans.add(ban);
+			}
+		}
+		return bans.toArray(new DiscordBan[]{});
 	}
 	
 }

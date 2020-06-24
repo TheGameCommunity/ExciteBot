@@ -1,6 +1,7 @@
 package com.gamebuster19901.excite.util;
 
 import java.time.Duration;
+import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
@@ -10,6 +11,7 @@ import java.util.Locale;
 
 public final class TimeUtils {
 	public static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM).withLocale(Locale.US).withZone(ZoneId.of("UTC"));
+	public static final Duration FOREVER = ChronoUnit.FOREVER.getDuration();
 	
 	public static String readableDuration(Duration duration) {
 		String time = "";
@@ -54,6 +56,14 @@ public final class TimeUtils {
 		return time.replaceAll("#", " ");
 	}
 	
+	public static Instant fromNow(Duration duration) {
+		try {
+			return Instant.now().plus(duration);
+		}
+		catch(ArithmeticException e) {
+			return Instant.MAX;
+		}
+	}
 	
 	public static Duration computeDuration(int amount, String timeUnit) {
 		Duration duration = null;

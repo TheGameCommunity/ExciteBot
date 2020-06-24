@@ -13,6 +13,7 @@ import javax.security.auth.login.LoginException;
 
 import com.gamebuster19901.excite.backup.Backup;
 import com.gamebuster19901.excite.bot.DiscordBot;
+import com.gamebuster19901.excite.bot.ban.Verdict;
 import com.gamebuster19901.excite.bot.command.Commands;
 import com.gamebuster19901.excite.bot.command.MessageContext;
 import com.gamebuster19901.excite.bot.server.DiscordServer;
@@ -107,6 +108,7 @@ public class Main {
 						DiscordServer.updateServerPreferencesFile();
 						DiscordUser.updateUserList();
 						DiscordUser.updateUserPreferencesFile();
+						Verdict.updateVerdictsFile();
 						discordBot.updatePresence();
 						UserPreferences.attemptRegister();
 					}
