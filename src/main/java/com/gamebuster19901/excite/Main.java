@@ -24,6 +24,7 @@ import com.gamebuster19901.excite.util.StacktraceUtil;
 import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.entities.Activity.ActivityType;
+import net.dv8tion.jda.api.exceptions.ErrorResponseException;
 
 public class Main {
 	
@@ -50,12 +51,21 @@ public class Main {
 		
 		wiimmfi = startWiimmfi(args);
 		discordBot = null;
-		try {
-			discordBot = startDiscordBot(args, wiimmfi);
-			discordBot.setWiimmfi(wiimmfi);
-			discordBot.updatePresence();
-		} catch (LoginException | IOException e) {
-			LOGGER.log(Level.SEVERE, e, () -> e.getMessage());
+		
+		int bootAttempts = 0;
+		while(discordBot == null) {
+			try {
+				bootAttempts++;
+				discordBot = startDiscordBot(args, wiimmfi);
+				discordBot.setWiimmfi(wiimmfi);
+				discordBot.updatePresence();
+			} catch (LoginException | IOException | ErrorResponseException e) {
+				LOGGER.log(Level.SEVERE, e, () -> e.getMessage());
+				if(bootAttempts >= 3) {
+					System.exit(-2);
+				}
+				Thread.sleep(5000);
+			}
 		}
 	
 		Throwable prevError = null;
