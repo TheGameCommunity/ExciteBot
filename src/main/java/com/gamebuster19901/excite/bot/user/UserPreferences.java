@@ -104,7 +104,7 @@ public class UserPreferences implements OutputCSV{
 	
 	public boolean isBanned() {
 		for(Ban ban : getBans()) {
-			if (!ban.isPardoned()) {
+			if (ban.isActive()) {
 				return true;
 			}
 		}

@@ -40,7 +40,7 @@ public class ProfileBan extends Ban {
 	
 	@SuppressWarnings("rawtypes")
 	public ProfileBan(MessageContext context, String reason, Duration banDuration, Instant banExpire, Player bannedPlayer) {
-		this(context, reason, banDuration, banExpire, NotPardoned.INSTANCE.verdictId.getValue(), bannedPlayer);
+		this(context, reason, banDuration, banExpire, NotPardoned.INSTANCE.auditId.getValue(), bannedPlayer);
 	}
 	
 	@SuppressWarnings("rawtypes")
@@ -58,10 +58,15 @@ public class ProfileBan extends Ban {
 	public int getBannedPlayerId() {
 		return bannedPlayer.getValue();
 	}
+
+	@Override
+	public String getBannedUsername() {
+		return (String) bannedUsername.getValue();
+	}
 	
 	@Override
-	public ProfileBan parseVerdict(CSVRecord record) {
-		super.parseVerdict(record);
+	public ProfileBan parseAudit(CSVRecord record) {
+		super.parseAudit(record);
 		
 		//0-6 is Verdict
 		//7-11 is Ban
@@ -79,7 +84,7 @@ public class ProfileBan extends Ban {
 				return true;
 			}
 		}
-		for(Entry<Long, ProfileBan> verdict : Verdict.PROFILE_BANS.entrySet()) {
+		for(Entry<Long, ProfileBan> verdict : Audit.PROFILE_BANS.entrySet()) {
 			ProfileBan ban = (ProfileBan) verdict.getValue();
 			if(ban.bannedPlayer.getValue() == profile.getPlayerID()) {
 				if(!ban.isPardoned()) {
@@ -93,4 +98,5 @@ public class ProfileBan extends Ban {
 	public static boolean isProfileBanned(int profileID) {
 		return isProfileBanned(Player.getPlayerByID(profileID));
 	}
+
 }

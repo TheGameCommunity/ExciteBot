@@ -25,7 +25,7 @@ import com.gamebuster19901.excite.Player;
 import com.gamebuster19901.excite.bot.ban.DiscordBan;
 import com.gamebuster19901.excite.bot.ban.NotDiscordBanned;
 import com.gamebuster19901.excite.bot.ban.Pardon;
-import com.gamebuster19901.excite.bot.ban.Verdict;
+import com.gamebuster19901.excite.bot.ban.Audit;
 import com.gamebuster19901.excite.bot.command.MessageContext;
 import com.gamebuster19901.excite.output.OutputCSV;
 import com.gamebuster19901.excite.util.FileUtils;
@@ -89,7 +89,7 @@ public class DiscordUser implements OutputCSV{
 	@SuppressWarnings("rawtypes")
 	public void ban(MessageContext context, Duration duration, String reason) {
 		DiscordBan discordBan = new DiscordBan(context, reason, duration, this);
-		Verdict.addVerdict(discordBan);
+		Audit.addAudit(discordBan);
 		sendMessage(context, toString() + " " + reason);
 	}
 	
@@ -109,15 +109,16 @@ public class DiscordUser implements OutputCSV{
 	public void pardon(MessageContext context) {
 		DiscordBan discordBan = getLongestActiveBan();
 		if(!(getLongestActiveBan() instanceof NotDiscordBanned)) {
-			Verdict.addVerdict(new Pardon(context, discordBan));
+			Audit.addAudit(new Pardon(context, discordBan));
 		}
 		else {
 			context.sendMessage(this.toString() + " is not discord banned. Provide a ban ID if you wish to pardon a ban which has expired.");
 		}
 	}
 	
-	public void pardon(long banId) {
-		
+	public void pardon(MessageContext context, long banId) {
+
+		if(this.ban)
 	}
 	
 	@Override
@@ -138,7 +139,7 @@ public class DiscordUser implements OutputCSV{
 	}
 	
 	public String getBanReason() {
-		return getLongestActiveBan().getReason();
+		return getLongestActiveBan().getDescription();
 	}
 	
 	public int getUnpardonedBanCount() {

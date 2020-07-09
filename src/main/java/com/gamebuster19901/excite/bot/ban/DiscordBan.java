@@ -17,7 +17,7 @@ import com.gamebuster19901.excite.util.TimeUtils;
 
 public class DiscordBan extends Ban {
 
-	private static final int DB_VERSION = 0;
+	private static final int DB_VERSION = 1;
 	
 	private LongPreference bannedDiscordId;
 	private StringPreference bannedUsername;
@@ -44,7 +44,7 @@ public class DiscordBan extends Ban {
 	
 	@SuppressWarnings("rawtypes")
 	public DiscordBan(MessageContext context, String reason, Duration banDuration, Instant banExpire, DiscordUser bannedDiscordUser) {
-		this(context, reason, banDuration, banExpire, NotPardoned.INSTANCE.verdictId.getValue(), bannedDiscordUser);
+		this(context, reason, banDuration, banExpire, NotPardoned.INSTANCE.getAuditId(), bannedDiscordUser);
 	}
 	
 	@SuppressWarnings("rawtypes")
@@ -59,15 +59,19 @@ public class DiscordBan extends Ban {
 		bannedUsername = new StringPreference(bannedDiscordUser.toString());
 	}
 	
+	public DiscordBan() {
+		super();
+	}
+	
 	@Override
-	public DiscordBan parseVerdict(CSVRecord record) {
-		super.parseVerdict(record);
+	public DiscordBan parseAudit(CSVRecord record) {
+		super.parseAudit(record);
 		
 		//0-6 is Verdict
-		//7-11 is Ban
-		//12 is discordBan version
-		bannedDiscordId.setValue(Long.parseLong(record.get(13)));
-		bannedUsername.setValue(record.get(14));
+		//7-10 is Ban
+		//11 is discordBan version
+		bannedDiscordId = new LongPreference(Long.parseLong(record.get(12)));
+		bannedUsername = new StringPreference(record.get(13));
 		
 		return this;
 	}
@@ -75,6 +79,11 @@ public class DiscordBan extends Ban {
 	
 	public long getBannedDiscordId() {
 		return bannedDiscordId.getValue();
+	}
+
+	@Override
+	public String getBannedUsername() {
+		return (String) bannedUsername.getValue();
 	}
 	
 	@Override
@@ -85,7 +94,7 @@ public class DiscordBan extends Ban {
 	}
 	
 	public static boolean isUserBanned(DiscordUser user) {
-		for(Entry<Long, DiscordBan> banEntry : Verdict.DISCORD_BANS.entrySet()) {
+		for(Entry<Long, DiscordBan> banEntry : Audit.DISCORD_BANS.entrySet()) {
 			DiscordBan ban = banEntry.getValue();
 			if(ban.bannedDiscordId.getValue() == user.getId()) {
 				if(!ban.isPardoned()) {

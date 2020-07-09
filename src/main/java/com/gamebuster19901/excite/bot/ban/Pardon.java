@@ -4,7 +4,7 @@ import org.apache.commons.csv.CSVRecord;
 
 import com.gamebuster19901.excite.bot.command.MessageContext;
 
-public class Pardon extends Verdict{
+public class Pardon extends Audit{
 
 	@SuppressWarnings("rawtypes")
 	public Pardon(MessageContext pardonContext, long banId) {
@@ -12,18 +12,29 @@ public class Pardon extends Verdict{
 	}
 	
 	@SuppressWarnings("rawtypes")
-	public Pardon(MessageContext pardonContext, Verdict verdict) {
+	public Pardon(MessageContext pardonContext, Audit audit) {
 		super(pardonContext);
 		String errMessage;
-		if(verdict == null || verdict instanceof Pardon) {
-			throw new IllegalArgumentException(errMessage = verdict != null ? verdict.verdictId.getValue() + "" : "null");
+		if(audit == null || audit instanceof Pardon) {
+			throw new IllegalArgumentException(errMessage = audit != null ? audit.auditId.getValue() + "" : "null");
 		}
 	}
 
 	@Override
-	protected Verdict parseVerdict(CSVRecord csv) {
-		// TODO Auto-generated method stub
+	public Audit parseAudit(CSVRecord csv) {
+		super.parseAudit(csv);
 		return null;
+	}
+	
+	@SuppressWarnings("rawtypes")
+	public static void pardon(MessageContext context, long banId, String reason) {
+		if(Audit.BANS.containsKey(banId)) {
+			Ban ban = Audit.BANS.get(banId);
+			ban.pardon(context);
+		}
+		else {
+			context.sendMessage("Could not find ban #" + banId);
+		}
 	}
 	
 }

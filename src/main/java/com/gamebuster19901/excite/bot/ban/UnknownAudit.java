@@ -4,30 +4,30 @@ import org.apache.commons.csv.CSVRecord;
 
 import com.gamebuster19901.excite.bot.common.preferences.LongPreference;
 
-public class UnknownVerdict extends Verdict{
+public class UnknownAudit extends Audit{
 
-	protected UnknownVerdict() {
+	protected UnknownAudit() {
 		super();
 	}
 	
-	protected UnknownVerdict(long verdictId) {
+	protected UnknownAudit(long auditId) {
 		super();
-		this.verdictId = new LongPreference(verdictId);
+		this.auditId = new LongPreference(auditId);
 	}
 	
 	@Override
-	public long getBannerDiscordId() {
+	public long getIssuerDiscordId() {
 		throw new AssertionError();
 	}
 
 	@Override
-	protected Verdict parseVerdict(CSVRecord csv) {
+	protected Audit parseAudit(CSVRecord csv) {
 		throw new AssertionError();
 	}
 
 	public String toString() {
-		if(this.verdictId != null) {
-			return "UNKNOWN_VERDICT(" + verdictId.getValue() + ")";
+		if(this.auditId != null) {
+			return "UNKNOWN_VERDICT(" + auditId.getValue() + ")";
 		}
 		return "UNKNOWN_VERDICT";
 	}

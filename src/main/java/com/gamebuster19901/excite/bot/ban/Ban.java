@@ -17,16 +17,17 @@ import com.gamebuster19901.excite.bot.common.preferences.StringPreference;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
 import com.gamebuster19901.excite.bot.user.DurationPreference;
 import com.gamebuster19901.excite.bot.user.InstantPreference;
+import com.gamebuster19901.excite.util.DataPoint;
 import com.gamebuster19901.excite.util.TimeUtils;
 
-public abstract class Ban extends Verdict{
+public abstract class Ban extends Audit{
 
-	protected static final int DB_VERSION = 0;
+	protected static final int DB_VERSION = 1;
 	
 	protected DurationPreference banDuration;
 	protected InstantPreference banExpire;
-	protected LongPreference pardon;
-	protected StringPreference reason;
+	protected LongPreference pardon = new LongPreference(NotPardoned.INSTANCE.getAuditId());
+	protected StringPreference bannedUsername;
 	
 	@SuppressWarnings("rawtypes")
 	public Ban(MessageContext context) {
@@ -50,7 +51,7 @@ public abstract class Ban extends Verdict{
 	
 	@SuppressWarnings("rawtypes")
 	public Ban(MessageContext context, String reason, Duration banDuration, Instant banExpire) {
-		this(context, reason, banDuration, banExpire, NotPardoned.INSTANCE.verdictId.getValue());
+		this(context, reason, banDuration, banExpire, NotPardoned.INSTANCE.auditId.getValue());
 	}
 	
 	@SuppressWarnings("rawtypes")
@@ -66,32 +67,38 @@ public abstract class Ban extends Verdict{
 		this.pardon = new LongPreference(pardon);
 	}
 	
+	public Ban() {
+		super();
+	}
+	
 	@SuppressWarnings("rawtypes")
-	public void pardon(MessageContext context) {
+	public void pardon(MessageContext context, String reason) {
 		if(!this.isPardoned()) {
-			Pardon pardon = new Pardon(context, this);
-			this.pardon = pardon.verdictId;
-			Verdict.addVerdict(pardon);
+			Pardon pardon = new Pardon(context, this, reason);
+			this.pardon = pardon.auditId;
+			Audit.addAudit(pardon);
+			context.sendMessage("Pardoned " + getBannedUsername());
 		}
 		else {
 			context.sendMessage("Already pardoned!");
 		}
 	}
 	
+	@DataPoint
 	public boolean isPardoned() {
-		return pardon.getValue() != NotPardoned.INSTANCE.getVerdictId();
+		return pardon.getValue() != NotPardoned.INSTANCE.getAuditId();
 	}
 	
+	@DataPoint
 	public boolean isActive() {
-		return banExpire.getValue().compareTo(Instant.now()) < 0 && !isPardoned();
+		return Instant.now().isBefore(banExpire.getValue()) && !isPardoned();
 	}
+	
+	@DataPoint
+	public abstract String getBannedUsername();
 	
 	public boolean endsAfter(Ban ban) {
 		return banExpire.getValue().compareTo(ban.banExpire.getValue()) > 0;
-	}
-	
-	public String getReason() {
-		return (String)reason.getValue();
 	}
 	
 	public Instant getBanExpireTime() {
@@ -99,15 +106,14 @@ public abstract class Ban extends Verdict{
 	}
 	
 	@Override
-	protected Ban parseVerdict(CSVRecord record) {
-		super.parseVerdict(record);
+	protected Ban parseAudit(CSVRecord record) {
+		super.parseAudit(record);
 		
 		//0-6 is Verdict
 		//7 is ban version
-		banDuration.setValue(Duration.parse(record.get(8)));
-		banExpire.setValue(Instant.parse(record.get(9)));
-		pardon.setValue(Long.parseLong(record.get(10)));
-		reason.setValue(record.get(11));
+		banDuration = new DurationPreference(Duration.parse(record.get(8)));
+		banExpire = new InstantPreference(Instant.parse(record.get(9)));
+		pardon = new LongPreference(Long.parseLong(record.get(10)));
 		
 		return this;
 	}
@@ -115,7 +121,7 @@ public abstract class Ban extends Verdict{
 	@Override
 	public List<Object> getParameters() {
 		List<Object> params = super.getParameters();
-		params.addAll(Arrays.asList(new Object[] {new Integer(DB_VERSION), banDuration, banExpire, pardon, reason}));
+		params.addAll(Arrays.asList(new Object[] {new Integer(DB_VERSION), banDuration, banExpire, pardon}));
 		return params;
 	}
 	
