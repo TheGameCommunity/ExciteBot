@@ -234,6 +234,9 @@ public abstract class Audit implements Comparable<Audit>, OutputCSV{
 					if(m.getParameterCount() != 0) {
 						throw new Error("Unresolved compilation problem:\n\n@DataPoint can only be placed on methods with no paramaters! \n\nClass: " + m.getDeclaringClass() + "\n\nMethod: " + m);
 					}
+					if(m.getReturnType() == void.class) {
+						throw new Error("Unresolved compilation problem:\n\n@DataPoint cannot be placed on a void method.");
+					}
 					m.setAccessible(true);
 					Object val = m.invoke(this);
 					ret = ret + m.getName() + ": " + val + " \n";
