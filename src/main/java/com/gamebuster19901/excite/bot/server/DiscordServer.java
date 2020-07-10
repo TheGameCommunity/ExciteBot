@@ -59,6 +59,7 @@ public class DiscordServer implements OutputCSV{
 	RolePreference adminRoles;
 	
 	public DiscordServer(String name, long guildId) {
+		this.name = new StringPreference(name);
 		this.id = new LongPreference(guildId);
 		this.adminRoles = new RolePreference(this);
 	}

@@ -1,6 +1,8 @@
 package com.gamebuster19901.excite.bot.command;
 
 import com.gamebuster19901.excite.bot.EventReceiver;
+import com.gamebuster19901.excite.bot.audit.Audit;
+import com.gamebuster19901.excite.bot.audit.CommandAudit;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
 import com.gamebuster19901.excite.util.StacktraceUtil;
 import com.mojang.brigadier.CommandDispatcher;
@@ -36,6 +38,7 @@ public class Commands extends EventReceiver{
 	public void handleCommand(String command) {
 		MessageContext context = new MessageContext();
 		try {
+			Audit.addAudit(new CommandAudit(context, command));
 			this.dispatcher.execute(command, context);
 		}
 		catch (CommandSyntaxException e) {
@@ -60,6 +63,7 @@ public class Commands extends EventReceiver{
 				if(!sender.isBanned()) {
 					sender.sentCommand(context);
 					if(!sender.isBanned()) {
+						Audit.addAudit(new CommandAudit(context, e.getMessage().getContentRaw()));
 						this.dispatcher.execute(e.getMessage().getContentRaw(), context);
 					}
 				}
@@ -88,6 +92,7 @@ public class Commands extends EventReceiver{
 			if(!sender.isBanned()) {
 				sender.sentCommand(context);
 				if(!sender.isBanned()) {
+					Audit.addAudit(new CommandAudit(context, e.getMessage().getContentRaw()));
 					this.dispatcher.execute(e.getMessage().getContentRaw(), context);
 				}
 			}
