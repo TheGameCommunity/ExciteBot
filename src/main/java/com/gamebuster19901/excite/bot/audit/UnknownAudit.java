@@ -1,4 +1,4 @@
-package com.gamebuster19901.excite.bot.ban;
+package com.gamebuster19901.excite.bot.audit;
 
 import org.apache.commons.csv.CSVRecord;
 

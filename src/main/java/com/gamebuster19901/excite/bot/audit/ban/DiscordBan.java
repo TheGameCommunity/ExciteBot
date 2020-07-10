@@ -1,4 +1,4 @@
-package com.gamebuster19901.excite.bot.ban;
+package com.gamebuster19901.excite.bot.audit.ban;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -9,6 +9,7 @@ import java.util.Map.Entry;
 
 import org.apache.commons.csv.CSVRecord;
 
+import com.gamebuster19901.excite.bot.audit.Audit;
 import com.gamebuster19901.excite.bot.command.MessageContext;
 import com.gamebuster19901.excite.bot.common.preferences.LongPreference;
 import com.gamebuster19901.excite.bot.common.preferences.StringPreference;

@@ -1,4 +1,4 @@
-package com.gamebuster19901.excite.bot.ban;
+package com.gamebuster19901.excite.bot.audit;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -25,6 +25,10 @@ import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.csv.CSVRecord;
 
+import com.gamebuster19901.excite.bot.audit.ban.Ban;
+import com.gamebuster19901.excite.bot.audit.ban.DiscordBan;
+import com.gamebuster19901.excite.bot.audit.ban.Pardon;
+import com.gamebuster19901.excite.bot.audit.ban.ProfileBan;
 import com.gamebuster19901.excite.bot.command.MessageContext;
 import com.gamebuster19901.excite.bot.common.preferences.LongPreference;
 import com.gamebuster19901.excite.bot.common.preferences.StringPreference;
@@ -212,9 +216,8 @@ public abstract class Audit implements Comparable<Audit>, OutputCSV{
 	
 	@Override
 	public String toString() {
-		List<Object> params = getParameters();
 		String ret = getClass().getSimpleName() + " info: \n";
-		Class clazz = getClass();
+		Class<?> clazz = getClass();
 		try {
 			while(clazz != Object.class) {
 				fieldLoop:
@@ -246,9 +249,6 @@ public abstract class Audit implements Comparable<Audit>, OutputCSV{
 		}
 		catch(IllegalAccessException | InvocationTargetException e) {
 			throw new RuntimeException(e);
-		}
-		catch(StackOverflowError e) {
-			RuntimeException ex = new RuntimeException(ret, new StackOverflowError());
 		}
 		return ret;
 	}

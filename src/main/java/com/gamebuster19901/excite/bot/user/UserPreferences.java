@@ -14,7 +14,7 @@ import org.apache.commons.csv.CSVPrinter;
 
 import com.gamebuster19901.excite.Player;
 import com.gamebuster19901.excite.Wiimmfi;
-import com.gamebuster19901.excite.bot.ban.Ban;
+import com.gamebuster19901.excite.bot.audit.ban.Ban;
 import com.gamebuster19901.excite.bot.command.MessageContext;
 import com.gamebuster19901.excite.bot.common.preferences.BooleanPreference;
 import com.gamebuster19901.excite.bot.common.preferences.IntegerPreference;

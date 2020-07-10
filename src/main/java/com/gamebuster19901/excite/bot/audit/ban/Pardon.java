@@ -1,10 +1,12 @@
-package com.gamebuster19901.excite.bot.ban;
+package com.gamebuster19901.excite.bot.audit.ban;
 
 import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.csv.CSVRecord;
 
+import com.gamebuster19901.excite.bot.audit.Audit;
+import com.gamebuster19901.excite.bot.audit.UnknownAudit;
 import com.gamebuster19901.excite.bot.command.MessageContext;
 import com.gamebuster19901.excite.bot.common.preferences.LongPreference;
 
@@ -35,7 +37,7 @@ public class Pardon extends Audit{
 		super(pardonContext, reason);
 		String errMessage;
 		if(audit == null || audit instanceof Pardon) {
-			throw new IllegalArgumentException(errMessage = audit != null ? audit.auditId.getValue() + "" : "null");
+			throw new IllegalArgumentException(errMessage = audit != null ? audit.getAuditId() + "" : "null");
 		}
 		this.banId.setValue(audit.getAuditId());
 	}

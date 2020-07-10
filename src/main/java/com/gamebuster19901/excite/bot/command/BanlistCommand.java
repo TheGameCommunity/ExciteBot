@@ -5,8 +5,8 @@ import java.util.Map.Entry;
 //import java.time.Instant;
 
 import com.gamebuster19901.excite.bot.WiimmfiCommand;
-import com.gamebuster19901.excite.bot.ban.Ban;
-import com.gamebuster19901.excite.bot.ban.Audit;
+import com.gamebuster19901.excite.bot.audit.Audit;
+import com.gamebuster19901.excite.bot.audit.ban.Ban;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;

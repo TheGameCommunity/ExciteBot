@@ -1,4 +1,4 @@
-package com.gamebuster19901.excite.bot.ban;
+package com.gamebuster19901.excite.bot.audit.ban;
 
 import java.time.Duration;
 import java.time.Instant;

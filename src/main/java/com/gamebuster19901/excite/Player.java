@@ -17,7 +17,7 @@ import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.csv.CSVRecord;
 
-import com.gamebuster19901.excite.bot.ban.ProfileBan;
+import com.gamebuster19901.excite.bot.audit.ban.ProfileBan;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
 import com.gamebuster19901.excite.output.OutputCSV;
 import com.gamebuster19901.excite.util.FileUtils;

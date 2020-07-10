@@ -22,10 +22,10 @@ import org.apache.commons.csv.CSVRecord;
 
 import com.gamebuster19901.excite.Main;
 import com.gamebuster19901.excite.Player;
-import com.gamebuster19901.excite.bot.ban.DiscordBan;
-import com.gamebuster19901.excite.bot.ban.NotDiscordBanned;
-import com.gamebuster19901.excite.bot.ban.Pardon;
-import com.gamebuster19901.excite.bot.ban.Audit;
+import com.gamebuster19901.excite.bot.audit.Audit;
+import com.gamebuster19901.excite.bot.audit.ban.DiscordBan;
+import com.gamebuster19901.excite.bot.audit.ban.NotDiscordBanned;
+import com.gamebuster19901.excite.bot.audit.ban.Pardon;
 import com.gamebuster19901.excite.bot.command.MessageContext;
 import com.gamebuster19901.excite.output.OutputCSV;
 import com.gamebuster19901.excite.util.FileUtils;
