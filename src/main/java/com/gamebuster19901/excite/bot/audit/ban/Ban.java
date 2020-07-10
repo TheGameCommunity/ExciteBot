@@ -20,6 +20,8 @@ import com.gamebuster19901.excite.bot.user.InstantPreference;
 import com.gamebuster19901.excite.util.DataPoint;
 import com.gamebuster19901.excite.util.TimeUtils;
 
+import static com.gamebuster19901.excite.util.Permission.ADMIN_ONLY;
+
 public abstract class Ban extends Audit{
 
 	protected static transient final int DB_VERSION = 1;
@@ -27,6 +29,10 @@ public abstract class Ban extends Audit{
 	protected DurationPreference banDuration;
 	protected InstantPreference banExpire;
 	protected LongPreference pardon = new LongPreference(NotPardoned.INSTANCE.getAuditId());
+	
+	{
+		secrecy = ADMIN_ONLY;
+	}
 	
 	@SuppressWarnings("rawtypes")
 	public Ban(MessageContext context) {

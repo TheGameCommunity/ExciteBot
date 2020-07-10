@@ -10,11 +10,17 @@ import com.gamebuster19901.excite.bot.audit.UnknownAudit;
 import com.gamebuster19901.excite.bot.command.MessageContext;
 import com.gamebuster19901.excite.bot.common.preferences.LongPreference;
 
+import static com.gamebuster19901.excite.util.Permission.ADMIN_ONLY;
+
 public class Pardon extends Audit{
 
 	private static transient final int DB_VERSION = 0;
 	
 	private LongPreference banId = new LongPreference(UnknownAudit.DEFAULT_INSTANCE.getAuditId());
+	
+	{
+		secrecy = ADMIN_ONLY;
+	}
 	
 	@SuppressWarnings("rawtypes")
 	public Pardon(MessageContext pardonContext, long banId) {

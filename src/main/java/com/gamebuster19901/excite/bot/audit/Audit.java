@@ -88,6 +88,7 @@ public abstract class Audit implements Comparable<Audit>, OutputCSV{
 	protected StringPreference issuerUsername;
 	protected StringPreference description;
 	protected InstantPreference dateIssued;
+	protected transient Permission secrecy = ANYONE;
 	
 	@SuppressWarnings("rawtypes")
 	protected Audit(MessageContext context) {
