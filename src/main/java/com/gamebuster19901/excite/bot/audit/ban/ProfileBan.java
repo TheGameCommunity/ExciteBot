@@ -14,7 +14,7 @@ import com.gamebuster19901.excite.bot.common.preferences.StringPreference;
 import com.gamebuster19901.excite.util.TimeUtils;
 
 public class ProfileBan extends Ban {
-	private static final int DB_VERSION = 0;
+	private static transient final int DB_VERSION = 0;
 	
 	private IntegerPreference bannedPlayer;
 	private StringPreference bannedUsername;

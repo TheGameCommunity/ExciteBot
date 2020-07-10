@@ -12,7 +12,7 @@ import com.gamebuster19901.excite.bot.common.preferences.LongPreference;
 
 public class Pardon extends Audit{
 
-	private static final int DB_VERSION = 0;
+	private static transient final int DB_VERSION = 0;
 	
 	private LongPreference banId = new LongPreference(UnknownAudit.DEFAULT_INSTANCE.getAuditId());
 	

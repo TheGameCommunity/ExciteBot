@@ -38,19 +38,22 @@ import com.gamebuster19901.excite.bot.user.InstantPreference;
 import com.gamebuster19901.excite.output.OutputCSV;
 import com.gamebuster19901.excite.util.DataPoint;
 import com.gamebuster19901.excite.util.FileUtils;
+import com.gamebuster19901.excite.util.Permission;
+
+import static com.gamebuster19901.excite.util.Permission.ANYONE;
 
 public abstract class Audit implements Comparable<Audit>, OutputCSV{
 
 	private static final int DB_VERSION = 0;
 	
-	private static final File AUDIT_DB = new File("./run/verdicts.csv");
-	private static final File OLD_AUDIT_DB = new File("./run/verdicts.csv.old");
-	protected static final HashMap<Long, Audit> AUDITS = new HashMap<Long, Audit>();
-	public static final HashMap<Long, Ban> BANS = new HashMap<Long, Ban>();
-	protected static final HashMap<Long, ProfileBan> PROFILE_BANS = new HashMap<Long, ProfileBan>();
-	protected static final HashMap<Long, DiscordBan> DISCORD_BANS = new HashMap<Long, DiscordBan>();
-	protected static final HashMap<Long, Pardon> PARDONS = new HashMap<Long, Pardon>();
-	private static final Method PARSE_AUDIT;
+	private static transient final File AUDIT_DB = new File("./run/verdicts.csv");
+	private static transient final File OLD_AUDIT_DB = new File("./run/verdicts.csv.old");
+	protected static transient final HashMap<Long, Audit> AUDITS = new HashMap<Long, Audit>();
+	public static transient final HashMap<Long, Ban> BANS = new HashMap<Long, Ban>();
+	protected static transient final HashMap<Long, ProfileBan> PROFILE_BANS = new HashMap<Long, ProfileBan>();
+	protected static transient final HashMap<Long, DiscordBan> DISCORD_BANS = new HashMap<Long, DiscordBan>();
+	protected static transient final HashMap<Long, Pardon> PARDONS = new HashMap<Long, Pardon>();
+	private static transient final Method PARSE_AUDIT;
 	
 	static {
 		try {
@@ -222,7 +225,7 @@ public abstract class Audit implements Comparable<Audit>, OutputCSV{
 			while(clazz != Object.class) {
 				fieldLoop:
 				for(Field f : clazz.getDeclaredFields()) {
-					if(Modifier.isStatic(f.getModifiers())) {
+					if(Modifier.isTransient(f.getModifiers())) {
 						continue fieldLoop;
 					}
 					f.setAccessible(true);

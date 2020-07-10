@@ -9,7 +9,7 @@ import com.gamebuster19901.excite.bot.command.MessageContext;
 
 public class NotProfileBanned extends ProfileBan {
 
-	public static final NotProfileBanned INSTANCE = new NotProfileBanned();
+	public static transient final NotProfileBanned INSTANCE = new NotProfileBanned();
 	
 	@SuppressWarnings("rawtypes")
 	private NotProfileBanned() {

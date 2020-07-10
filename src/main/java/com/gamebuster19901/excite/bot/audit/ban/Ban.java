@@ -22,7 +22,7 @@ import com.gamebuster19901.excite.util.TimeUtils;
 
 public abstract class Ban extends Audit{
 
-	protected static final int DB_VERSION = 1;
+	protected static transient final int DB_VERSION = 1;
 	
 	protected DurationPreference banDuration;
 	protected InstantPreference banExpire;

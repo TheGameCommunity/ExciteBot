@@ -11,7 +11,7 @@ import com.gamebuster19901.excite.bot.user.UnknownDiscordUser;
 
 public class NotDiscordBanned extends DiscordBan {
 	
-	public static final NotDiscordBanned INSTANCE = new NotDiscordBanned();
+	public static transient final NotDiscordBanned INSTANCE = new NotDiscordBanned();
 	
 	@SuppressWarnings("rawtypes")
 	private NotDiscordBanned() {

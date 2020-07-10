@@ -18,7 +18,7 @@ import com.gamebuster19901.excite.util.TimeUtils;
 
 public class DiscordBan extends Ban {
 
-	private static final int DB_VERSION = 1;
+	private static transient final int DB_VERSION = 1;
 	
 	private LongPreference bannedDiscordId;
 	private StringPreference bannedUsername;

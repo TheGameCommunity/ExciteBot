@@ -8,7 +8,7 @@ import com.gamebuster19901.excite.bot.command.MessageContext;
 
 public class NotPardoned extends Pardon {
 
-	public static final NotPardoned INSTANCE = new NotPardoned();
+	public static transient final NotPardoned INSTANCE = new NotPardoned();
 	
 	@SuppressWarnings("rawtypes")
 	private NotPardoned() {
