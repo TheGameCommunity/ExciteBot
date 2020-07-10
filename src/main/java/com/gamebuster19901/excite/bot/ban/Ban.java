@@ -13,7 +13,6 @@ import org.apache.commons.csv.CSVRecord;
 import com.gamebuster19901.excite.Player;
 import com.gamebuster19901.excite.bot.command.MessageContext;
 import com.gamebuster19901.excite.bot.common.preferences.LongPreference;
-import com.gamebuster19901.excite.bot.common.preferences.StringPreference;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
 import com.gamebuster19901.excite.bot.user.DurationPreference;
 import com.gamebuster19901.excite.bot.user.InstantPreference;
@@ -27,7 +26,6 @@ public abstract class Ban extends Audit{
 	protected DurationPreference banDuration;
 	protected InstantPreference banExpire;
 	protected LongPreference pardon = new LongPreference(NotPardoned.INSTANCE.getAuditId());
-	protected StringPreference bannedUsername;
 	
 	@SuppressWarnings("rawtypes")
 	public Ban(MessageContext context) {
