@@ -61,7 +61,7 @@ public abstract class Audit implements Comparable<Audit>, OutputCSV{
 					}
 				}
 			}
-			PARSE_AUDIT = Audit.class.getDeclaredMethod("parseVerdict", CSVRecord.class);
+			PARSE_AUDIT = Audit.class.getDeclaredMethod("parseAudit", CSVRecord.class);
 			PARSE_AUDIT.setAccessible(true);
 			for(Audit audit : getAuditsFromFile()) {
 				addAudit(audit);
@@ -103,7 +103,7 @@ public abstract class Audit implements Comparable<Audit>, OutputCSV{
 	}
 	
 	/**
-	 * Should only be used when parsing verdicts from a file
+	 * Should only be used when parsing audits from a file
 	 */
 	protected Audit() {
 

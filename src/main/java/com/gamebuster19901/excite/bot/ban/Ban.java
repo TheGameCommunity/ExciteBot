@@ -72,9 +72,8 @@ public abstract class Ban extends Audit{
 	}
 	
 	@SuppressWarnings("rawtypes")
-	public void pardon(MessageContext context, String reason) {
+	public void pardon(MessageContext context, Pardon pardon) {
 		if(!this.isPardoned()) {
-			Pardon pardon = new Pardon(context, this, reason);
 			this.pardon = pardon.auditId;
 			Audit.addAudit(pardon);
 			context.sendMessage("Pardoned " + getBannedUsername());
@@ -109,7 +108,7 @@ public abstract class Ban extends Audit{
 	protected Ban parseAudit(CSVRecord record) {
 		super.parseAudit(record);
 		
-		//0-6 is Verdict
+		//0-6 is audit
 		//7 is ban version
 		banDuration = new DurationPreference(Duration.parse(record.get(8)));
 		banExpire = new InstantPreference(Instant.parse(record.get(9)));
@@ -151,6 +150,14 @@ public abstract class Ban extends Audit{
 			throw new AssertionError();
 		}
 		return getBansOfUser(DiscordUser.getDiscordUserIncludingUnknown(id));
+	}
+	
+	public static Ban getBanById(long id) throws IllegalArgumentException {
+		Ban ban = Audit.BANS.get(id);
+		if(ban == null) {
+			throw new IllegalArgumentException("No ban with id " + id + " exists ");
+		}
+		return ban;
 	}
 	
 }

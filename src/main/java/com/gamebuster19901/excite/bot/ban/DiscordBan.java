@@ -127,4 +127,12 @@ public class DiscordBan extends Ban {
 		return bans.toArray(new DiscordBan[]{});
 	}
 	
+	public static DiscordBan getBanById(long id) throws IllegalArgumentException {
+		Ban ban = Audit.BANS.get(id);
+		if(ban instanceof DiscordBan && !(ban instanceof NotDiscordBanned)) {
+			return (DiscordBan) ban;
+		}
+		throw new IllegalArgumentException("No discord ban with id " + id + " exists.");
+	}
+	
 }

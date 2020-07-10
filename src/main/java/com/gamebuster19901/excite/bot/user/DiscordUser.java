@@ -106,19 +106,43 @@ public class DiscordUser implements OutputCSV{
 	}
 	
 	@SuppressWarnings("rawtypes")
-	public void pardon(MessageContext context) {
-		DiscordBan discordBan = getLongestActiveBan();
-		if(!(getLongestActiveBan() instanceof NotDiscordBanned)) {
-			Audit.addAudit(new Pardon(context, discordBan));
+	public void pardon(MessageContext context, Pardon pardon) {
+		DiscordBan discordBan = DiscordBan.getBanById(pardon.getBanId());
+		if(pardon.getBanId() == discordBan.getAuditId()) {
+			if(checkPardon(context, pardon)) {
+				Audit.addAudit(new Pardon(context, discordBan));
+				context.sendMessage("Pardoned " + this);
+			}
 		}
 		else {
 			context.sendMessage(this.toString() + " is not discord banned. Provide a ban ID if you wish to pardon a ban which has expired.");
 		}
 	}
 	
+	@SuppressWarnings("rawtypes")
+	public void pardon(MessageContext context) {
+		DiscordBan discordBan = getLongestActiveBan();
+		if(!(getLongestActiveBan() instanceof NotDiscordBanned)) {
+			Pardon pardon = new Pardon(context, discordBan);
+			if(checkPardon(context, pardon)) {
+				discordBan.pardon(context, pardon);
+			}
+			else {
+				throw new AssertionError("This should not be possible...");
+			}
+		}
+		else {
+			context.sendMessage(this.toString() + " is not discord banned. Provide a ban ID if you wish to pardon a ban which has expired.");
+		}
+	}
+	
+	@SuppressWarnings("rawtypes")
 	public void pardon(MessageContext context, long banId) {
-
-		if(this.ban)
+		Pardon pardon = new Pardon(context, banId);
+		DiscordBan discordBan = DiscordBan.getBanById(banId);
+		if(checkPardon(context, pardon)) {
+			discordBan.pardon(context, pardon);
+		}
 	}
 	
 	@Override
@@ -230,7 +254,7 @@ public class DiscordUser implements OutputCSV{
 	}
 	
 	public String toDetailedString() {
-		return this.getJDAUser().getAsTag() + " (" + id + ")";
+		return this + " (" + id + ")";
 	}
 	
 	public static void addUser(DiscordUser user) {
@@ -285,6 +309,15 @@ public class DiscordUser implements OutputCSV{
 		user = users.get(id);
 		if(user == null) {
 			user = new UnknownDiscordUser(id);
+		}
+		return user;
+	}
+	
+	public static final DiscordUser getDiscordUserTreatingUnknownsAsNobody(long id) {
+		DiscordUser user;
+		user = users.get(id);
+		if(user == null) {
+			user = Nobody.INSTANCE;
 		}
 		return user;
 	}
@@ -458,4 +491,22 @@ public class DiscordUser implements OutputCSV{
 		}
 		return discordUsers.toArray(new DiscordUser[]{});
 	}
+	
+	private boolean checkPardon(MessageContext context, Pardon pardon) {
+		long banId = pardon.getBanId();
+		DiscordBan discordBan = DiscordBan.getBanById(banId);
+		if(discordBan.getBannedDiscordId() == this.getId()) {
+			if(!discordBan.isPardoned()) {
+				 return true;
+			}
+			else {
+				context.sendMessage(discordBan.getBannedUsername() + " has already had ban " + banId + " pardoned!");
+			}
+		}
+		else {
+			context.sendMessage("Ban " + banId + " does not belong to " + this + ", it belongs to " + DiscordUser.getDiscordUserTreatingUnknownsAsNobody(discordBan.getBannedDiscordId()));
+		}
+		return false;
+	}
+	
 }

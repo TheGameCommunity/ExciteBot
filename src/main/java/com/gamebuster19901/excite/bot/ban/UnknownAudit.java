@@ -6,6 +6,8 @@ import com.gamebuster19901.excite.bot.common.preferences.LongPreference;
 
 public class UnknownAudit extends Audit{
 
+	public static final UnknownAudit DEFAULT_INSTANCE = new UnknownAudit();
+	
 	protected UnknownAudit() {
 		super();
 	}
@@ -18,6 +20,11 @@ public class UnknownAudit extends Audit{
 	@Override
 	public long getIssuerDiscordId() {
 		throw new AssertionError();
+	}
+	
+	@Override
+	public long getAuditId() {
+		return -1;
 	}
 
 	@Override

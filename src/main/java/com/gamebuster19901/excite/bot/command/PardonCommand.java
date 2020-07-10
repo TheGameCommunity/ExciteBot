@@ -13,7 +13,7 @@ public class PardonCommand extends WiimmfiCommand{
 	@SuppressWarnings("rawtypes")
 	public static void register(CommandDispatcher<MessageContext> dispatcher) {
 		dispatcher.register(Commands.literal("!pardon").then(Commands.argument("discordUser", StringArgumentType.string()).then(Commands.argument("discriminator", StringArgumentType.string()).executes((context) -> {
-			return pardon(context.getSource(), context.getArgument("discordUser", String.class), context.getArgument("discriminator", String.class), 1);
+			return pardon(context.getSource(), context.getArgument("discordUser", String.class), context.getArgument("discriminator", String.class));
 		}).then(Commands.argument("banId", LongArgumentType.longArg()).executes((context) -> {
 			return pardon(context.getSource(), context.getArgument("discordUser", String.class), context.getArgument("discriminator", String.class), context.getArgument("banId", Long.class));
 		}))))
@@ -38,6 +38,22 @@ public class PardonCommand extends WiimmfiCommand{
 	}
 	
 	@SuppressWarnings("rawtypes")
+	private static final int pardon(MessageContext context, String username, String discriminator) {
+		if(context.isAdmin()) {
+			DiscordUser user = getDiscordUser(username, discriminator);
+			if(user instanceof UnknownDiscordUser) {
+				context.sendMessage("Could not find user " + username + "#" + discriminator);
+				return 1;
+			}
+			user.pardon(context);
+		}
+		else {
+			context.sendMessage("You do not have permission to execute this command");
+		}
+		return 1;
+	}
+	
+	@SuppressWarnings("rawtypes")
 	private static final int pardon(MessageContext context, String username, String discriminator, long banId) {
 		if(context.isAdmin()) {
 			DiscordUser user = getDiscordUser(username, discriminator);
@@ -45,8 +61,12 @@ public class PardonCommand extends WiimmfiCommand{
 				context.sendMessage("Could not find user " + username + "#" + discriminator);
 				return 1;
 			}
-			user.pardon(new Pardon(context, banId));
-			context.sendMessage("Pardoned " + user);
+			try {
+				user.pardon(context, new Pardon(context, banId));
+			}
+			catch(IllegalArgumentException e) {
+				context.sendMessage(e.getMessage());
+			}
 		}
 		else {
 			context.sendMessage("You do not have permission to execute this command");
@@ -62,8 +82,12 @@ public class PardonCommand extends WiimmfiCommand{
 				context.sendMessage("Could not find user by id (" + discordId + ")");
 				return 1;
 			}
-			user.pardon(new Pardon(context, banId));
-			context.sendMessage("Pardoned " + user);
+			try {
+				user.pardon(context, new Pardon(context, banId));
+			}
+			catch(IllegalArgumentException e) {
+				context.sendMessage(e.getMessage());
+			}
 		}
 		else {
 			context.sendMessage("You do not have permission to execute this command");
