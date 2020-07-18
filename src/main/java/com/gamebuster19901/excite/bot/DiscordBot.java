@@ -70,6 +70,11 @@ public class DiscordBot {
 		return wiimmfi;
 	}
 	
+	public void setLoading() {
+		Presence presence = jda.getPresence();
+		presence.setPresence(OnlineStatus.IDLE, Activity.of(ActivityType.DEFAULT, "Loading..."));
+	}
+	
 	public void updatePresence() {
 		Presence presence = jda.getPresence();
 		if(wiimmfi.getError() == null) {

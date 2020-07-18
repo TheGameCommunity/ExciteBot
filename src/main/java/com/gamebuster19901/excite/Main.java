@@ -58,7 +58,7 @@ public class Main {
 				bootAttempts++;
 				discordBot = startDiscordBot(args, wiimmfi);
 				discordBot.setWiimmfi(wiimmfi);
-				discordBot.updatePresence();
+				discordBot.setLoading();
 			} catch (LoginException | IOException | ErrorResponseException e) {
 				LOGGER.log(Level.SEVERE, e, () -> e.getMessage());
 				if(bootAttempts >= 3) {

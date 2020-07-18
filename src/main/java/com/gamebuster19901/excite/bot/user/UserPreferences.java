@@ -95,6 +95,10 @@ public class UserPreferences implements OutputCSV{
 		}
 	}
 	
+	public String getDiscordTag() {
+		return (String) discord.getValue();
+	}
+	
 	public int getNotifyThreshold() {
 		return notifyThreshold.getValue();
 	}
