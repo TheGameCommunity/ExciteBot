@@ -14,7 +14,7 @@ repositories {
 dependencies {
 	compile group: 'org.apache.commons', name: 'commons-csv', version: '1.8'
 	compile group: 'org.jsoup', name: 'jsoup', version: '1.13.1'
-    compile ('net.dv8tion:JDA:4.1.1_139') {
+    compile ('net.dv8tion:JDA:4.2.0_168') {
         exclude module: 'opus-java'
     }
     compile 'com.mojang:brigadier:1.0.17'

@@ -26,6 +26,7 @@ import com.gamebuster19901.excite.bot.command.MessageContext;
 import com.gamebuster19901.excite.output.OutputCSV;
 import com.gamebuster19901.excite.util.FileUtils;
 
+import net.dv8tion.jda.api.entities.PrivateChannel;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 
@@ -50,6 +51,7 @@ public class DiscordUser implements OutputCSV{
 			}
 			for(DiscordUser user : getEncounteredUsersFromFile()) {
 				addUser(user);
+				System.out.println("Found user " + user);
 			}
 		}
 		catch(IOException e) {
@@ -58,6 +60,7 @@ public class DiscordUser implements OutputCSV{
 	}
 	
 	private final long id;
+	protected User user;
 	UserPreferences preferences;
 	
 	public DiscordUser(User user) {
@@ -75,7 +78,16 @@ public class DiscordUser implements OutputCSV{
 	
 	@Nullable
 	public User getJDAUser() {
-		return Main.discordBot.jda.getUserById(id);
+		if(id == -1) {
+			return null;
+		}
+		if(user == null) {
+			user = Main.discordBot.jda.retrieveUserById(id).complete();
+			if(user == null) {
+				System.out.println("Could not find JDA user for " + preferences.getDiscordTag());
+			}
+		}
+		return user;
 	}
 	
 	public long getId() {
@@ -163,8 +175,10 @@ public class DiscordUser implements OutputCSV{
 	
 	public void sendMessage(String message) {
 		if(Main.discordBot != null && !getJDAUser().equals(Main.discordBot.jda.getSelfUser())) {
-			if(!getJDAUser().isBot() && !getJDAUser().isFake()) {
-				getJDAUser().openPrivateChannel().complete().sendMessage(message).complete();
+			if(!getJDAUser().isBot()) {
+				PrivateChannel privateChannel = getJDAUser().openPrivateChannel().complete();
+				System.out.println(privateChannel.getClass().getCanonicalName());
+				privateChannel.sendMessage(message).complete();
 			}
 		}
 	}
@@ -223,7 +237,7 @@ public class DiscordUser implements OutputCSV{
 	}
 	
 	public static final User getJDAUser(long id) {
-		return Main.discordBot.jda.getUserById(id);
+		return Main.discordBot.jda.retrieveUserById(id).complete();
 	}
 	
 	public static final User getJDAUser(String name, String discriminator) {

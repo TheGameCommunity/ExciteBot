@@ -19,14 +19,12 @@ import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.entities.Activity.ActivityType;
 import net.dv8tion.jda.api.managers.Presence;
 import net.dv8tion.jda.api.requests.GatewayIntent;
-import net.dv8tion.jda.api.utils.MemberCachePolicy;
-import net.dv8tion.jda.api.utils.cache.CacheFlag;
 
 public class DiscordBot {
 
 	private static final Logger LOGGER = Logger.getLogger(DiscordBot.class.getName());
 	
-	private static final List<GatewayIntent> GATEWAYS = Arrays.asList(new GatewayIntent[] {GatewayIntent.GUILD_MESSAGES, GatewayIntent.DIRECT_MESSAGES, GatewayIntent.GUILD_MEMBERS, GatewayIntent.GUILD_EMOJIS});
+	private static final List<GatewayIntent> GATEWAYS = Arrays.asList(new GatewayIntent[] {GatewayIntent.GUILD_MESSAGES, GatewayIntent.DIRECT_MESSAGES, GatewayIntent.GUILD_EMOJIS});
 	private String botOwner;
 	public final JDA jda;
 	protected Wiimmfi wiimmfi;
@@ -53,7 +51,7 @@ public class DiscordBot {
 			}
 		}
 		
-		JDABuilder builder = JDABuilder.create(secret, GATEWAYS).setMemberCachePolicy(MemberCachePolicy.ALL).disableCache(CacheFlag.ACTIVITY, CacheFlag.VOICE_STATE, CacheFlag.CLIENT_STATUS);
+		JDABuilder builder = JDABuilder.createDefault(secret);
 		this.jda = builder.build();
 		jda.addEventListener(new EventReceiver());
 		secret = null;
@@ -70,6 +68,11 @@ public class DiscordBot {
 	
 	public Wiimmfi getWiimmfi() {
 		return wiimmfi;
+	}
+	
+	public void setLoading() {
+		Presence presence = jda.getPresence();
+		presence.setPresence(OnlineStatus.IDLE, Activity.of(ActivityType.DEFAULT, "Loading..."));
 	}
 	
 	public void updatePresence() {
