@@ -1,6 +1,5 @@
 package com.gamebuster19901.excite.bot.command;
 
-import com.gamebuster19901.excite.bot.EventReceiver;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
 import com.gamebuster19901.excite.util.StacktraceUtil;
 import com.mojang.brigadier.CommandDispatcher;
@@ -13,7 +12,7 @@ import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.events.message.priv.PrivateMessageReceivedEvent;
 
 @SuppressWarnings("rawtypes")
-public class Commands extends EventReceiver{
+public class Commands {
 	private final CommandDispatcher<MessageContext> dispatcher = new CommandDispatcher<>();
 	public static final Commands DISPATCHER = new Commands();
 	
@@ -116,14 +115,6 @@ public class Commands extends EventReceiver{
 	
 	public CommandDispatcher<MessageContext> getDispatcher() {
 		return this.dispatcher;
-	}
-	
-	@Override
-	public void onGuildMessageReceived(GuildMessageReceivedEvent e) {
-		String message = e.getMessage().getContentRaw();
-		if(message.startsWith("!")) {
-			Commands.DISPATCHER.handleCommand(e);
-		}
 	}
 	
 }
