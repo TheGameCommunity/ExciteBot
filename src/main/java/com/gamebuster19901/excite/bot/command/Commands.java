@@ -32,6 +32,7 @@ public class Commands {
 		BanInfoCommand.register(dispatcher);
 		PlayersCommand.register(dispatcher);
 		IconDumpCommand.register(dispatcher);
+		VideoCommand.register(dispatcher);
 	}
 	
 	public void handleCommand(String command) {
