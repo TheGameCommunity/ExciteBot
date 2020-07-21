@@ -33,6 +33,10 @@ public class RegisterCommand extends WiimmfiCommand {
 		for(Player p : Player.getEncounteredPlayers()) {
 			if((p.getPlayerID() + "").equals(player)) {
 				String securityCode = discordUser.requestRegistration(p);
+				if(p.isBanned()) {
+					context.sendMessage("You cannot register a banned profile.");
+					return;
+				}
 				sendInfo(context, discordUser, p, securityCode);
 				return;
 			}
@@ -48,6 +52,10 @@ public class RegisterCommand extends WiimmfiCommand {
 				break;
 			case 1:
 				Player desiredProfile = players.toArray(new Player[]{})[0];
+				if(desiredProfile.isBanned()) {
+					context.sendMessage("You cannot register a banned profile.");
+					return;
+				}
 				String securityCode = discordUser.requestRegistration(desiredProfile);
 				sendInfo(context, discordUser, desiredProfile, securityCode);
 				break;
