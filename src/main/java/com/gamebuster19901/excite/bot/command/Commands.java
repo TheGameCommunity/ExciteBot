@@ -63,7 +63,6 @@ public class Commands {
 			if(e.getMessage().getContentRaw().startsWith("!")) {
 				DiscordUser sender = DiscordUser.getDiscordUser(e.getAuthor().getIdLong());
 				if(!sender.isBanned()) {
-					this.dispatcher.execute(e.getMessage().getContentRaw(), context);
 					sender.sentCommand(context);
 					if(!sender.isBanned()) {
 						Audit.addAudit(new CommandAudit(context, e.getMessage().getContentRaw()));
