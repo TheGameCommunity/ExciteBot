@@ -71,7 +71,7 @@ public class DiscordBan extends Ban {
 		//0-6 is Verdict
 		//7-10 is Ban
 		//11 is discordBan version
-		bannedDiscordId = new LongPreference(Long.parseLong(record.get(12)));
+		bannedDiscordId = new LongPreference(Long.parseLong(record.get(12).substring(1)));
 		bannedUsername = new StringPreference(record.get(13));
 		
 		return this;
@@ -90,7 +90,7 @@ public class DiscordBan extends Ban {
 	@Override
 	public List<Object> getParameters() {
 		List<Object> params = super.getParameters();
-		params.addAll(Arrays.asList(new Object[] {DB_VERSION, bannedDiscordId, bannedUsername}));
+		params.addAll(Arrays.asList(new Object[] {DB_VERSION, "`" + bannedDiscordId, bannedUsername}));
 		return params;
 	}
 	
@@ -98,9 +98,7 @@ public class DiscordBan extends Ban {
 		for(Entry<Long, DiscordBan> banEntry : Audit.DISCORD_BANS.entrySet()) {
 			DiscordBan ban = banEntry.getValue();
 			if(ban.bannedDiscordId.getValue() == user.getId()) {
-				if(!ban.isPardoned()) {
-					return true;
-				}
+				return ban.isActive();
 			}
 		}
 		return false;

@@ -2,6 +2,8 @@ package com.gamebuster19901.excite.bot.audit.ban;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map.Entry;
 
 import org.apache.commons.csv.CSVRecord;
@@ -56,6 +58,8 @@ public class ProfileBan extends Ban {
 		bannedUsername = new StringPreference(bannedPlayer.getName());
 	}
 	
+	public ProfileBan() {}
+	
 	public int getBannedPlayerId() {
 		return bannedPlayer.getValue();
 	}
@@ -70,12 +74,19 @@ public class ProfileBan extends Ban {
 		super.parseAudit(record);
 		
 		//0-6 is Verdict
-		//7-11 is Ban
-		//12 is profileBan version
-		bannedPlayer.setValue(Integer.parseInt(record.get(13)));
-		bannedUsername.setValue(record.get(14));
+		//7-10 is Ban
+		//11 is profileBan version
+		bannedPlayer = new IntegerPreference(Integer.parseInt(record.get(12).substring(1)));
+		bannedUsername = new StringPreference(record.get(13));
 		
 		return this;
+	}
+	
+	@Override
+	public List<Object> getParameters() {
+		List<Object> params = super.getParameters();
+		params.addAll(Arrays.asList(new Object[] {DB_VERSION, "`" + bannedPlayer, bannedUsername}));
+		return params;
 	}
 	
 	
@@ -88,7 +99,7 @@ public class ProfileBan extends Ban {
 		for(Entry<Long, ProfileBan> verdict : Audit.PROFILE_BANS.entrySet()) {
 			ProfileBan ban = (ProfileBan) verdict.getValue();
 			if(ban.bannedPlayer.getValue() == profile.getPlayerID()) {
-				if(!ban.isPardoned()) {
+				if(ban.isActive()) {
 					return true;
 				}
 			}

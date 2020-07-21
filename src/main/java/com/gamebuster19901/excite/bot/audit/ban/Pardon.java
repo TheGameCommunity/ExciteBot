@@ -57,7 +57,7 @@ public class Pardon extends Audit{
 		super.parseAudit(record);
 		//0-6 is audit
 		//7 is pardon version
-		banId = new LongPreference(Long.parseLong(record.get(8)));
+		banId = new LongPreference(Long.parseLong(record.get(8).substring(1)));
 		
 		return this;
 	}
@@ -65,7 +65,7 @@ public class Pardon extends Audit{
 	@Override
 	public List<Object> getParameters() {
 		List<Object> params = super.getParameters();
-		params.addAll(Arrays.asList(new Object[] {new Integer(DB_VERSION), banId}));
+		params.addAll(Arrays.asList(new Object[] {new Integer(DB_VERSION), "`" + banId}));
 		return params;
 	}
 	

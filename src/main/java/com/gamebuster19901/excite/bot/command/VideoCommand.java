@@ -1,6 +1,5 @@
 package com.gamebuster19901.excite.bot.command;
 
-import java.io.File;
 import java.util.List;
 
 import com.gamebuster19901.excite.bot.video.Video;
@@ -16,9 +15,9 @@ public class VideoCommand {
 	public static void register(CommandDispatcher<MessageContext> dispatcher) {
 		dispatcher.register(Commands.literal("!video").executes((context) -> {
 			return getVideo(context.getSource());
-		}).then(Commands.literal("update")).executes(
-				
-		));
+		})/*.then(Commands.literal("update")).executes(
+				return 0
+		)*/);
 		
 	}
 	
@@ -47,8 +46,8 @@ public class VideoCommand {
 							context.sendMessage("The file provided is not a CSV file");
 						}
 						else {
-							attachment.downloadToFile(Video.VIDEO_DL).
-							Video.validateDB()
+							//attachment.downloadToFile(Video.VIDEO_DL).
+							//Video.validateDB()
 						}
 					}
 				}

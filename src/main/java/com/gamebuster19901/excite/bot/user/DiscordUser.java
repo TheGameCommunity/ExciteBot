@@ -33,6 +33,7 @@ import com.gamebuster19901.excite.util.FileUtils;
 import net.dv8tion.jda.api.entities.PrivateChannel;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
+import net.dv8tion.jda.api.exceptions.ErrorResponseException;
 
 public class DiscordUser implements OutputCSV{
 	
@@ -99,10 +100,11 @@ public class DiscordUser implements OutputCSV{
 	}
 	
 	@SuppressWarnings("rawtypes")
-	public void ban(MessageContext context, Duration duration, String reason) {
+	public DiscordBan ban(MessageContext context, Duration duration, String reason) {
 		DiscordBan discordBan = new DiscordBan(context, reason, duration, this);
-		Audit.addAudit(discordBan);
+		discordBan = Audit.addAudit(discordBan); //future proofing, just in case we ever return a different audit in the future
 		sendMessage(context, toString() + " " + reason);
+		return discordBan;
 	}
 	
 	public DiscordBan getLongestActiveBan() {
@@ -316,6 +318,7 @@ public class DiscordUser implements OutputCSV{
 		return null;
 	}
 	
+	@Deprecated
 	public static final DiscordUser getDiscordUser(long id) {
 		DiscordUser discordUser = users.get(id);
 		if(discordUser == null || discordUser instanceof UnloadedDiscordUser) {

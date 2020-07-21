@@ -4,6 +4,7 @@ import java.time.Duration;
 import java.util.Set;
 
 import com.gamebuster19901.excite.Player;
+import com.gamebuster19901.excite.bot.audit.ban.DiscordBan;
 import com.gamebuster19901.excite.bot.command.MessageContext;
 
 import net.dv8tion.jda.api.entities.User;
@@ -25,7 +26,7 @@ public class ConsoleUser extends UnloadedDiscordUser{
 	
 	@Override
 	@SuppressWarnings("rawtypes")
-	public void ban(MessageContext context, Duration duration, String reason) {
+	public DiscordBan ban(MessageContext context, Duration duration, String reason) {
 		throw new AssertionError();
 	}
 	

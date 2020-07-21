@@ -117,7 +117,7 @@ public abstract class Audit implements Comparable<Audit>, OutputCSV{
 
 	}
 	
-	public static void addAudit(Audit audit) {
+	public static <T extends Audit> T addAudit(T audit) {
 		long auditId = audit.auditId.getValue();
 		AUDITS.put(auditId, audit);
 		if(audit instanceof Ban) {
@@ -135,6 +135,7 @@ public abstract class Audit implements Comparable<Audit>, OutputCSV{
 		else if (audit instanceof Pardon) {
 			PARDONS.put(auditId, (Pardon) audit);
 		}
+		return audit;
 	}
 	
 	public long getAuditId() {
@@ -182,8 +183,8 @@ public abstract class Audit implements Comparable<Audit>, OutputCSV{
 	protected Audit parseAudit(CSVRecord record) {
 		//0 is verdict version
 		auditType.setValue(record.get(1));
-		auditId = new LongPreference(Long.parseLong(record.get(2)));
-		issuerDiscordId = new LongPreference(Long.parseLong(record.get(3)));
+		auditId = new LongPreference(Long.parseLong(record.get(2).substring(1)));
+		issuerDiscordId = new LongPreference(Long.parseLong(record.get(3).substring(1)));
 		issuerUsername = new StringPreference(record.get(4));
 		description = new StringPreference(record.get(5));
 		dateIssued = new InstantPreference(Instant.parse(record.get(6)));
@@ -207,7 +208,7 @@ public abstract class Audit implements Comparable<Audit>, OutputCSV{
 	}
 	
 	public List<Object> getParameters() {
-		ArrayList<Object> params = new ArrayList<Object>(Arrays.asList(new Object[] {DB_VERSION, this.auditType, auditId, issuerDiscordId, issuerUsername, description, dateIssued}));
+		ArrayList<Object> params = new ArrayList<Object>(Arrays.asList(new Object[] {DB_VERSION, this.auditType, "`" + auditId, "`" + issuerDiscordId, issuerUsername, description, dateIssued}));
 		return params;
 	}
 	

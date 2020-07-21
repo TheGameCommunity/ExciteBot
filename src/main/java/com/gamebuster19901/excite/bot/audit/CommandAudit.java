@@ -70,9 +70,9 @@ public class CommandAudit extends Audit {
 		//0-6 is audit
 		//7 is commandAudit version
 		serverName = new StringPreference(record.get(8));
-		serverId = new LongPreference(Long.parseLong(record.get(9)));
+		serverId = new LongPreference(Long.parseLong(record.get(9).substring(1)));
 		channelName = new StringPreference(record.get(10));
-		channelId = new LongPreference(Long.parseLong(record.get(11)));
+		channelId = new LongPreference(Long.parseLong(record.get(11).substring(1)));
 		isGuildMessage = new BooleanPreference(Boolean.parseBoolean(record.get(12)));
 		isPrivateMessage = new BooleanPreference(Boolean.parseBoolean(record.get(13)));
 		isConsoleMessage = new BooleanPreference(Boolean.parseBoolean(record.get(14)));
@@ -85,7 +85,7 @@ public class CommandAudit extends Audit {
 	@Override
 	public List<Object> getParameters() {
 		List<Object> params = super.getParameters();
-		params.addAll(Arrays.asList(new Object[] {new Integer(DB_VERSION), serverName, serverId, channelName, channelId, isGuildMessage, isPrivateMessage, isConsoleMessage, isAdmin, isOperator}));
+		params.addAll(Arrays.asList(new Object[] {new Integer(DB_VERSION), serverName, "`" + serverId, channelName, "`" + channelId, isGuildMessage, isPrivateMessage, isConsoleMessage, isAdmin, isOperator}));
 		return params;
 	}
 }

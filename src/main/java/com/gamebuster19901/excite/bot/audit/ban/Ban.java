@@ -117,7 +117,7 @@ public abstract class Ban extends Audit{
 		//7 is ban version
 		banDuration = new DurationPreference(Duration.parse(record.get(8)));
 		banExpire = new InstantPreference(Instant.parse(record.get(9)));
-		pardon = new LongPreference(Long.parseLong(record.get(10)));
+		pardon = new LongPreference(Long.parseLong(record.get(10).substring((1))));
 		
 		return this;
 	}
@@ -125,7 +125,7 @@ public abstract class Ban extends Audit{
 	@Override
 	public List<Object> getParameters() {
 		List<Object> params = super.getParameters();
-		params.addAll(Arrays.asList(new Object[] {new Integer(DB_VERSION), banDuration, banExpire, pardon}));
+		params.addAll(Arrays.asList(new Object[] {new Integer(DB_VERSION), banDuration, banExpire, "`" + pardon}));
 		return params;
 	}
 	

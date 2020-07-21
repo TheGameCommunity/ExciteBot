@@ -7,5 +7,9 @@ public class UnknownPlayer extends Player {
 	private UnknownPlayer() {
 		super("Unknown Player", "NOT_REAL", -1);
 	}
+	
+	private UnknownPlayer(String name) {
+		super(name, "NOT_REAL", -1);
+	}
 
 }
