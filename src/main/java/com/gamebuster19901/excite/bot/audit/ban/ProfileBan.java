@@ -36,7 +36,7 @@ public class ProfileBan extends Ban {
 	
 	@SuppressWarnings("rawtypes")
 	public ProfileBan(MessageContext context, String reason, Duration banDuration, Player bannedPlayer) {
-		this(context, reason, banDuration, Instant.now().plus(banDuration), bannedPlayer);
+		this(context, reason, banDuration, TimeUtils.fromNow(banDuration), bannedPlayer);
 	}
 	
 	@SuppressWarnings("rawtypes")
