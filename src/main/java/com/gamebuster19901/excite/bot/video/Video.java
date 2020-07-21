@@ -20,6 +20,7 @@ public class Video {
 	private static final int DB_VERSION = 1;
 	private static final File VIDEOS = new File("./run/videos.csv");
 	private static final File OLD_VIDEOS = new File("./run/videos.old");
+	public static final File VIDEO_DL = new File("./run/videosDL.csv");
 	private static ArrayList<Video> videos = new ArrayList<Video>();
 	
 	static {
@@ -45,6 +46,9 @@ public class Video {
 	}
 	
 	String videoLink;
+	String bot;
+	String roomCount;
+	String course;
 	
 	public Video(String youtubeLink) {
 		this.videoLink = youtubeLink;
