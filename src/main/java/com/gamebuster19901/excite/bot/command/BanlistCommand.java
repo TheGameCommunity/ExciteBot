@@ -1,8 +1,12 @@
 package com.gamebuster19901.excite.bot.command;
 
+import java.util.Map.Entry;
+
 //import java.time.Instant;
 
 import com.gamebuster19901.excite.bot.WiimmfiCommand;
+import com.gamebuster19901.excite.bot.audit.Audit;
+import com.gamebuster19901.excite.bot.audit.ban.Ban;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
@@ -32,6 +36,9 @@ public class BanlistCommand extends WiimmfiCommand{
 				}
 			}
 			context.sendMessage("There are (" + amount + ") discord users banned from using this bot. \n" + response);
+			for(Entry<Long, Ban> ban : Audit.BANS.entrySet()) {
+				context.sendMessage(ban.toString());
+			}
 			return 1;
 		}
 		else {

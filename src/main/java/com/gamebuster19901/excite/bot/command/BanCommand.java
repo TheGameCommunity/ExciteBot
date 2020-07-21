@@ -47,10 +47,7 @@ public class BanCommand extends WiimmfiCommand {
 	}
 	
 	private static DiscordUser getDiscordUser(long id) {
-		DiscordUser user = DiscordUser.getDiscordUserIncludingUnloaded(id);
-		if(user == null) {
-			user = new UnknownDiscordUser(id);
-		}
+		DiscordUser user = DiscordUser.getDiscordUserIncludingUnknown(id);
 		return user;
 	}
 	

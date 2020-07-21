@@ -1,7 +1,6 @@
 package com.gamebuster19901.excite.bot.user;
 
 import java.time.Duration;
-import java.time.Instant;
 import java.util.Set;
 
 import com.gamebuster19901.excite.Player;
@@ -31,11 +30,6 @@ public class ConsoleUser extends UnloadedDiscordUser{
 	}
 	
 	@Override
-	public void pardon(int amount) {
-		throw new AssertionError();
-	}
-	
-	@Override
 	public String toCSV() {
 		throw new AssertionError();
 	}
@@ -48,16 +42,6 @@ public class ConsoleUser extends UnloadedDiscordUser{
 	@Override
 	public boolean isBanned() {
 		return false;
-	}
-	
-	@Override
-	public String getBanReason() {
-		throw new AssertionError();
-	}
-	
-	@Override
-	public Instant getBanExpireTime() {
-		throw new AssertionError();
 	}
 	
 	@Override

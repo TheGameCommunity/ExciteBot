@@ -22,6 +22,10 @@ import org.apache.commons.csv.CSVRecord;
 
 import com.gamebuster19901.excite.Main;
 import com.gamebuster19901.excite.Player;
+import com.gamebuster19901.excite.bot.audit.Audit;
+import com.gamebuster19901.excite.bot.audit.ban.DiscordBan;
+import com.gamebuster19901.excite.bot.audit.ban.NotDiscordBanned;
+import com.gamebuster19901.excite.bot.audit.ban.Pardon;
 import com.gamebuster19901.excite.bot.command.MessageContext;
 import com.gamebuster19901.excite.output.OutputCSV;
 import com.gamebuster19901.excite.util.FileUtils;
@@ -32,7 +36,7 @@ import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 
 public class DiscordUser implements OutputCSV{
 	
-	private static final File USER_PREFS = new File("./run/userPreferences.csv");
+	public static final File USER_PREFS = new File("./run/userPreferences.csv");
 	private static final File OLD_USER_PREFS = new File("./run/userPreferences.csv.old");
 	private static HashMap<Long, DiscordUser> users = new HashMap<Long, DiscordUser>();
 	
@@ -96,11 +100,61 @@ public class DiscordUser implements OutputCSV{
 	
 	@SuppressWarnings("rawtypes")
 	public void ban(MessageContext context, Duration duration, String reason) {
-		this.preferences.ban(context, duration, reason);
+		DiscordBan discordBan = new DiscordBan(context, reason, duration, this);
+		Audit.addAudit(discordBan);
+		sendMessage(context, toString() + " " + reason);
 	}
 	
-	public void pardon(int amount) {
-		this.preferences.pardon(amount);
+	public DiscordBan getLongestActiveBan() {
+		DiscordBan longest = NotDiscordBanned.INSTANCE;
+		for(DiscordBan ban : DiscordBan.getBansOfUser(this)) {
+			if(ban.isActive()) {
+				if(ban.endsAfter(longest)) {
+					longest = ban;
+				}
+			}
+		}
+		return longest;
+	}
+	
+	@SuppressWarnings("rawtypes")
+	public void pardon(MessageContext context, Pardon pardon) {
+		DiscordBan discordBan = DiscordBan.getBanById(pardon.getBanId());
+		if(pardon.getBanId() == discordBan.getAuditId()) {
+			if(checkPardon(context, pardon)) {
+				Audit.addAudit(new Pardon(context, discordBan));
+				context.sendMessage("Pardoned " + this);
+			}
+		}
+		else {
+			context.sendMessage(this.toString() + " is not discord banned. Provide a ban ID if you wish to pardon a ban which has expired.");
+		}
+	}
+	
+	@SuppressWarnings("rawtypes")
+	public void pardon(MessageContext context) {
+		DiscordBan discordBan = getLongestActiveBan();
+		if(!(getLongestActiveBan() instanceof NotDiscordBanned)) {
+			Pardon pardon = new Pardon(context, discordBan);
+			if(checkPardon(context, pardon)) {
+				discordBan.pardon(context, pardon);
+			}
+			else {
+				throw new AssertionError("This should not be possible...");
+			}
+		}
+		else {
+			context.sendMessage(this.toString() + " is not discord banned. Provide a ban ID if you wish to pardon a ban which has expired.");
+		}
+	}
+	
+	@SuppressWarnings("rawtypes")
+	public void pardon(MessageContext context, long banId) {
+		Pardon pardon = new Pardon(context, banId);
+		DiscordBan discordBan = DiscordBan.getBanById(banId);
+		if(checkPardon(context, pardon)) {
+			discordBan.pardon(context, pardon);
+		}
 	}
 	
 	@Override
@@ -116,12 +170,12 @@ public class DiscordUser implements OutputCSV{
 		return preferences.isBanned();
 	}
 	
-	public String getBanReason() {
-		return preferences.getBanReason();
+	public Instant getBanExpireTime() {
+		return getLongestActiveBan().getBanExpireTime();
 	}
 	
-	public Instant getBanExpireTime() {
-		return preferences.getBanExpireTime();
+	public String getBanReason() {
+		return getLongestActiveBan().getDescription();
 	}
 	
 	public int getUnpardonedBanCount() {
@@ -162,6 +216,8 @@ public class DiscordUser implements OutputCSV{
 	public boolean requestingRegistration() {
 		return preferences.requestingRegistration();
 	}
+	
+	
 	
 	@SuppressWarnings("rawtypes")
 	public void sentCommand(MessageContext context) {
@@ -217,7 +273,7 @@ public class DiscordUser implements OutputCSV{
 	}
 	
 	public String toDetailedString() {
-		return this.getJDAUser().getAsTag() + " (" + id + ")";
+		return this + " (" + id + ")";
 	}
 	
 	public static void addUser(DiscordUser user) {
@@ -243,6 +299,7 @@ public class DiscordUser implements OutputCSV{
 	public static final User getJDAUser(String name, String discriminator) {
 		if(Main.discordBot != null) {
 			User user = Main.discordBot.jda.getUserByTag(name, discriminator);
+			return user;
 		}
 		return null;
 	}
@@ -271,6 +328,15 @@ public class DiscordUser implements OutputCSV{
 		user = users.get(id);
 		if(user == null) {
 			user = new UnknownDiscordUser(id);
+		}
+		return user;
+	}
+	
+	public static final DiscordUser getDiscordUserTreatingUnknownsAsNobody(long id) {
+		DiscordUser user;
+		user = users.get(id);
+		if(user == null) {
+			user = Nobody.INSTANCE;
 		}
 		return user;
 	}
@@ -369,14 +435,14 @@ public class DiscordUser implements OutputCSV{
 				int notifyThreshold;
 				Duration notifyFrequency;
 				Player[] profiles;
-				Instant banTime;
-				Duration banDuration;
-				Instant banExpire;
-				String banReason;
-				int unpardonedBanCount;
+				//Instant banTime;
+				//Duration banDuration;
+				//Instant banExpire;
+				//String banReason;
+				//int unpardonedBanCount;
 				Instant lastNotification;
 				boolean dippedBelowThreshold;
-				int totalBanCount;
+				//int totalBanCount;
 				boolean notifyContinuously;
 				
 				for(CSVRecord csvRecord : csvParser) {
@@ -395,11 +461,8 @@ public class DiscordUser implements OutputCSV{
 						}
 					}
 					profiles = Player.getPlayersFromIds(playerIDs);
-					banTime = Instant.parse(csvRecord.get(5));
-					banDuration = Duration.parse(csvRecord.get(6));
-					banExpire = Instant.parse(csvRecord.get(7));
-					banReason = csvRecord.get(8);
-					unpardonedBanCount = Integer.parseInt(csvRecord.get(9));
+					
+					//records 5 - 9 were removed
 					
 					if(csvRecord.size() > 10) { //legacy data may not have this record
 						lastNotification = Instant.parse(csvRecord.get(10));
@@ -415,12 +478,7 @@ public class DiscordUser implements OutputCSV{
 						dippedBelowThreshold = false;
 					}
 					
-					if(csvRecord.size() > 12) { //legacy data may not have this record
-						totalBanCount = Integer.parseInt(csvRecord.get(12));
-					}
-					else {
-						totalBanCount = unpardonedBanCount;
-					}
+					//record 12 was removed
 					
 					if(csvRecord.size() > 13) {
 						notifyContinuously = Boolean.parseBoolean(csvRecord.get(13));
@@ -429,7 +487,7 @@ public class DiscordUser implements OutputCSV{
 						notifyContinuously = false;
 					}
 					
-					preferences.parsePreferences(discord, discordId, notifyThreshold, notifyFrequency, profiles, banTime, banDuration, banExpire, banReason, unpardonedBanCount, lastNotification, dippedBelowThreshold, totalBanCount, notifyContinuously);
+					preferences.parsePreferences(discord, discordId, notifyThreshold, notifyFrequency, profiles, lastNotification, dippedBelowThreshold, notifyContinuously);
 					
 					User jdaUser = getJDAUser(discordId);
 					if(jdaUser != null) {
@@ -458,4 +516,22 @@ public class DiscordUser implements OutputCSV{
 		}
 		return discordUsers.toArray(new DiscordUser[]{});
 	}
+	
+	private boolean checkPardon(MessageContext context, Pardon pardon) {
+		long banId = pardon.getBanId();
+		DiscordBan discordBan = DiscordBan.getBanById(banId);
+		if(discordBan.getBannedDiscordId() == this.getId()) {
+			if(!discordBan.isPardoned()) {
+				 return true;
+			}
+			else {
+				context.sendMessage(discordBan.getBannedUsername() + " has already had ban " + banId + " pardoned!");
+			}
+		}
+		else {
+			context.sendMessage("Ban " + banId + " does not belong to " + this + ", it belongs to " + DiscordUser.getDiscordUserTreatingUnknownsAsNobody(discordBan.getBannedDiscordId()));
+		}
+		return false;
+	}
+	
 }

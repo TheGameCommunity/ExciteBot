@@ -6,6 +6,7 @@ import com.gamebuster19901.excite.bot.user.DiscordUser;
 import com.gamebuster19901.excite.util.MessageUtil;
 
 import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.events.message.priv.PrivateMessageReceivedEvent;
@@ -106,7 +107,7 @@ public class MessageContext<E>{
 	
 	public String getMention() {
 		if(isConsoleMessage()) {
-			return "@ CONSOLE";
+			return "@CONSOLE";
 		}
 		return getAuthor().getJDAUser().getAsMention();
 	}
@@ -128,6 +129,16 @@ public class MessageContext<E>{
 	public DiscordServer getServer() {
 		if(event instanceof GuildMessageReceivedEvent) {
 			return DiscordServer.getServer(((GuildMessageReceivedEvent)event).getMessage().getGuild().getIdLong());
+		}
+		return null;
+	}
+	
+	public MessageChannel getChannel() {
+		if (event instanceof GuildMessageReceivedEvent) {
+			return ((GuildMessageReceivedEvent) event).getChannel();
+		}
+		if (event instanceof PrivateMessageReceivedEvent) {
+			return ((PrivateMessageReceivedEvent) event).getChannel();
 		}
 		return null;
 	}
