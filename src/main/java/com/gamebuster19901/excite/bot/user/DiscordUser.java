@@ -234,7 +234,12 @@ public class DiscordUser implements OutputCSV{
 			if(!getJDAUser().isBot()) {
 				PrivateChannel privateChannel = getJDAUser().openPrivateChannel().complete();
 				System.out.println(privateChannel.getClass().getCanonicalName());
-				privateChannel.sendMessage(message).complete();
+				try {
+					privateChannel.sendMessage(message).complete();
+				}
+				catch(ErrorResponseException e) {
+					e.printStackTrace();
+				}
 			}
 		}
 	}
