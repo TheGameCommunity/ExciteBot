@@ -32,7 +32,7 @@ public class MessageUtil {
 			}
 			if(message.length() + s.length() > 2000 || i == strings.length - 1) {
 				messages.add(message);
-				message = s;
+				message = "";
 			}
 		}
 		return messages;
