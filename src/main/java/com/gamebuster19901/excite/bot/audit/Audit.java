@@ -15,10 +15,10 @@ import java.lang.reflect.Modifier;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
@@ -48,11 +48,11 @@ public abstract class Audit implements Comparable<Audit>, OutputCSV{
 	
 	private static transient final File AUDIT_DB = new File("./run/verdicts.csv");
 	private static transient final File OLD_AUDIT_DB = new File("./run/verdicts.csv.old");
-	protected static transient final HashMap<Long, Audit> AUDITS = new HashMap<Long, Audit>();
-	public static transient final HashMap<Long, Ban> BANS = new HashMap<Long, Ban>();
-	protected static transient final HashMap<Long, ProfileBan> PROFILE_BANS = new HashMap<Long, ProfileBan>();
-	protected static transient final HashMap<Long, DiscordBan> DISCORD_BANS = new HashMap<Long, DiscordBan>();
-	protected static transient final HashMap<Long, Pardon> PARDONS = new HashMap<Long, Pardon>();
+	protected static transient final ConcurrentHashMap<Long, Audit> AUDITS = new ConcurrentHashMap<Long, Audit>();
+	public static transient final ConcurrentHashMap<Long, Ban> BANS = new ConcurrentHashMap<Long, Ban>();
+	protected static transient final ConcurrentHashMap<Long, ProfileBan> PROFILE_BANS = new ConcurrentHashMap<Long, ProfileBan>();
+	protected static transient final ConcurrentHashMap<Long, DiscordBan> DISCORD_BANS = new ConcurrentHashMap<Long, DiscordBan>();
+	protected static transient final ConcurrentHashMap<Long, Pardon> PARDONS = new ConcurrentHashMap<Long, Pardon>();
 	private static transient final Method PARSE_AUDIT;
 	
 	static {
