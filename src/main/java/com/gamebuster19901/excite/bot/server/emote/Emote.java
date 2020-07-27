@@ -1,7 +1,7 @@
 package com.gamebuster19901.excite.bot.server.emote;
 
-import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -12,7 +12,7 @@ public class Emote {
 	
 	private static final Logger LOGGER = Logger.getLogger(Emote.class.getName());
 	
-	private static final HashMap<String, Emote> EMOTES = new HashMap<String, Emote>();
+	private static final ConcurrentHashMap<String, Emote> EMOTES = new ConcurrentHashMap<String, Emote>();
 	
 	private long discordServer = -1;
 	private String name;
