@@ -10,7 +10,9 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.time.Duration;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.Set;
 import java.util.logging.Logger;
 
 import org.apache.commons.csv.CSVFormat;
@@ -47,7 +49,7 @@ public class Player implements OutputCSV{
 	protected static final File KNOWN_PLAYERS = new File("./run/encounteredPlayers.csv");
 	protected static final File OLD_KNOWN_PLAYERS = new File("./run/encounteredPlayers.csv.old");
 	
-	private static HashSet<Player> knownPlayers;
+	private static Set<Player> knownPlayers;
 	static {
 		try {
 			if(!KNOWN_PLAYERS.exists()) {
@@ -61,7 +63,7 @@ public class Player implements OutputCSV{
 					}
 				}
 			}
-			knownPlayers = new HashSet<Player>(Arrays.asList(getEncounteredPlayersFromFile()));
+			knownPlayers = Collections.synchronizedSet(new HashSet<Player>(Arrays.asList(getEncounteredPlayersFromFile())));
 		}
 		catch(IOException e) {
 			throw new IOError(e);

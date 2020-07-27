@@ -8,9 +8,9 @@ import java.io.FileWriter;
 import java.io.IOError;
 import java.io.IOException;
 import java.io.StringWriter;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
@@ -30,7 +30,7 @@ public class DiscordServer implements OutputCSV{
 
 	private static final File SERVER_PREFS = new File("./run/serverPreferences.csv");
 	private static final File OLD_SERVER_PREFS = new File("./run/serverPreferences.csv.old");
-	private static HashMap<Long, DiscordServer> servers = new HashMap<Long, DiscordServer>();
+	private static ConcurrentHashMap<Long, DiscordServer> servers = new ConcurrentHashMap<Long, DiscordServer>();
 	
 	static {
 		try {

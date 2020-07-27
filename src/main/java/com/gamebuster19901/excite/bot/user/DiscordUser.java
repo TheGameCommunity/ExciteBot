@@ -9,10 +9,10 @@ import java.io.IOError;
 import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.annotation.Nullable;
 
@@ -39,7 +39,7 @@ public class DiscordUser implements OutputCSV{
 	
 	public static final File USER_PREFS = new File("./run/userPreferences.csv");
 	private static final File OLD_USER_PREFS = new File("./run/userPreferences.csv.old");
-	private static HashMap<Long, DiscordUser> users = new HashMap<Long, DiscordUser>();
+	private static ConcurrentHashMap<Long, DiscordUser> users = new ConcurrentHashMap<Long, DiscordUser>();
 	
 	static {
 		try {
