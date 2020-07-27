@@ -118,26 +118,24 @@ public abstract class Audit implements Comparable<Audit>, OutputCSV{
 	}
 	
 	public static <T extends Audit> T addAudit(T audit) {
-		synchronized(AUDITS) {
-			long auditId = audit.auditId.getValue();
-			AUDITS.put(auditId, audit);
-			if(audit instanceof Ban) {
-				BANS.put(auditId, (Ban) audit);
-				if(audit instanceof DiscordBan) {
-					DISCORD_BANS.put(auditId, (DiscordBan) audit);
-				}
-				else if (audit instanceof ProfileBan) {
-					PROFILE_BANS.put(auditId, (ProfileBan) audit);
-				}
-				else {
-					throw new AssertionError(audit.getClass());
-				}
+		long auditId = audit.auditId.getValue();
+		AUDITS.put(auditId, audit);
+		if(audit instanceof Ban) {
+			BANS.put(auditId, (Ban) audit);
+			if(audit instanceof DiscordBan) {
+				DISCORD_BANS.put(auditId, (DiscordBan) audit);
 			}
-			else if (audit instanceof Pardon) {
-				PARDONS.put(auditId, (Pardon) audit);
+			else if (audit instanceof ProfileBan) {
+				PROFILE_BANS.put(auditId, (ProfileBan) audit);
 			}
-			return audit;
+			else {
+				throw new AssertionError(audit.getClass());
+			}
 		}
+		else if (audit instanceof Pardon) {
+			PARDONS.put(auditId, (Pardon) audit);
+		}
+		return audit;
 	}
 	
 	public long getAuditId() {
@@ -161,13 +159,11 @@ public abstract class Audit implements Comparable<Audit>, OutputCSV{
 	}
 	
 	public Audit getAuditById(long id) {
-		synchronized(AUDITS) {
-			Audit audit = AUDITS.get(id);
-			if(audit == null) {
-				audit = new UnknownAudit(id);
-			}
-			return audit;
+		Audit audit = AUDITS.get(id);
+		if(audit == null) {
+			audit = new UnknownAudit(id);
 		}
+		return audit;
 	}
 	
 	@Override
@@ -294,9 +290,7 @@ public abstract class Audit implements Comparable<Audit>, OutputCSV{
 	}
 	
 	private static long generateUniqueId() {
-		synchronized(AUDITS) {
-			return AUDITS.size();
-		}
+		return AUDITS.size();
 	}
 
 	public static void updateAuditsFile() {
@@ -310,10 +304,8 @@ public abstract class Audit implements Comparable<Audit>, OutputCSV{
 			}
 			AUDIT_DB.createNewFile();
 			writer = new BufferedWriter(new FileWriter(AUDIT_DB));
-			synchronized(AUDITS) {
-				for(Entry<Long, Audit> audit : AUDITS.entrySet()) {
-					writer.write(audit.getValue().toCSV());
-				}
+			for(Entry<Long, Audit> audit : AUDITS.entrySet()) {
+				writer.write(audit.getValue().toCSV());
 			}
 		}
 		catch(IOException e) {
