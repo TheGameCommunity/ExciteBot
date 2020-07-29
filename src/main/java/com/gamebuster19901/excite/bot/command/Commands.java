@@ -35,6 +35,7 @@ public class Commands {
 		PlayersCommand.register(dispatcher);
 		IconDumpCommand.register(dispatcher);
 		VideoCommand.register(dispatcher);
+		GameDataCommand.register(dispatcher);
 	}
 	
 	public void handleCommand(String command) {

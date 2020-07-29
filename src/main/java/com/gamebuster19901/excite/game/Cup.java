@@ -140,4 +140,8 @@ public enum Cup {
 		}
 		throw new IllegalArgumentException("Could not derive cup from string: " + cupString);
 	}
+
+	public Course[] getCourses() {
+		return courses;
+	}
 }

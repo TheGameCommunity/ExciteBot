@@ -21,8 +21,8 @@ public enum Bot {
 	ANT,
 	ROACH,
 	LIZARD,
-	BOULDER,
 	SQUID,
+	BOULDER,
 	FLEA;
 	
 	public String toString() {
