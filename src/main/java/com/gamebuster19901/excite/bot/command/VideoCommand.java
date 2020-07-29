@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.gamebuster19901.excite.bot.video.Video;
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.arguments.IntegerArgumentType;
 
 import net.dv8tion.jda.api.entities.Message.Attachment;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
@@ -15,10 +16,9 @@ public class VideoCommand {
 	public static void register(CommandDispatcher<MessageContext> dispatcher) {
 		dispatcher.register(Commands.literal("!video").executes((context) -> {
 			return getVideo(context.getSource());
-		})/*.then(Commands.literal("update")).executes(
-				return 0
-		)*/);
-		
+		}).then(Commands.argument("number", IntegerArgumentType.integer(0)).executes((context) -> {
+			return getVideo(context.getSource(), context.getArgument("number", Integer.class));
+		})));
 	}
 	
 	@SuppressWarnings("rawtypes")
@@ -26,6 +26,7 @@ public class VideoCommand {
 		context.sendMessage(Video.getRandomVideo() + "");
 		return 1;
 	}
+	
 	
 	private static int updateDB(MessageContext context) {
 		if(context.isGuildMessage() || context.isPrivateMessage()) {
@@ -62,6 +63,13 @@ public class VideoCommand {
 		else {
 			context.sendMessage("This command must be executed in discord");
 		}
+		return 1;
+	}
+	
+	
+	@SuppressWarnings("rawtypes")
+	private static int getVideo(MessageContext context, int videoNumber) {
+		context.sendMessage(Video.getVideo(videoNumber) + "");
 		return 1;
 	}
 	

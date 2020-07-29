@@ -92,6 +92,10 @@ public class Video {
 		return videos.get(RAND.nextInt(getVideoCount()));
 	}
 	
+	public static final Video getVideo(int index) {
+		return videos.get(index);
+	}
+	
 	private static final Video[] getVideosFromFile() {
 		HashSet<Video> videos = new HashSet<Video>();
 		try {
