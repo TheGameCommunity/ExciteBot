@@ -87,7 +87,12 @@ public class DiscordUser implements OutputCSV{
 			return null;
 		}
 		if(user == null) {
-			user = Main.discordBot.jda.retrieveUserById(id).complete();
+			try {
+				user = Main.discordBot.jda.retrieveUserById(id).complete();
+			}
+			catch(Exception e) {
+				e.printStackTrace();
+			}
 			if(user == null) {
 				System.out.println("Could not find JDA user for " + preferences.getDiscordTag());
 			}
