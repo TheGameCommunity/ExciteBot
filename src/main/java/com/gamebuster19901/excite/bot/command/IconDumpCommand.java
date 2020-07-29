@@ -1,5 +1,7 @@
 package com.gamebuster19901.excite.bot.command;
 
+import java.util.List;
+
 import com.gamebuster19901.excite.bot.server.DiscordServer;
 import com.gamebuster19901.excite.bot.server.UnloadedDiscordServer;
 import com.mojang.brigadier.CommandDispatcher;
@@ -11,7 +13,10 @@ public class IconDumpCommand {
 
 	@SuppressWarnings("rawtypes")
 	public static void register(CommandDispatcher<MessageContext> dispatcher) {
-		dispatcher.register(Commands.literal("!icondump").then(Commands.argument("server", LongArgumentType.longArg()).executes((command) -> {
+		dispatcher.register(Commands.literal("!icondump").executes((context) -> {
+			context.getSource().sendMessage("Provide a server id");
+			return 0;
+		}).then(Commands.argument("server", LongArgumentType.longArg()).executes((command) -> {
 				return sendResponse(command.getSource(), command.getArgument("server", Long.class));
 			}
 		)));
@@ -22,9 +27,10 @@ public class IconDumpCommand {
 		if(context.isOperator()) {
 			DiscordServer server = DiscordServer.getServer(serverId);
 			if(server != null && !(server instanceof UnloadedDiscordServer)) {
-				String ret = "WhAT dO thEY MEaN?\n\n";
-				for(Emote emote : server.getGuild().getEmotes()) {
-					ret += emote.getAsMention();
+				List<Emote> emotes = server.getGuild().getEmotes();
+				String ret = server.getName() + " has " + emotes.size() + " emotes:\n\n";
+				for(Emote emote : emotes) {
+					ret += emote.getName() + ": " + emote.getAsMention() + "\n";
 				}
 				context.sendMessage(ret);
 			}
