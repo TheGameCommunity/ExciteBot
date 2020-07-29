@@ -5,6 +5,8 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOError;
 import java.io.IOException;
+import java.net.URI;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Random;
@@ -14,6 +16,9 @@ import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 
 import com.gamebuster19901.excite.util.FileUtils;
+import com.gamebuster19901.excite.util.TimeUtils;
+import com.gamebuster19901.excite.game.Bot;
+import com.gamebuster19901.excite.game.Course;
 
 public class Video {
 
@@ -45,13 +50,50 @@ public class Video {
 		}
 	}
 	
-	String videoLink;
-	String bot;
-	String roomCount;
-	String course;
+	int raceNumber;
+	LocalDate date;
+	Course course;
+	short stars;
+	byte roomSize;
+	byte placement;
+	Bot bot;
+	short videoNumber;
+	short firstStars;
+	short secondStars;
+	short thirdStars;
+	short fourthStars;
+	short fifthStars;
+	short sixthStars;
+	short Base;
+	int timeLeft;
+	short crashes;
+	int seconds;
+	String firstPlace;
+	String secondPlace;
+	String thridPlace;
+	String fourthPlace;
+	String fifthPlace;
+	String sixthPlace;
+	String imageName;
+	URI video;
+	String uploader;
+	String youtubeDescription;
+	String notes;
+	String rankHelper;
+	int starTimeRank;
+	String recordFinder;
 	
-	public Video(String youtubeLink) {
-		this.videoLink = youtubeLink;
+	public Video(CSVRecord record) {
+		this.raceNumber = Integer.parseInt(record.get("#"));
+		this.date = TimeUtils.fromString(record.get("Date"));
+		this.course = Course.fromString(record.get("Course"));
+		this.stars = Short.parseShort(record.get("Stars"));
+		this.roomSize = Byte.parseByte(record.get("Rm"));
+		this.placement = (byte)(record.get("Place").charAt(0) - '0');
+		this.bot = Bot.fromString(record.get("Bot"));
+		this.videoNumber = Short.parseShort(record.get("V#"));
+		
+		
 	}
 	
 	@Override
