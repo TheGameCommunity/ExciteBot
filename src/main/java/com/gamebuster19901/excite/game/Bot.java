@@ -28,4 +28,13 @@ public enum Bot {
 		return WordUtils.capitalizeFully(name());
 	}
 	
+	public static Bot fromString(String botName) {
+		for(Bot bot : values()) {
+			if(botName.equalsIgnoreCase(bot.name())) {
+				return bot;
+			}
+		}
+		throw new IllegalArgumentException("Unknown bot " + botName);
+	}
+	
 }

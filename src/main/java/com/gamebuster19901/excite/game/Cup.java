@@ -131,4 +131,13 @@ public enum Cup {
 	public String toString() {
 		return WordUtils.capitalizeFully(this.name().replaceAll("_", " "));
 	}
+	
+	public static Cup fromString(String cupString) {
+		for(Cup cup : values()) {
+			if(cupString.toLowerCase().contains(cup.toString().toLowerCase())) {
+				return cup;
+			}
+		}
+		throw new IllegalArgumentException("Could not derive cup from string: " + cupString);
+	}
 }

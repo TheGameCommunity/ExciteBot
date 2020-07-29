@@ -24,4 +24,14 @@ public class Course {
 		}
 	}
 	
+	public static Course fromString(String courseString) {
+		Cup cup = Cup.fromString(courseString);
+		for(Course course : cup.courses) {
+			if(courseString.contains(course.toFullString())) {
+				return course;
+			}
+		}
+		throw new IllegalArgumentException("Unknown Course: " + courseString);
+	}
+	
 }
