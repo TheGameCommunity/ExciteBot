@@ -1,0 +1,31 @@
+package com.gamebuster19901.excite.game;
+
+import org.apache.commons.text.WordUtils;
+
+public enum Bot {
+	FROG,
+	BEETLE,
+	LADYBUG,
+	BAT,
+	TURTLE,
+	GRASSHOPPER,
+	MOUSE,
+	MANTIS,
+	HUMMINGBIRD,
+	CENTIPEDE,
+	SPIDER,
+	CRAB,
+	SCORPION,
+	HORNET,
+	LOBSTER,
+	ANT,
+	ROACH,
+	LIZARD,
+	BOULDER,
+	FLEA;
+	
+	public String toString() {
+		return WordUtils.capitalizeFully(name());
+	}
+	
+}
