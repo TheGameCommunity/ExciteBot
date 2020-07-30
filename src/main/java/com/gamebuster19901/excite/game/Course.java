@@ -27,7 +27,7 @@ public class Course {
 	public static Course fromString(String courseString) {
 		Cup cup = Cup.fromString(courseString);
 		for(Course course : cup.getCourses()) {
-			if(courseString.contains(course.toFullString())) {
+			if(courseString.contains(course.toString())) {
 				return course;
 			}
 		}
