@@ -176,7 +176,7 @@ public abstract class Audit implements Comparable<Audit>, OutputCSV{
 		return dateIssued.getValue();
 	}
 	
-	public Audit getAuditById(long id) {
+	public static Audit getAuditById(long id) {
 		try {
 			MAP_LOCK.lock();
 			Audit audit = AUDITS.get(id);

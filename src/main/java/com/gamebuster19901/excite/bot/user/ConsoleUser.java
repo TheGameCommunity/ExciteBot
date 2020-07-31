@@ -98,5 +98,10 @@ public class ConsoleUser extends UnloadedDiscordUser{
 	public String toString() {
 		return name + "(" + getId() + ")"; 
 	}
+	
+	@Override
+	public String toDetailedString() {
+		return toString();
+	}
 
 }

@@ -2,6 +2,7 @@ package com.gamebuster19901.excite.bot.command;
 
 import com.gamebuster19901.excite.bot.audit.Audit;
 import com.gamebuster19901.excite.bot.audit.CommandAudit;
+import com.gamebuster19901.excite.bot.user.ConsoleUser;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
 import com.gamebuster19901.excite.util.StacktraceUtil;
 import com.mojang.brigadier.CommandDispatcher;
@@ -35,10 +36,11 @@ public class Commands {
 		IconDumpCommand.register(dispatcher);
 		VideoCommand.register(dispatcher);
 		GameDataCommand.register(dispatcher);
+		RankCommand.register(dispatcher);
 	}
 	
 	public void handleCommand(String command) {
-		MessageContext context = new MessageContext();
+		MessageContext context = new MessageContext(ConsoleUser.INSTANCE);
 		try {
 			Audit.addAudit(new CommandAudit(context, command));
 			this.dispatcher.execute(command, context);

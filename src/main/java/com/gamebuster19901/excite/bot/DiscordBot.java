@@ -17,6 +17,7 @@ import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.entities.Activity.ActivityType;
+import net.dv8tion.jda.api.entities.SelfUser;
 import net.dv8tion.jda.api.managers.Presence;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 
@@ -90,6 +91,10 @@ public class DiscordBot {
 				System.out.println("set presence");
 			}
 		}
+	}
+	
+	public SelfUser getSelfUser() {
+		return jda.getSelfUser();
 	}
 	
 }

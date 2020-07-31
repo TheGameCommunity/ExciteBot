@@ -24,7 +24,7 @@ import com.gamebuster19901.excite.output.OutputCSV;
 import com.gamebuster19901.excite.util.TimeUtils;
 
 public class UserPreferences implements OutputCSV{
-	public static final int DB_VERSION = 1;
+	public static final int DB_VERSION = 2;
 	
 	private static final String validPasswordChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNPQRSTUVWXYZ123456789,.!?";
 	private Random random = new Random();
@@ -37,6 +37,8 @@ public class UserPreferences implements OutputCSV{
 	private InstantPreference lastNotification = new InstantPreference(Instant.MIN);
 	private BooleanPreference dippedBelowThreshold = new BooleanPreference(true);
 	private BooleanPreference notifyContinuously = new BooleanPreference(false);
+	private BooleanPreference isAdmin = new BooleanPreference(false);
+	private BooleanPreference isOperator = new BooleanPreference(false);
 	
 	private transient IntegerPreference desiredProfile = new IntegerPreference(-1);
 	private transient StringPreference registrationCode = new StringPreference("");
@@ -60,7 +62,7 @@ public class UserPreferences implements OutputCSV{
 		
 	}
 	
-	public void parsePreferences(String discord, long discordId, int notifyThreshold, Duration notifyFrequency, Player[] profiles, Instant lastNotification, boolean dippedBelowThreshold, boolean notifyContinuously) {
+	public void parsePreferences(String discord, long discordId, int notifyThreshold, Duration notifyFrequency, Player[] profiles, Instant lastNotification, boolean dippedBelowThreshold, boolean notifyContinuously, boolean isAdmin, boolean isOperator) {
 		this.discord = new StringPreference(discord);
 		this.discordId = new LongPreference(discordId);
 		this.notifyThreshold = new IntegerPreference(notifyThreshold);
@@ -69,6 +71,8 @@ public class UserPreferences implements OutputCSV{
 		this.lastNotification = new InstantPreference(lastNotification);
 		this.dippedBelowThreshold = new BooleanPreference(dippedBelowThreshold);
 		this.notifyContinuously = new BooleanPreference(notifyContinuously);
+		this.isAdmin = new BooleanPreference(isAdmin);
+		this.isOperator = new BooleanPreference(isOperator);
 	}
 	
 	@Override
@@ -78,7 +82,7 @@ public class UserPreferences implements OutputCSV{
 			CSVPrinter printer = new CSVPrinter(writer, CSVFormat.DEFAULT.withTrim(false));
 		)
 		{
-			printer.printRecord(discord, discordId, notifyThreshold, notifyFrequency, profiles, lastNotification, dippedBelowThreshold, notifyContinuously);
+			printer.printRecord(DB_VERSION, discord, discordId, notifyThreshold, notifyFrequency, profiles, lastNotification, dippedBelowThreshold, notifyContinuously, isAdmin, isOperator);
 			printer.flush();
 			return writer.toString();
 		} catch (IOException e) {
@@ -113,6 +117,24 @@ public class UserPreferences implements OutputCSV{
 			}
 		}
 		return false;
+	}
+	
+	public boolean isAdmin() {
+		return isOperator.getValue() || isAdmin.getValue();
+	}
+	
+	public boolean isOperator() {
+		return isOperator.getValue();
+	}
+	
+	@SuppressWarnings("rawtypes")
+	public void setAdmin(MessageContext promoter, boolean admin) {
+		isAdmin.setValue(admin);
+	}
+	
+	@SuppressWarnings("rawtypes")
+	public void setOperator(MessageContext promoter, boolean operator) {
+		isOperator.setValue(operator);
 	}
 	
 	public int getUnpardonedBanCount() {

@@ -126,6 +126,10 @@ public class CSVHelper {
 		return record;
 	}
 	
+	public int size() {
+		return record.size();
+	}
+	
 	@Override
 	public String toString() {
 		return record.toString();
