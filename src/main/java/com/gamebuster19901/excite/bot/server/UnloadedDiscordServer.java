@@ -38,7 +38,7 @@ public class UnloadedDiscordServer extends DiscordServer{
 			CSVPrinter printer = new CSVPrinter(writer, CSVFormat.DEFAULT.withTrim(false));
 		)
 		{
-			printer.printRecord("UNLOADED_DISCORD_SERVER", id, adminRoles);
+			printer.printRecord("UNLOADED_DISCORD_SERVER", id);
 			printer.flush();
 			return writer.toString();
 		} catch (IOException e) {

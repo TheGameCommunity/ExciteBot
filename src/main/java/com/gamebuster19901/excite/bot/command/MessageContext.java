@@ -1,13 +1,10 @@
 package com.gamebuster19901.excite.bot.command;
 
-import com.gamebuster19901.excite.Main;
 import com.gamebuster19901.excite.bot.server.DiscordServer;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
 import com.gamebuster19901.excite.util.MessageUtil;
 
-import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.MessageChannel;
-import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.events.message.priv.PrivateMessageReceivedEvent;
 
@@ -66,20 +63,13 @@ public class MessageContext<E>{
 		}
 		else if(event instanceof GuildMessageReceivedEvent) {
 			GuildMessageReceivedEvent e = (GuildMessageReceivedEvent) event;
-			DiscordServer server = getServer();
-			Role[] adminRoles = server.getAdminRoles();
-			Member member = e.getMessage().getMember();
-			for(Role role : adminRoles) {
-				if(member.getRoles().contains(role)) {
-					return true;
-				}
-			}
+			return getAuthor().isAdmin();
 		}
 		return false;
 	}
 	
 	public boolean isOperator() {
-		return isConsoleMessage() || getAuthor().getJDAUser().getAsTag().equalsIgnoreCase(Main.botOwner);
+		return isConsoleMessage() || getAuthor().isOperator();
 	}
 	
 	public void sendMessage(String message) {

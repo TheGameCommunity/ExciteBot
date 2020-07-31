@@ -26,7 +26,6 @@ public class Commands {
 		RegisterCommand.register(dispatcher);
 		NotifyCommand.register(dispatcher);
 		StopCommand.register(dispatcher);
-		AdminRoleCommand.register(dispatcher);
 		HelpCommand.register(dispatcher);
 		BackupCommand.register(dispatcher);
 		BanlistCommand.register(dispatcher);
