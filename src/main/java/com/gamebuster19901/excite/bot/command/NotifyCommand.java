@@ -2,14 +2,13 @@ package com.gamebuster19901.excite.bot.command;
 
 import java.time.Duration;
 
-import com.gamebuster19901.excite.bot.WiimmfiCommand;
 import com.gamebuster19901.excite.util.TimeUtils;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 
-public class NotifyCommand extends WiimmfiCommand{
+public class NotifyCommand {
 
 	@SuppressWarnings("rawtypes")
 	public static void register(CommandDispatcher<MessageContext> dispatcher) {

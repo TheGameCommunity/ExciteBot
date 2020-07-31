@@ -4,7 +4,6 @@ import java.time.DateTimeException;
 import java.time.Duration;
 import java.time.Instant;
 
-import com.gamebuster19901.excite.bot.WiimmfiCommand;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
 import com.gamebuster19901.excite.bot.user.UnknownDiscordUser;
 import com.gamebuster19901.excite.util.TimeUtils;
@@ -12,7 +11,7 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.LongArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 
-public class BanInfoCommand extends WiimmfiCommand {
+public class BanInfoCommand {
 	
 	@SuppressWarnings("rawtypes")
 	public static void register(CommandDispatcher<MessageContext> dispatcher) {

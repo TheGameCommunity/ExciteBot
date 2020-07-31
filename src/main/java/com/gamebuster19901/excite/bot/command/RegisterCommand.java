@@ -3,12 +3,11 @@ package com.gamebuster19901.excite.bot.command;
 import java.util.HashSet;
 
 import com.gamebuster19901.excite.Player;
-import com.gamebuster19901.excite.bot.WiimmfiCommand;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
 
-public class RegisterCommand extends WiimmfiCommand {
+public class RegisterCommand {
 
 	@SuppressWarnings("rawtypes")
 	public static void register(CommandDispatcher<MessageContext> dispatcher) {

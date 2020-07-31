@@ -1,6 +1,5 @@
 package com.gamebuster19901.excite.bot.command;
 
-import com.gamebuster19901.excite.bot.WiimmfiCommand;
 import com.gamebuster19901.excite.bot.audit.ban.Pardon;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
 import com.gamebuster19901.excite.bot.user.UnknownDiscordUser;
@@ -8,7 +7,7 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.LongArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 
-public class PardonCommand extends WiimmfiCommand{
+public class PardonCommand {
 
 	@SuppressWarnings("rawtypes")
 	public static void register(CommandDispatcher<MessageContext> dispatcher) {

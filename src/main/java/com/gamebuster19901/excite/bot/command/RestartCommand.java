@@ -1,11 +1,10 @@
 package com.gamebuster19901.excite.bot.command;
 
 import com.gamebuster19901.excite.Main;
-import com.gamebuster19901.excite.bot.WiimmfiCommand;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
 import com.mojang.brigadier.CommandDispatcher;
 
-public class RestartCommand extends WiimmfiCommand {
+public class RestartCommand {
 	@SuppressWarnings("rawtypes")
 	public static void register(CommandDispatcher<MessageContext> dispatcher) {
 		dispatcher.register(Commands.literal("!restart").executes((context) -> {
