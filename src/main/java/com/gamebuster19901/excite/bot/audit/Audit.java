@@ -19,6 +19,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
@@ -44,6 +45,8 @@ import static com.gamebuster19901.excite.util.Permission.ANYONE;
 
 public abstract class Audit implements Comparable<Audit>, OutputCSV{
 
+	static final ReentrantLock MAP_LOCK = new ReentrantLock();
+	
 	private static final int DB_VERSION = 0;
 	
 	private static transient final File AUDIT_DB = new File("./run/verdicts.csv");
@@ -68,10 +71,16 @@ public abstract class Audit implements Comparable<Audit>, OutputCSV{
 					}
 				}
 			}
-			PARSE_AUDIT = Audit.class.getDeclaredMethod("parseAudit", CSVRecord.class);
-			PARSE_AUDIT.setAccessible(true);
-			for(Audit audit : getAuditsFromFile()) {
-				addAudit(audit);
+			try {
+				MAP_LOCK.lock();
+				PARSE_AUDIT = Audit.class.getDeclaredMethod("parseAudit", CSVRecord.class);
+				PARSE_AUDIT.setAccessible(true);
+				for(Audit audit : getAuditsFromFile()) {
+					addAudit(audit);
+				}
+			}
+			finally {
+				MAP_LOCK.unlock();
 			}
 		}
 		catch(IOException e) {
@@ -103,7 +112,6 @@ public abstract class Audit implements Comparable<Audit>, OutputCSV{
 	@SuppressWarnings("rawtypes")
 	protected Audit(MessageContext context, String description, Instant dateIssued) {
 		this();
-		this.auditId = new LongPreference(generateUniqueId());
 		this.issuerDiscordId = new LongPreference(context.getSenderId());
 		this.issuerUsername = new StringPreference(context.getTag());
 		this.description = new StringPreference(description);
@@ -118,22 +126,32 @@ public abstract class Audit implements Comparable<Audit>, OutputCSV{
 	}
 	
 	public static <T extends Audit> T addAudit(T audit) {
-		long auditId = audit.auditId.getValue();
-		AUDITS.put(auditId, audit);
-		if(audit instanceof Ban) {
-			BANS.put(auditId, (Ban) audit);
-			if(audit instanceof DiscordBan) {
-				DISCORD_BANS.put(auditId, (DiscordBan) audit);
+		try {
+			MAP_LOCK.lock();
+			if(audit.auditId == null) {
+				long auditId = generateUniqueId();
+				audit.auditId = new LongPreference(auditId);
 			}
-			else if (audit instanceof ProfileBan) {
-				PROFILE_BANS.put(auditId, (ProfileBan) audit);
+			long auditId = audit.auditId.getValue();
+			AUDITS.put(auditId, audit);
+			if(audit instanceof Ban) {
+				BANS.put(auditId, (Ban) audit);
+				if(audit instanceof DiscordBan) {
+					DISCORD_BANS.put(auditId, (DiscordBan) audit);
+				}
+				else if (audit instanceof ProfileBan) {
+					PROFILE_BANS.put(auditId, (ProfileBan) audit);
+				}
+				else {
+					throw new AssertionError(audit.getClass());
+				}
 			}
-			else {
-				throw new AssertionError(audit.getClass());
+			else if (audit instanceof Pardon) {
+				PARDONS.put(auditId, (Pardon) audit);
 			}
 		}
-		else if (audit instanceof Pardon) {
-			PARDONS.put(auditId, (Pardon) audit);
+		finally {
+			MAP_LOCK.unlock();
 		}
 		return audit;
 	}
@@ -159,11 +177,17 @@ public abstract class Audit implements Comparable<Audit>, OutputCSV{
 	}
 	
 	public Audit getAuditById(long id) {
-		Audit audit = AUDITS.get(id);
-		if(audit == null) {
-			audit = new UnknownAudit(id);
+		try {
+			MAP_LOCK.lock();
+			Audit audit = AUDITS.get(id);
+			if(audit == null) {
+				audit = new UnknownAudit(id);
+			}
+			return audit;
 		}
-		return audit;
+		finally {
+			MAP_LOCK.unlock();
+		}
 	}
 	
 	@Override
@@ -290,12 +314,19 @@ public abstract class Audit implements Comparable<Audit>, OutputCSV{
 	}
 	
 	private static long generateUniqueId() {
-		return AUDITS.size();
+		try {
+			MAP_LOCK.lock();
+			return AUDITS.size();
+		}
+		finally {
+			MAP_LOCK.unlock();
+		}
 	}
 
 	public static void updateAuditsFile() {
 		BufferedWriter writer = null;
 		try {
+			MAP_LOCK.lock();
 			if(OLD_AUDIT_DB.exists()) {
 				OLD_AUDIT_DB.delete();
 			}
@@ -319,6 +350,9 @@ public abstract class Audit implements Comparable<Audit>, OutputCSV{
 			}
 			catch(IOException e) {
 				throw new IOError(e);
+			}
+			finally {
+				MAP_LOCK.unlock();
 			}
 		}
 	}

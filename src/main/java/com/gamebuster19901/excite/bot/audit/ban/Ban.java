@@ -79,8 +79,8 @@ public abstract class Ban extends Audit{
 	@SuppressWarnings("rawtypes")
 	public void pardon(MessageContext context, Pardon pardon) {
 		if(!this.isPardoned()) {
-			this.pardon.setValue(pardon.getAuditId());
 			Audit.addAudit(pardon);
+			this.pardon.setValue(pardon.getAuditId());
 			context.sendMessage("Pardoned " + getBannedUsername());
 		}
 		else {
