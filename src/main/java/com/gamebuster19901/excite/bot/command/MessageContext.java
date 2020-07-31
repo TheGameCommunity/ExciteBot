@@ -1,6 +1,7 @@
 package com.gamebuster19901.excite.bot.command;
 
 import com.gamebuster19901.excite.bot.server.DiscordServer;
+import com.gamebuster19901.excite.bot.user.ConsoleUser;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
 import com.gamebuster19901.excite.util.MessageUtil;
 
@@ -13,7 +14,7 @@ public class MessageContext<E>{
 	private E event;
 	
 	public MessageContext(E e) {
-		if(e == null || e instanceof GuildMessageReceivedEvent || e instanceof PrivateMessageReceivedEvent || e instanceof DiscordUser) {
+		if(e instanceof GuildMessageReceivedEvent || e instanceof PrivateMessageReceivedEvent || e instanceof DiscordUser) {
 			this.event = e;
 		}
 		else {
@@ -21,8 +22,9 @@ public class MessageContext<E>{
 		}
 	}
 	
+	@SuppressWarnings("unchecked")
 	public MessageContext() {
-		this.event = null;
+		this.event = (E) ConsoleUser.INSTANCE;
 	}
 	
 	public boolean isGuildMessage() {
@@ -34,7 +36,7 @@ public class MessageContext<E>{
 	}
 	
 	public boolean isConsoleMessage() {
-		return event == null;
+		return event instanceof ConsoleUser;
 	}
 	
 	public E getEvent() {
@@ -42,9 +44,6 @@ public class MessageContext<E>{
 	}
 	
 	public DiscordUser getAuthor() {
-		if(isConsoleMessage()) {
-			return null;
-		}
 		if(event instanceof GuildMessageReceivedEvent) {
 			return DiscordUser.getDiscordUser(((GuildMessageReceivedEvent)event).getMessage().getAuthor().getIdLong());
 		}
