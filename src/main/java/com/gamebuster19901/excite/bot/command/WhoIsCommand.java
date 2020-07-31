@@ -24,7 +24,7 @@ public class WhoIsCommand {
 	public static int sendResponse(MessageContext context, String lookingFor) {
 		Wiimmfi wiimmfi = Main.discordBot.getWiimmfi();
 		String response = "";
-		if(wiimmfi.getError() != null) {
+		if(wiimmfi.getError() == null) {
 			Player[] players = wiimmfi.getKnownPlayers();
 			
 			if(!lookingFor.isEmpty()) {
