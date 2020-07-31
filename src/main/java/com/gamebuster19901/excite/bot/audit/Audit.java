@@ -45,7 +45,7 @@ import static com.gamebuster19901.excite.util.Permission.ANYONE;
 
 public abstract class Audit implements Comparable<Audit>, OutputCSV{
 
-	static final ReentrantLock MAP_LOCK = new ReentrantLock();
+	static transient final ReentrantLock MAP_LOCK = new ReentrantLock();
 	
 	private static final int DB_VERSION = 0;
 	
