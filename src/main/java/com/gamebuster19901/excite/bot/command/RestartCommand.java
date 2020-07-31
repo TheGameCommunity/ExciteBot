@@ -1,6 +1,5 @@
 package com.gamebuster19901.excite.bot.command;
 
-import com.gamebuster19901.excite.Main;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
 import com.mojang.brigadier.CommandDispatcher;
 
@@ -16,12 +15,8 @@ public class RestartCommand {
 	private static int stop(MessageContext context) {
 		if(context.isAdmin()) {
 			try {
-				System.out.println(context.getTag() + "(" + context.getSenderId() + ") is restarting the bot!");
 				context.sendMessage("Restarting!");
-				if(Main.botOwner != null) {
-					DiscordUser botOwner = DiscordUser.getDiscordUser(Main.botOwner);
-					botOwner.sendMessage(botOwner.getJDAUser().getAsMention() + ", " + context.getTag() + "(" + context.getSenderId() + ") is restarting the bot!");
-				}
+				DiscordUser.messageAllAdmins(context.getAuthor().toDetailedString() + " is restarting the bot!");
 			}
 			catch (Throwable t) {
 				t.printStackTrace();

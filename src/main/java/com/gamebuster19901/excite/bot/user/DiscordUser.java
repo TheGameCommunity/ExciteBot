@@ -428,6 +428,28 @@ public class DiscordUser implements OutputCSV{
 		return users.values().toArray(new DiscordUser[]{});
 	}
 	
+	public static final void messageAllAdmins(String message) {
+		ArrayList<DiscordUser> users = new ArrayList<DiscordUser>();
+		users.addAll(DiscordUser.users.values());
+		users.add(ConsoleUser.INSTANCE);
+		for(DiscordUser user : users) {
+			if(user.isAdmin()) {
+				user.sendMessage(message);
+			}
+		}
+	}
+	
+	public static final void messageAllOperators(String message) {
+		ArrayList<DiscordUser> users = new ArrayList<DiscordUser>();
+		users.addAll(DiscordUser.users.values());
+		users.add(ConsoleUser.INSTANCE);
+		for(DiscordUser user : users) {
+			if(user.isOperator()) {
+				user.sendMessage(message);
+			}
+		}
+	}
+	
 	public static void updateWarningCooldowns() {
 		for(DiscordUser user : getKnownUsers()) {
 			user.preferences.updateWarningCooldown();
