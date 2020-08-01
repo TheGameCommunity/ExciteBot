@@ -24,7 +24,7 @@ import com.gamebuster19901.excite.game.Stars;
 public class Video {
 
 	private static final int DB_VERSION = 1;
-	private static final File VIDEOS = new File("./run/videos.csv");
+	private static final File VIDEOS = new File("./run/videos/");
 	private static final File OLD_VIDEOS = new File("./run/videos.old");
 	public static final File VIDEO_DL = new File("./run/videosDL.csv");
 	private static ArrayList<Video> videos = new ArrayList<Video>();
@@ -32,7 +32,7 @@ public class Video {
 	static {
 		try {
 			if(!VIDEOS.exists()) {
-				VIDEOS.getParentFile().mkdirs();
+				VIDEOS.mkdirs();
 				VIDEOS.createNewFile();
 			}
 			else {
@@ -42,7 +42,7 @@ public class Video {
 					}
 				}
 			}
-			for(Video video : getVideosFromFile()) {
+			for(Video video : getVideosFromDirectory()) {
 				addVideo(video);
 			}
 		}
