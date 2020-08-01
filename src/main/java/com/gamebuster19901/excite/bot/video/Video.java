@@ -78,14 +78,13 @@ public class Video {
 	String sixthPlace = "";
 	String imageName = "";
 	URI video = null;
-	String uploader = null;
 	String youtubeDescription = null;
 	String notes = null;
 	String rankHelper = null;
 	int starTimeRank;
 	String recordFinder = null;
 	
-	Object[] nonNull = new Object[] {date, course, placement, bot, firstStars, secondStars, thirdStars, fourthStars, fifthStars, sixthStars, base, timestamp, firstPlace, secondPlace, thirdPlace, fourthPlace, fifthPlace, sixthPlace, imageName, video, uploader, youtubeDescription, notes, rankHelper, recordFinder}; 
+	Object[] nonNull = new Object[] {date, course, placement, bot, firstStars, secondStars, thirdStars, fourthStars, fifthStars, sixthStars, base, timestamp, firstPlace, secondPlace, thirdPlace, fourthPlace, fifthPlace, sixthPlace, imageName, video, youtubeDescription, notes, rankHelper, recordFinder}; 
 	
 	public Video(CSVHelper record) {
 		try {
@@ -116,7 +115,6 @@ public class Video {
 			this.sixthPlace = record.getNull("P6");
 			this.imageName = record.getNull("Image Name");
 			this.video = new URI(record.getNonNull("Race Link"));
-			this.uploader = record.getNonNull("Uploader");
 			this.youtubeDescription = record.getNull("YouTube Description Timestamp C/P");
 			this.notes = record.getNull("Notes");
 			this.rankHelper = record.getNonNull("Rank Helper");
