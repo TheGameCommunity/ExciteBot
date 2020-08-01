@@ -164,25 +164,27 @@ public class Video {
 		return videos.get(index);
 	}
 	
-	private static final Video[] getVideosFromFile() {
+	private static final Video[] getVideosFromDirectory() {
 		HashSet<Video> videos = new HashSet<Video>();
 		try {
-			BufferedReader reader = new BufferedReader(new FileReader(VIDEOS));
-			CSVParser csvParser = new CSVParser(reader, CSVFormat.DEFAULT.withHeader());
-			try {
-				
-				for(CSVRecord csvRecord : csvParser) {
-					Video video = new Video(new CSVHelper(csvRecord));
-					addVideo(video);
+			for(File f : VIDEOS.listFiles()) {
+				BufferedReader reader = new BufferedReader(new FileReader(f));
+				CSVParser csvParser = new CSVParser(reader, CSVFormat.DEFAULT.withHeader());
+				try {
+					
+					for(CSVRecord csvRecord : csvParser) {
+						Video video = new Video(new CSVHelper(csvRecord));
+						addVideo(video);
+					}
+					
 				}
-				
-			}
-			finally {
-				if(reader != null) {
-					reader.close();
-				}
-				if(csvParser != null) {
-					csvParser.close();
+				finally {
+					if(reader != null) {
+						reader.close();
+					}
+					if(csvParser != null) {
+						csvParser.close();
+					}
 				}
 			}
 		}
