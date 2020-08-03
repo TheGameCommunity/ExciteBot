@@ -15,7 +15,7 @@ import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 
 import com.gamebuster19901.excite.util.CSVHelper;
-import com.gamebuster19901.excite.util.FileUtils;
+import com.gamebuster19901.excite.util.file.FileUtils;
 import com.gamebuster19901.excite.game.Bot;
 import com.gamebuster19901.excite.game.Course;
 import com.gamebuster19901.excite.game.Placement;

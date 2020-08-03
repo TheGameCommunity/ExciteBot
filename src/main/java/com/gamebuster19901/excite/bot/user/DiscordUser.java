@@ -31,7 +31,7 @@ import com.gamebuster19901.excite.bot.audit.ban.Pardon;
 import com.gamebuster19901.excite.bot.command.MessageContext;
 import com.gamebuster19901.excite.output.OutputCSV;
 import com.gamebuster19901.excite.util.CSVHelper;
-import com.gamebuster19901.excite.util.FileUtils;
+import com.gamebuster19901.excite.util.file.FileUtils;
 
 import net.dv8tion.jda.api.entities.PrivateChannel;
 import net.dv8tion.jda.api.entities.User;
