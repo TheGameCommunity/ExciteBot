@@ -93,14 +93,7 @@ public class Main {
 						Player[] onlinePlayers = Wiimmfi.updateOnlinePlayers();
 						Player.updatePlayerListFile();
 						
-						LOGGER.info("Players online: " + onlinePlayers.length);
-						int waitTime = 60000;
-						if(onlinePlayers.length > 1) {
-							waitTime = waitTime / onlinePlayers.length;
-							if(waitTime < 4000) {
-								waitTime = 4000;
-							}
-						}
+						int waitTime = 1000;
 						nextWiimmfiPing = Instant.now().plus(Duration.ofMillis(waitTime));
 					}
 					else {
