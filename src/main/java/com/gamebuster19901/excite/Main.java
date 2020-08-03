@@ -90,7 +90,6 @@ public class Main {
 							LOGGER.log(Level.SEVERE, "Error resolved.");
 						}
 						
-						Player[] onlinePlayers = Wiimmfi.updateOnlinePlayers();
 						Player.updatePlayerListFile();
 						
 						int waitTime = 1000;

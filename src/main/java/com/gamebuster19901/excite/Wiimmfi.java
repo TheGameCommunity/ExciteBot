@@ -59,14 +59,10 @@ public class Wiimmfi {
 		if(url != null) {
 			try {
 				if(url.getProtocol().equals("file")) {
-					logger.info("opening " + url);
 					document = Jsoup.parse(new File(url.toURI()), null);
-					logger.info("opened " + url);
 				}
 				else {
-					logger.info("connecting to " + url);
 					document = Jsoup.connect(url.toString()).get();
-					logger.info("connected to " + url);
 				}
 				error = null;
 			}
