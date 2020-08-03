@@ -37,6 +37,7 @@ public class Commands {
 		VideoCommand.register(dispatcher);
 		GameDataCommand.register(dispatcher);
 		RankCommand.register(dispatcher);
+		CDCommand.register(dispatcher);
 	}
 	
 	public void handleCommand(String command) {
