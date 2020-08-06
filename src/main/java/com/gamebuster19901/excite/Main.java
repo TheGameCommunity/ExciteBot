@@ -78,54 +78,60 @@ public class Main {
 		
 		try {
 			while(true) {
-				Throwable error = wiimmfi.getError();
-				if(nextBackupTime.isBefore(Instant.now())) {
-					Backup.backup(new MessageContext());
-					nextBackupTime = nextBackupTime.plus(Duration.ofHours(1));
-				}
-				if(nextWiimmfiPing.isBefore(Instant.now())) {
-					wiimmfi.update();
-					if(error == null) {
-						if(prevError != null) {
-							LOGGER.log(Level.SEVERE, "Error resolved.");
+				try {
+					Throwable error = wiimmfi.getError();
+					if(nextBackupTime.isBefore(Instant.now())) {
+						Backup.backup(new MessageContext());
+						nextBackupTime = nextBackupTime.plus(Duration.ofHours(1));
+					}
+					if(nextWiimmfiPing.isBefore(Instant.now())) {
+						wiimmfi.update();
+						if(error == null) {
+							if(prevError != null) {
+								LOGGER.log(Level.SEVERE, "Error resolved.");
+							}
+							
+							Player.updatePlayerListFile();
+							
+							int waitTime = 3000;
+							nextWiimmfiPing = Instant.now().plus(Duration.ofMillis(waitTime));
 						}
-						
-						Player.updatePlayerListFile();
-						
-						int waitTime = 1000;
-						nextWiimmfiPing = Instant.now().plus(Duration.ofMillis(waitTime));
-					}
-					else {
-						nextWiimmfiPing = Instant.now().plus(Duration.ofMillis(5000));
-						if(prevError == null || !prevError.getClass().equals(error.getClass())) {
-							System.out.println("Error!");
-							LOGGER.log(Level.SEVERE, error, () -> error.getMessage());
+						else {
+							nextWiimmfiPing = Instant.now().plus(Duration.ofMillis(5000));
+							if(prevError == null || !prevError.getClass().equals(error.getClass())) {
+								System.out.println("Error!");
+								LOGGER.log(Level.SEVERE, error, () -> error.getMessage());
+							}
 						}
 					}
-				}
-				if(discordBot != null) {
-					if(nextDiscordPing.isBefore(Instant.now())) {
-						nextDiscordPing = Instant.now().plus(Duration.ofSeconds(5));
-						DiscordServer.updateServerList();
-						DiscordServer.updateServerPreferencesFile();
-						DiscordUser.updateUserList();
-						DiscordUser.updateUserPreferencesFile();
-						discordBot.updatePresence();
-						UserPreferences.attemptRegister();
+					if(discordBot != null) {
+						if(nextDiscordPing.isBefore(Instant.now())) {
+							nextDiscordPing = Instant.now().plus(Duration.ofSeconds(5));
+							DiscordServer.updateServerList();
+							DiscordServer.updateServerPreferencesFile();
+							DiscordUser.updateUserList();
+							DiscordUser.updateUserPreferencesFile();
+							discordBot.updatePresence();
+							UserPreferences.attemptRegister();
+						}
+						if(updateCooldowns.isBefore(Instant.now())) {
+							updateCooldowns = Instant.now().plus(Duration.ofSeconds(4));
+							DiscordUser.updateCooldowns();
+						}
+						if(updateWarningCooldowns.isBefore(Instant.now())) {
+							updateWarningCooldowns = Instant.now().plus(Duration.ofSeconds(15));
+							DiscordUser.updateWarningCooldowns();
+						}
 					}
-					if(updateCooldowns.isBefore(Instant.now())) {
-						updateCooldowns = Instant.now().plus(Duration.ofSeconds(4));
-						DiscordUser.updateCooldowns();
+					while(!consoleCommandsAwaitingProcessing.isEmpty()) {
+						Commands.DISPATCHER.handleCommand(consoleCommandsAwaitingProcessing.pollFirst());
 					}
-					if(updateWarningCooldowns.isBefore(Instant.now())) {
-						updateWarningCooldowns = Instant.now().plus(Duration.ofSeconds(15));
-						DiscordUser.updateWarningCooldowns();
-					}
+					prevError = error;
 				}
-				while(!consoleCommandsAwaitingProcessing.isEmpty()) {
-					Commands.DISPATCHER.handleCommand(consoleCommandsAwaitingProcessing.pollFirst());
+				catch(ErrorResponseException e) {
+					ConsoleUser.INSTANCE.sendMessage(StacktraceUtil.getStackTrace(e));
+					ConsoleUser.INSTANCE.sendMessage("An ErrorResponseException occurred... waiting 10 seconds");
 				}
-				prevError = error;
 				Thread.sleep(1000);
 			}
 		}
