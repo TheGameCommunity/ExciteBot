@@ -3,12 +3,11 @@ package com.gamebuster19901.excite.bot.command;
 import java.util.HashSet;
 
 import com.gamebuster19901.excite.Player;
-import com.gamebuster19901.excite.bot.WiimmfiCommand;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
 
-public class RegisterCommand extends WiimmfiCommand {
+public class RegisterCommand {
 
 	@SuppressWarnings("rawtypes")
 	public static void register(CommandDispatcher<MessageContext> dispatcher) {
@@ -33,6 +32,10 @@ public class RegisterCommand extends WiimmfiCommand {
 		for(Player p : Player.getEncounteredPlayers()) {
 			if((p.getPlayerID() + "").equals(player)) {
 				String securityCode = discordUser.requestRegistration(p);
+				if(p.isBanned()) {
+					context.sendMessage("You cannot register a banned profile.");
+					return;
+				}
 				sendInfo(context, discordUser, p, securityCode);
 				return;
 			}
@@ -48,6 +51,10 @@ public class RegisterCommand extends WiimmfiCommand {
 				break;
 			case 1:
 				Player desiredProfile = players.toArray(new Player[]{})[0];
+				if(desiredProfile.isBanned()) {
+					context.sendMessage("You cannot register a banned profile.");
+					return;
+				}
 				String securityCode = discordUser.requestRegistration(desiredProfile);
 				sendInfo(context, discordUser, desiredProfile, securityCode);
 				break;

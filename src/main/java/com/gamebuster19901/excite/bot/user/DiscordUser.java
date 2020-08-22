@@ -9,6 +9,7 @@ import java.io.IOError;
 import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -22,17 +23,24 @@ import org.apache.commons.csv.CSVRecord;
 
 import com.gamebuster19901.excite.Main;
 import com.gamebuster19901.excite.Player;
+import com.gamebuster19901.excite.bot.audit.Audit;
+import com.gamebuster19901.excite.bot.audit.RankChangeAudit;
+import com.gamebuster19901.excite.bot.audit.ban.DiscordBan;
+import com.gamebuster19901.excite.bot.audit.ban.NotDiscordBanned;
+import com.gamebuster19901.excite.bot.audit.ban.Pardon;
 import com.gamebuster19901.excite.bot.command.MessageContext;
 import com.gamebuster19901.excite.output.OutputCSV;
+import com.gamebuster19901.excite.util.CSVHelper;
 import com.gamebuster19901.excite.util.FileUtils;
 
 import net.dv8tion.jda.api.entities.PrivateChannel;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
+import net.dv8tion.jda.api.exceptions.ErrorResponseException;
 
 public class DiscordUser implements OutputCSV{
 	
-	private static final File USER_PREFS = new File("./run/userPreferences.csv");
+	public static final File USER_PREFS = new File("./run/userPreferences.csv");
 	private static final File OLD_USER_PREFS = new File("./run/userPreferences.csv.old");
 	private static ConcurrentHashMap<Long, DiscordUser> users = new ConcurrentHashMap<Long, DiscordUser>();
 	
@@ -82,7 +90,12 @@ public class DiscordUser implements OutputCSV{
 			return null;
 		}
 		if(user == null) {
-			user = Main.discordBot.jda.retrieveUserById(id).complete();
+			try {
+				user = Main.discordBot.jda.retrieveUserById(id).complete();
+			}
+			catch(Exception e) {
+				e.printStackTrace();
+			}
 			if(user == null) {
 				System.out.println("Could not find JDA user for " + preferences.getDiscordTag());
 			}
@@ -95,12 +108,63 @@ public class DiscordUser implements OutputCSV{
 	}
 	
 	@SuppressWarnings("rawtypes")
-	public void ban(MessageContext context, Duration duration, String reason) {
-		this.preferences.ban(context, duration, reason);
+	public DiscordBan ban(MessageContext context, Duration duration, String reason) {
+		DiscordBan discordBan = new DiscordBan(context, reason, duration, this);
+		discordBan = Audit.addAudit(discordBan); //future proofing, just in case we ever return a different audit in the future
+		sendMessage(context, toString() + " " + reason);
+		return discordBan;
 	}
 	
-	public void pardon(int amount) {
-		this.preferences.pardon(amount);
+	public DiscordBan getLongestActiveBan() {
+		DiscordBan longest = NotDiscordBanned.INSTANCE;
+		for(DiscordBan ban : DiscordBan.getBansOfUser(this)) {
+			if(ban.isActive()) {
+				if(ban.endsAfter(longest)) {
+					longest = ban;
+				}
+			}
+		}
+		return longest;
+	}
+	
+	@SuppressWarnings("rawtypes")
+	public void pardon(MessageContext context, Pardon pardon) {
+		DiscordBan discordBan = DiscordBan.getBanById(pardon.getBanId());
+		if(pardon.getBanId() == discordBan.getAuditId()) {
+			if(checkPardon(context, pardon)) {
+				Audit.addAudit(new Pardon(context, discordBan));
+				context.sendMessage("Pardoned " + this);
+			}
+		}
+		else {
+			context.sendMessage(this.toString() + " is not discord banned. Provide a ban ID if you wish to pardon a ban which has expired.");
+		}
+	}
+	
+	@SuppressWarnings("rawtypes")
+	public void pardon(MessageContext context) {
+		DiscordBan discordBan = getLongestActiveBan();
+		if(!(getLongestActiveBan() instanceof NotDiscordBanned)) {
+			Pardon pardon = new Pardon(context, discordBan);
+			if(checkPardon(context, pardon)) {
+				discordBan.pardon(context, pardon);
+			}
+			else {
+				throw new AssertionError("This should not be possible...");
+			}
+		}
+		else {
+			context.sendMessage(this.toString() + " is not discord banned. Provide a ban ID if you wish to pardon a ban which has expired.");
+		}
+	}
+	
+	@SuppressWarnings("rawtypes")
+	public void pardon(MessageContext context, long banId) {
+		Pardon pardon = new Pardon(context, banId);
+		DiscordBan discordBan = DiscordBan.getBanById(banId);
+		if(checkPardon(context, pardon)) {
+			discordBan.pardon(context, pardon);
+		}
 	}
 	
 	@Override
@@ -116,12 +180,44 @@ public class DiscordUser implements OutputCSV{
 		return preferences.isBanned();
 	}
 	
-	public String getBanReason() {
-		return preferences.getBanReason();
+	public boolean isAdmin() {
+		return preferences.isAdmin();
+	}
+	
+	@SuppressWarnings("rawtypes")
+	public void setAdmin(MessageContext promoter, boolean admin) {
+		preferences.setAdmin(promoter, admin);
+		MessageContext<DiscordUser> promotedContext = new MessageContext<DiscordUser>(this);
+		RankChangeAudit audit = new RankChangeAudit(promoter, promotedContext, "administrator", admin);
+		Audit.addAudit(audit);
+		DiscordUser.messageAllAdmins(audit.getDescription());
+		if(!admin) {
+			this.sendMessage(audit.getDescription());
+		}
+	}
+	
+	@SuppressWarnings("rawtypes")
+	public void setOperator(MessageContext promoter, boolean operator) {
+		preferences.setOperator(promoter, operator);
+		MessageContext<DiscordUser> promotedContext = new MessageContext<DiscordUser>(this);
+		RankChangeAudit audit = new RankChangeAudit(promoter, promotedContext, "operator", operator);
+		Audit.addAudit(audit);
+		DiscordUser.messageAllAdmins(audit.getDescription());
+		if(!operator) {
+			this.sendMessage(audit.getDescription());
+		}
+	}
+	
+	public boolean isOperator() {
+		return preferences.isOperator();
 	}
 	
 	public Instant getBanExpireTime() {
-		return preferences.getBanExpireTime();
+		return getLongestActiveBan().getBanExpireTime();
+	}
+	
+	public String getBanReason() {
+		return getLongestActiveBan().getDescription();
 	}
 	
 	public int getUnpardonedBanCount() {
@@ -178,7 +274,12 @@ public class DiscordUser implements OutputCSV{
 			if(!getJDAUser().isBot()) {
 				PrivateChannel privateChannel = getJDAUser().openPrivateChannel().complete();
 				System.out.println(privateChannel.getClass().getCanonicalName());
-				privateChannel.sendMessage(message).complete();
+				try {
+					privateChannel.sendMessage(message).complete();
+				}
+				catch(ErrorResponseException e) {
+					e.printStackTrace();
+				}
 			}
 		}
 	}
@@ -217,7 +318,7 @@ public class DiscordUser implements OutputCSV{
 	}
 	
 	public String toDetailedString() {
-		return this.getJDAUser().getAsTag() + " (" + id + ")";
+		return this + " (" + id + ")";
 	}
 	
 	public static void addUser(DiscordUser user) {
@@ -243,6 +344,7 @@ public class DiscordUser implements OutputCSV{
 	public static final User getJDAUser(String name, String discriminator) {
 		if(Main.discordBot != null) {
 			User user = Main.discordBot.jda.getUserByTag(name, discriminator);
+			return user;
 		}
 		return null;
 	}
@@ -254,6 +356,7 @@ public class DiscordUser implements OutputCSV{
 		return null;
 	}
 	
+	@Deprecated
 	public static final DiscordUser getDiscordUser(long id) {
 		DiscordUser discordUser = users.get(id);
 		if(discordUser == null || discordUser instanceof UnloadedDiscordUser) {
@@ -271,6 +374,29 @@ public class DiscordUser implements OutputCSV{
 		user = users.get(id);
 		if(user == null) {
 			user = new UnknownDiscordUser(id);
+		}
+		return user;
+	}
+	
+	public static final DiscordUser getDiscordUserIncludingUnknown(String discriminator) {
+		DiscordUser user;
+		user = getDiscordUser(discriminator);
+		if(user == null) {
+			if(discriminator.contains("#")) {
+				user = new UnknownDiscordUser(discriminator.substring(0, discriminator.indexOf('#')), discriminator.substring(discriminator.indexOf('#') + 1, discriminator.length()));
+			}
+			else {
+				user = new UnknownDiscordUser(discriminator, "????");
+			}
+		}
+		return user;
+	}
+	
+	public static final DiscordUser getDiscordUserTreatingUnknownsAsNobody(long id) {
+		DiscordUser user;
+		user = users.get(id);
+		if(user == null) {
+			user = Nobody.INSTANCE;
 		}
 		return user;
 	}
@@ -300,6 +426,28 @@ public class DiscordUser implements OutputCSV{
 	
 	public static final DiscordUser[] getKnownUsers() {
 		return users.values().toArray(new DiscordUser[]{});
+	}
+	
+	public static final void messageAllAdmins(String message) {
+		ArrayList<DiscordUser> users = new ArrayList<DiscordUser>();
+		users.addAll(DiscordUser.users.values());
+		users.add(ConsoleUser.INSTANCE);
+		for(DiscordUser user : users) {
+			if(user.isAdmin()) {
+				user.sendMessage(message);
+			}
+		}
+	}
+	
+	public static final void messageAllOperators(String message) {
+		ArrayList<DiscordUser> users = new ArrayList<DiscordUser>();
+		users.addAll(DiscordUser.users.values());
+		users.add(ConsoleUser.INSTANCE);
+		for(DiscordUser user : users) {
+			if(user.isOperator()) {
+				user.sendMessage(message);
+			}
+		}
 	}
 	
 	public static void updateWarningCooldowns() {
@@ -364,84 +512,17 @@ public class DiscordUser implements OutputCSV{
 			CSVParser csvParser = new CSVParser(reader, CSVFormat.DEFAULT);
 			try {
 				
-				String discord;
-				long discordId;
-				int notifyThreshold;
-				Duration notifyFrequency;
-				Player[] profiles;
-				Instant banTime;
-				Duration banDuration;
-				Instant banExpire;
-				String banReason;
-				int unpardonedBanCount;
-				Instant lastNotification;
-				boolean dippedBelowThreshold;
-				int totalBanCount;
-				boolean notifyContinuously;
+				int DB_VERSION = 0;
 				
-				for(CSVRecord csvRecord : csvParser) {
-					DiscordUser discordUser;
-					UserPreferences preferences = new UserPreferences();
-
-					discord = csvRecord.get(0);
-					discordId = Long.parseLong(csvRecord.get(1).replaceFirst("'", ""));
-					notifyThreshold = Integer.parseInt(csvRecord.get(2));
-					notifyFrequency = Duration.parse(csvRecord.get(3));
-					String[] players = csvRecord.get(4).replaceAll("\"", "").replaceFirst("'", "").split(",");
-					int[] playerIDs = new int[players.length];
-					for(int i = 0; i < players.length; i++) {
-						if(!players[i].isEmpty()) {
-							playerIDs[i] = Integer.parseInt(players[i]);
-						}
+				for(CSVRecord record : csvParser) {
+					CSVHelper csvRecord = new CSVHelper(record);
+					try {
+						DB_VERSION = csvRecord.getInt(0);
+						addUser(parseDB_VERSION(csvRecord, DB_VERSION));
 					}
-					profiles = Player.getPlayersFromIds(playerIDs);
-					banTime = Instant.parse(csvRecord.get(5));
-					banDuration = Duration.parse(csvRecord.get(6));
-					banExpire = Instant.parse(csvRecord.get(7));
-					banReason = csvRecord.get(8);
-					unpardonedBanCount = Integer.parseInt(csvRecord.get(9));
-					
-					if(csvRecord.size() > 10) { //legacy data may not have this record
-						lastNotification = Instant.parse(csvRecord.get(10));
+					catch(NumberFormatException e) {
+						addUser(parseDB_VERSION(csvRecord, 0));
 					}
-					else {
-						lastNotification = Instant.MIN;
-					}
-					
-					if(csvRecord.size() > 11) { //legacy data may not have this record
-						dippedBelowThreshold = Boolean.parseBoolean(csvRecord.get(11));
-					}
-					else {
-						dippedBelowThreshold = false;
-					}
-					
-					if(csvRecord.size() > 12) { //legacy data may not have this record
-						totalBanCount = Integer.parseInt(csvRecord.get(12));
-					}
-					else {
-						totalBanCount = unpardonedBanCount;
-					}
-					
-					if(csvRecord.size() > 13) {
-						notifyContinuously = Boolean.parseBoolean(csvRecord.get(13));
-					}
-					else {
-						notifyContinuously = false;
-					}
-					
-					preferences.parsePreferences(discord, discordId, notifyThreshold, notifyFrequency, profiles, banTime, banDuration, banExpire, banReason, unpardonedBanCount, lastNotification, dippedBelowThreshold, totalBanCount, notifyContinuously);
-					
-					User jdaUser = getJDAUser(discordId);
-					if(jdaUser != null) {
-						discordUser = new DiscordUser(jdaUser);
-					}
-					else {
-						System.out.println("Could not find JDA user for " + discord + "(" + discordId + ")");
-						discordUser = new UnloadedDiscordUser(discordId);
-					}
-					discordUser.preferences = preferences;
-					
-					discordUsers.add(discordUser);
 				}
 			}
 			finally {
@@ -458,4 +539,139 @@ public class DiscordUser implements OutputCSV{
 		}
 		return discordUsers.toArray(new DiscordUser[]{});
 	}
+	
+	@SuppressWarnings("rawtypes")
+	private boolean checkPardon(MessageContext context, Pardon pardon) {
+		long banId = pardon.getBanId();
+		DiscordBan discordBan = DiscordBan.getBanById(banId);
+		if(discordBan.getBannedDiscordId() == this.getId()) {
+			if(!discordBan.isPardoned()) {
+				 return true;
+			}
+			else {
+				context.sendMessage(discordBan.getBannedUsername() + " has already had ban " + banId + " pardoned!");
+			}
+		}
+		else {
+			context.sendMessage("Ban " + banId + " does not belong to " + this + ", it belongs to " + DiscordUser.getDiscordUserTreatingUnknownsAsNobody(discordBan.getBannedDiscordId()));
+		}
+		return false;
+	}
+	
+	private static DiscordUser parseDB_VERSION(CSVHelper csvRecord, int DB_VERSION) {
+		if(DB_VERSION < UserPreferences.DB_VERSION) {
+			System.out.println("Found legacy data of version " + DB_VERSION);
+		}
+		
+		
+		
+		String discord;
+		long discordId;
+		int notifyThreshold;
+		Duration notifyFrequency;
+		Player[] profiles;
+		//Instant banTime;
+		//Duration banDuration;
+		//Instant banExpire;
+		//String banReason;
+		//int unpardonedBanCount;
+		Instant lastNotification;
+		boolean dippedBelowThreshold;
+		//int totalBanCount;
+		boolean notifyContinuously;
+		boolean isAdmin;
+		boolean isOperator;
+		
+		DiscordUser discordUser;
+		UserPreferences preferences = new UserPreferences();
+		
+		if(DB_VERSION == 0 || DB_VERSION == 1) {
+			discord = csvRecord.get(0);
+			discordId = Long.parseLong(csvRecord.get(1).replaceFirst("'", ""));
+			notifyThreshold = Integer.parseInt(csvRecord.get(2));
+			notifyFrequency = Duration.parse(csvRecord.get(3));
+			String[] players = csvRecord.get(4).replaceAll("\"", "").replaceFirst("'", "").split(",");
+			int[] playerIDs = new int[players.length];
+			for(int i = 0; i < players.length; i++) {
+				if(!players[i].isEmpty()) {
+					playerIDs[i] = Integer.parseInt(players[i]);
+				}
+			}
+			profiles = Player.getPlayersFromIds(playerIDs);
+			
+			//records 5 - 9 were removed
+			
+			if(csvRecord.size() > 10) { //legacy data may not have this record
+				lastNotification = Instant.parse(csvRecord.get(10));
+			}
+			else {
+				lastNotification = Instant.parse(csvRecord.get(5));
+			}
+			
+			if(csvRecord.size() > 11) { //legacy data may not have this record
+				dippedBelowThreshold = Boolean.parseBoolean(csvRecord.get(11));
+			}
+			else {
+				dippedBelowThreshold = Boolean.parseBoolean(csvRecord.get(6));
+			}
+			
+			//record 12 was removed
+			
+			if(csvRecord.size() > 13) {
+				notifyContinuously = Boolean.parseBoolean(csvRecord.get(13));
+			}
+			else {
+				notifyContinuously = Boolean.parseBoolean(csvRecord.get(7));
+			}
+			
+			preferences.parsePreferences(discord, discordId, notifyThreshold, notifyFrequency, profiles, lastNotification, dippedBelowThreshold, notifyContinuously, false, false);
+			
+			User jdaUser = getJDAUser(discordId);
+			if(jdaUser != null) {
+				discordUser = new DiscordUser(jdaUser);
+			}
+			else {
+				System.out.println("Could not find JDA user for " + discord + "(" + discordId + ")");
+				discordUser = new UnloadedDiscordUser(discordId);
+			}
+			discordUser.preferences = preferences;
+		}
+		else if (DB_VERSION == 2) {
+			discord = csvRecord.get(1);
+			discordId = Long.parseLong(csvRecord.get(2).replaceFirst("'", ""));
+			notifyThreshold = Integer.parseInt(csvRecord.get(3));
+			notifyFrequency = Duration.parse(csvRecord.get(4));
+			String[] players = csvRecord.get(5).replaceAll("\"", "").replaceFirst("'", "").split(",");
+			int[] playerIDs = new int[players.length];
+			for(int i = 0; i < players.length; i++) {
+				if(!players[i].isEmpty()) {
+					playerIDs[i] = Integer.parseInt(players[i]);
+				}
+			}
+			profiles = Player.getPlayersFromIds(playerIDs);
+			lastNotification = Instant.parse(csvRecord.get(6));
+			dippedBelowThreshold = Boolean.parseBoolean(csvRecord.get(7));
+			notifyContinuously = Boolean.parseBoolean(csvRecord.get(8));
+			isAdmin = Boolean.parseBoolean(csvRecord.get(9));
+			isOperator = Boolean.parseBoolean(csvRecord.get(10));
+			
+			preferences.parsePreferences(discord, discordId, notifyThreshold, notifyFrequency, profiles, lastNotification, dippedBelowThreshold, notifyContinuously, isAdmin, isOperator);
+			
+			User jdaUser = getJDAUser(discordId);
+			if(jdaUser != null) {
+				discordUser = new DiscordUser(jdaUser);
+			}
+			else {
+				System.out.println("Could not find JDA user for " + discord + "(" + discordId + ")");
+				discordUser = new UnloadedDiscordUser(discordId);
+			}
+			discordUser.preferences = preferences;
+		}
+		else {
+			throw new IllegalArgumentException("Unknown DB version: " + DB_VERSION);
+		}
+	
+		return discordUser;
+	}
+	
 }

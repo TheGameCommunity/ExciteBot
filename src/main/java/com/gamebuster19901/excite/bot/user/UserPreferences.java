@@ -14,6 +14,7 @@ import org.apache.commons.csv.CSVPrinter;
 
 import com.gamebuster19901.excite.Player;
 import com.gamebuster19901.excite.Wiimmfi;
+import com.gamebuster19901.excite.bot.audit.ban.Ban;
 import com.gamebuster19901.excite.bot.command.MessageContext;
 import com.gamebuster19901.excite.bot.common.preferences.BooleanPreference;
 import com.gamebuster19901.excite.bot.common.preferences.IntegerPreference;
@@ -23,6 +24,8 @@ import com.gamebuster19901.excite.output.OutputCSV;
 import com.gamebuster19901.excite.util.TimeUtils;
 
 public class UserPreferences implements OutputCSV{
+	public static final int DB_VERSION = 2;
+	
 	private static final String validPasswordChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNPQRSTUVWXYZ123456789,.!?";
 	private Random random = new Random();
 	
@@ -31,15 +34,11 @@ public class UserPreferences implements OutputCSV{
 	private IntegerPreference notifyThreshold = new IntegerPreference(-1); //-1 means don't notify
 	private DurationPreference notifyFrequency = new DurationPreference(Duration.ofMinutes(30), Duration.ofMinutes(5), ChronoUnit.FOREVER.getDuration());
 	private ProfilePreference profiles = new ProfilePreference();
-	private InstantPreference banTime = new InstantPreference(Instant.MIN);
-	private DurationPreference banDuration = new DurationPreference();
-	private InstantPreference banExpire = new InstantPreference(Instant.MIN);
-	private StringPreference banReason = new StringPreference("");
-	private IntegerPreference unpardonedBanCount = new IntegerPreference(0);
 	private InstantPreference lastNotification = new InstantPreference(Instant.MIN);
 	private BooleanPreference dippedBelowThreshold = new BooleanPreference(true);
-	private IntegerPreference totalBanCount = new IntegerPreference(0);
 	private BooleanPreference notifyContinuously = new BooleanPreference(false);
+	private BooleanPreference isAdmin = new BooleanPreference(false);
+	private BooleanPreference isOperator = new BooleanPreference(false);
 	
 	private transient IntegerPreference desiredProfile = new IntegerPreference(-1);
 	private transient StringPreference registrationCode = new StringPreference("");
@@ -63,21 +62,17 @@ public class UserPreferences implements OutputCSV{
 		
 	}
 	
-	public void parsePreferences(String discord, long discordId, int notifyThreshold, Duration notifyFrequency, Player[] profiles, Instant banTime, Duration banDuration, Instant banExpire, String banReason, int unpardonedBanCount, Instant lastNotification, boolean dippedBelowThreshold, int totalBanCount, boolean notifyContinuously) {
+	public void parsePreferences(String discord, long discordId, int notifyThreshold, Duration notifyFrequency, Player[] profiles, Instant lastNotification, boolean dippedBelowThreshold, boolean notifyContinuously, boolean isAdmin, boolean isOperator) {
 		this.discord = new StringPreference(discord);
 		this.discordId = new LongPreference(discordId);
 		this.notifyThreshold = new IntegerPreference(notifyThreshold);
 		this.notifyFrequency = new DurationPreference(notifyFrequency);
 		this.profiles = new ProfilePreference(profiles);
-		this.banTime = new InstantPreference(banTime);
-		this.banDuration = new DurationPreference(banDuration);
-		this.banExpire = new InstantPreference(banExpire);
-		this.banReason = new StringPreference(banReason);
-		this.unpardonedBanCount = new IntegerPreference(unpardonedBanCount);
 		this.lastNotification = new InstantPreference(lastNotification);
 		this.dippedBelowThreshold = new BooleanPreference(dippedBelowThreshold);
-		this.totalBanCount = new IntegerPreference(totalBanCount);
 		this.notifyContinuously = new BooleanPreference(notifyContinuously);
+		this.isAdmin = new BooleanPreference(isAdmin);
+		this.isOperator = new BooleanPreference(isOperator);
 	}
 	
 	@Override
@@ -87,7 +82,7 @@ public class UserPreferences implements OutputCSV{
 			CSVPrinter printer = new CSVPrinter(writer, CSVFormat.DEFAULT.withTrim(false));
 		)
 		{
-			printer.printRecord(discord, discordId, notifyThreshold, notifyFrequency, profiles, banTime, banDuration, banExpire, banReason, unpardonedBanCount, lastNotification, dippedBelowThreshold, totalBanCount, notifyContinuously);
+			printer.printRecord(DB_VERSION, discord, discordId, notifyThreshold, notifyFrequency, profiles, lastNotification, dippedBelowThreshold, notifyContinuously, isAdmin, isOperator);
 			printer.flush();
 			return writer.toString();
 		} catch (IOException e) {
@@ -111,32 +106,49 @@ public class UserPreferences implements OutputCSV{
 		return profiles.getValue();
 	}
 	
-	public Instant getTimeBanned() {
-		return banTime.getValue();
+	public Ban[] getBans() {
+		return Ban.getBansOfUser(discordId.getValue());
 	}
 	
 	public boolean isBanned() {
-		return Instant.now().isBefore(banExpire.getValue());
+		for(Ban ban : getBans()) {
+			if (ban.isActive()) {
+				return true;
+			}
+		}
+		return false;
 	}
 	
-	public Instant getBanExpireTime() {
-		return banExpire.getValue();
+	public boolean isAdmin() {
+		return isOperator.getValue() || isAdmin.getValue();
 	}
 	
-	public Duration getBanDuration() {
-		return banDuration.getValue();
+	public boolean isOperator() {
+		return isOperator.getValue();
 	}
 	
-	public String getBanReason() {
-		return (String) banReason.getValue();
+	@SuppressWarnings("rawtypes")
+	public void setAdmin(MessageContext promoter, boolean admin) {
+		isAdmin.setValue(admin);
+	}
+	
+	@SuppressWarnings("rawtypes")
+	public void setOperator(MessageContext promoter, boolean operator) {
+		isOperator.setValue(operator);
 	}
 	
 	public int getUnpardonedBanCount() {
-		return unpardonedBanCount.getValue();
+		int bans = 0;
+		for(Ban ban : getBans()) {
+			if(!ban.isPardoned()) {
+				bans++;
+			}
+		}
+		return bans;
 	}
 	
 	public int getTotalBanCount() {
-		return totalBanCount.getValue();
+		return getBans().length;
 	}
 	
 	public void setNotifyThreshold(int threshold) {
@@ -160,36 +172,6 @@ public class UserPreferences implements OutputCSV{
 	
 	public void addProfile(Player profile) {
 		profiles.addProfile(profile);
-	}
-	
-	@SuppressWarnings("rawtypes")
-	public void ban(MessageContext context, Duration duration, String reason) {
-		this.banTime.setValue(Instant.now());
-		this.banDuration.setValue(duration);
-		try {
-			this.banExpire.setValue(Instant.now().plus(duration));
-		}
-		catch(ArithmeticException e) {
-			this.banExpire.setValue(Instant.MAX);
-		}
-		this.banReason.setValue(reason);
-		unpardonedBanCount.setValue(unpardonedBanCount.getValue() + 1);
-		totalBanCount.setValue(totalBanCount.getValue() + 1);
-		DiscordUser discordUser = DiscordUser.getDiscordUserIncludingUnloaded(this.discordId.getValue());
-		discordUser.sendMessage(context, discordUser.getJDAUser().getAsMention() + " " + (String)banReason.getValue());
-	}
-	
-	public void pardon(int amount) {
-		this.banTime.setValue(Instant.MIN);
-		this.banDuration.setValue(Duration.ZERO);
-		this.banExpire.setValue(Instant.MIN);
-		this.banReason.setValue("");
-		if(this.unpardonedBanCount.getValue() > 0) {
-			this.unpardonedBanCount.setValue(this.unpardonedBanCount.getValue() - amount);
-		}
-		if(this.unpardonedBanCount.getValue() < 0) {
-			this.unpardonedBanCount.setValue(0);
-		}
 	}
 	
 	public void clearRegistration() {
@@ -223,7 +205,7 @@ public class UserPreferences implements OutputCSV{
 		}
 		else if(messageCount > 7) {
 			Duration banTime;
-			switch(unpardonedBanCount.getValue()) {
+			switch(getUnpardonedBanCount()) {
 				case 0:
 					banTime = Duration.ofSeconds(30);
 					break;
@@ -245,7 +227,7 @@ public class UserPreferences implements OutputCSV{
 					banTime = ChronoUnit.FOREVER.getDuration();
 					break;
 			}
-			ban(context, banTime, "Do not spam the bot. You have been banned from using the bot for " + TimeUtils.readableDuration(banTime));
+			DiscordUser.getDiscordUserIncludingUnknown(discordId.getValue()).ban(new MessageContext(), banTime, "Do not spam the bot. You have been banned from using the bot for " + TimeUtils.readableDuration(banTime));
 		}
 	}
 	

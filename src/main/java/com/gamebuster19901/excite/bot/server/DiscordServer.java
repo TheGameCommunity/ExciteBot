@@ -56,12 +56,10 @@ public class DiscordServer implements OutputCSV{
 	
 	StringPreference name;
 	protected final LongPreference id;
-	RolePreference adminRoles;
 	
 	public DiscordServer(String name, long guildId) {
 		this.name = new StringPreference(name);
 		this.id = new LongPreference(guildId);
-		this.adminRoles = new RolePreference(this);
 	}
 
 	@Override
@@ -72,7 +70,7 @@ public class DiscordServer implements OutputCSV{
 			CSVPrinter printer = new CSVPrinter(writer, CSVFormat.DEFAULT.withTrim(false));
 		)
 		{
-			printer.printRecord(name, id, adminRoles);
+			printer.printRecord(name, id);
 			printer.flush();
 			return writer.toString();
 		} catch (IOException e) {
@@ -92,27 +90,8 @@ public class DiscordServer implements OutputCSV{
 		return id.getValue();
 	}
 	
-	public Role[] getAdminRoles() {
-		HashSet<Role> roles = new HashSet<Role>();
-		for(Long roleID : adminRoles.getValue()) {
-			Role role = getRoleById(roleID);
-			if(role != null) {
-				roles.add(role);
-			}
-		}
-		return roles.toArray(new Role[]{});
-	}
-	
 	public Role[] getRoles() {
 		return getGuild().getRoles().toArray(new Role[]{});
-	}
-	
-	public void addAdminRole(Role role) {
-		this.adminRoles.addRole(role);
-	}
-	
-	public void removeAdminRole(Role role) {
-		this.adminRoles.removeRole(role);
 	}
 	
 	public String getName() {
@@ -141,8 +120,6 @@ public class DiscordServer implements OutputCSV{
 			DiscordServer s = serverEntry.getValue();
 			if(server.equals(s)) {
 				if(s instanceof UnloadedDiscordServer && !(server instanceof UnloadedDiscordServer)) {
-					RolePreference adminRoles = s.adminRoles;
-					server.adminRoles = adminRoles;
 					servers.put(s.getId(), server);
 					System.out.println("Loaded previously unloaded server " + server.getGuild().getName());
 				}
@@ -231,17 +208,6 @@ public class DiscordServer implements OutputCSV{
 					else {
 						discordServer = new UnloadedDiscordServer(guildId);
 						System.out.println("Could not find Guild for server " + name + " (" + guildId + ")");
-					}
-					String adminRoleString = csvRecord.get(2);
-					if(!adminRoleString.isEmpty()) {
-						String[] adminRoleIdStrings = csvRecord.get(2).split(",");
-						long[] adminRoleIds = new long[adminRoleIdStrings.length];
-						for(int i = 0; i < adminRoleIdStrings.length; i++) {
-							if(!adminRoleIdStrings[i].isEmpty()) {
-								adminRoleIds[i] = Long.parseLong(adminRoleIdStrings[i]);
-							}
-						}
-						discordServer.adminRoles.setFromIds(adminRoleIds);
 					}
 					discordServers.add(discordServer);
 				}

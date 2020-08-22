@@ -1,12 +1,11 @@
 package com.gamebuster19901.excite.bot.command;
 
-import com.gamebuster19901.excite.Main;
 import com.gamebuster19901.excite.bot.server.DiscordServer;
+import com.gamebuster19901.excite.bot.user.ConsoleUser;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
 import com.gamebuster19901.excite.util.MessageUtil;
 
-import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.Role;
+import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.events.message.priv.PrivateMessageReceivedEvent;
 
@@ -15,7 +14,7 @@ public class MessageContext<E>{
 	private E event;
 	
 	public MessageContext(E e) {
-		if(e == null || e instanceof GuildMessageReceivedEvent || e instanceof PrivateMessageReceivedEvent || e instanceof DiscordUser) {
+		if(e instanceof GuildMessageReceivedEvent || e instanceof PrivateMessageReceivedEvent || e instanceof DiscordUser) {
 			this.event = e;
 		}
 		else {
@@ -23,8 +22,9 @@ public class MessageContext<E>{
 		}
 	}
 	
+	@SuppressWarnings("unchecked")
 	public MessageContext() {
-		this.event = null;
+		this.event = (E) ConsoleUser.INSTANCE;
 	}
 	
 	public boolean isGuildMessage() {
@@ -36,7 +36,7 @@ public class MessageContext<E>{
 	}
 	
 	public boolean isConsoleMessage() {
-		return event == null;
+		return event instanceof ConsoleUser;
 	}
 	
 	public E getEvent() {
@@ -44,9 +44,6 @@ public class MessageContext<E>{
 	}
 	
 	public DiscordUser getAuthor() {
-		if(isConsoleMessage()) {
-			return null;
-		}
 		if(event instanceof GuildMessageReceivedEvent) {
 			return DiscordUser.getDiscordUser(((GuildMessageReceivedEvent)event).getMessage().getAuthor().getIdLong());
 		}
@@ -65,20 +62,13 @@ public class MessageContext<E>{
 		}
 		else if(event instanceof GuildMessageReceivedEvent) {
 			GuildMessageReceivedEvent e = (GuildMessageReceivedEvent) event;
-			DiscordServer server = getServer();
-			Role[] adminRoles = server.getAdminRoles();
-			Member member = e.getMessage().getMember();
-			for(Role role : adminRoles) {
-				if(member.getRoles().contains(role)) {
-					return true;
-				}
-			}
+			return getAuthor().isAdmin();
 		}
 		return false;
 	}
 	
 	public boolean isOperator() {
-		return isConsoleMessage() || getAuthor().getJDAUser().getAsTag().equalsIgnoreCase(Main.botOwner);
+		return isConsoleMessage() || getAuthor().isOperator();
 	}
 	
 	public void sendMessage(String message) {
@@ -106,7 +96,7 @@ public class MessageContext<E>{
 	
 	public String getMention() {
 		if(isConsoleMessage()) {
-			return "@ CONSOLE";
+			return "@CONSOLE";
 		}
 		return getAuthor().getJDAUser().getAsMention();
 	}
@@ -128,6 +118,16 @@ public class MessageContext<E>{
 	public DiscordServer getServer() {
 		if(event instanceof GuildMessageReceivedEvent) {
 			return DiscordServer.getServer(((GuildMessageReceivedEvent)event).getMessage().getGuild().getIdLong());
+		}
+		return null;
+	}
+	
+	public MessageChannel getChannel() {
+		if (event instanceof GuildMessageReceivedEvent) {
+			return ((GuildMessageReceivedEvent) event).getChannel();
+		}
+		if (event instanceof PrivateMessageReceivedEvent) {
+			return ((PrivateMessageReceivedEvent) event).getChannel();
 		}
 		return null;
 	}

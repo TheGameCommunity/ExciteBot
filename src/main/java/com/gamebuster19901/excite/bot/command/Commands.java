@@ -1,5 +1,8 @@
 package com.gamebuster19901.excite.bot.command;
 
+import com.gamebuster19901.excite.bot.audit.Audit;
+import com.gamebuster19901.excite.bot.audit.CommandAudit;
+import com.gamebuster19901.excite.bot.user.ConsoleUser;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
 import com.gamebuster19901.excite.util.StacktraceUtil;
 import com.mojang.brigadier.CommandDispatcher;
@@ -24,7 +27,6 @@ public class Commands {
 		RegisterCommand.register(dispatcher);
 		NotifyCommand.register(dispatcher);
 		StopCommand.register(dispatcher);
-		AdminRoleCommand.register(dispatcher);
 		HelpCommand.register(dispatcher);
 		BackupCommand.register(dispatcher);
 		BanlistCommand.register(dispatcher);
@@ -33,11 +35,14 @@ public class Commands {
 		PlayersCommand.register(dispatcher);
 		IconDumpCommand.register(dispatcher);
 		VideoCommand.register(dispatcher);
+		GameDataCommand.register(dispatcher);
+		RankCommand.register(dispatcher);
 	}
 	
 	public void handleCommand(String command) {
-		MessageContext context = new MessageContext();
+		MessageContext context = new MessageContext(ConsoleUser.INSTANCE);
 		try {
+			Audit.addAudit(new CommandAudit(context, command));
 			this.dispatcher.execute(command, context);
 		}
 		catch (CommandSyntaxException e) {
@@ -60,8 +65,11 @@ public class Commands {
 			if(e.getMessage().getContentRaw().startsWith("!")) {
 				DiscordUser sender = DiscordUser.getDiscordUser(e.getAuthor().getIdLong());
 				if(!sender.isBanned()) {
-					this.dispatcher.execute(e.getMessage().getContentRaw(), context);
 					sender.sentCommand(context);
+					if(!sender.isBanned()) {
+						Audit.addAudit(new CommandAudit(context, e.getMessage().getContentRaw()));
+						this.dispatcher.execute(e.getMessage().getContentRaw(), context);
+					}
 				}
 			}
 		}
@@ -88,6 +96,7 @@ public class Commands {
 			if(!sender.isBanned()) {
 				sender.sentCommand(context);
 				if(!sender.isBanned()) {
+					Audit.addAudit(new CommandAudit(context, e.getMessage().getContentRaw()));
 					this.dispatcher.execute(e.getMessage().getContentRaw(), context);
 				}
 			}

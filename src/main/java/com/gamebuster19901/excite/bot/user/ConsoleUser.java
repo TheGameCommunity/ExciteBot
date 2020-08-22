@@ -1,10 +1,10 @@
 package com.gamebuster19901.excite.bot.user;
 
 import java.time.Duration;
-import java.time.Instant;
 import java.util.Set;
 
 import com.gamebuster19901.excite.Player;
+import com.gamebuster19901.excite.bot.audit.ban.DiscordBan;
 import com.gamebuster19901.excite.bot.command.MessageContext;
 
 import net.dv8tion.jda.api.entities.User;
@@ -26,12 +26,7 @@ public class ConsoleUser extends UnloadedDiscordUser{
 	
 	@Override
 	@SuppressWarnings("rawtypes")
-	public void ban(MessageContext context, Duration duration, String reason) {
-		throw new AssertionError();
-	}
-	
-	@Override
-	public void pardon(int amount) {
+	public DiscordBan ban(MessageContext context, Duration duration, String reason) {
 		throw new AssertionError();
 	}
 	
@@ -48,16 +43,6 @@ public class ConsoleUser extends UnloadedDiscordUser{
 	@Override
 	public boolean isBanned() {
 		return false;
-	}
-	
-	@Override
-	public String getBanReason() {
-		throw new AssertionError();
-	}
-	
-	@Override
-	public Instant getBanExpireTime() {
-		throw new AssertionError();
 	}
 	
 	@Override
@@ -112,6 +97,11 @@ public class ConsoleUser extends UnloadedDiscordUser{
 	@Override
 	public String toString() {
 		return name + "(" + getId() + ")"; 
+	}
+	
+	@Override
+	public String toDetailedString() {
+		return toString();
 	}
 
 }

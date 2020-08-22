@@ -11,16 +11,16 @@ public class EventReceiver extends ListenerAdapter {
 
 	@Override
 	public void onGuildMessageReceived(GuildMessageReceivedEvent e) {
+		DiscordUser.addUser(new DiscordUser(e.getAuthor()));
 		if(!e.getAuthor().isBot()) {
-			DiscordUser.addUser(new DiscordUser(e.getAuthor()));
 			Commands.DISPATCHER.handleCommand(e);
 		}
 	}
 	
 	@Override
 	public void onPrivateMessageReceived(PrivateMessageReceivedEvent e) {
+		DiscordUser.addUser(new DiscordUser(e.getAuthor()));
 		if(!e.getAuthor().isBot()) {
-			DiscordUser.addUser(new DiscordUser(e.getAuthor()));
 			Commands.DISPATCHER.handleCommand(e);
 		}
 	}

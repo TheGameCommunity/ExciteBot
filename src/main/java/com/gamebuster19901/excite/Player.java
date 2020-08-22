@@ -8,6 +8,7 @@ import java.io.FileWriter;
 import java.io.IOError;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -20,7 +21,11 @@ import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.csv.CSVRecord;
 
 import com.gamebuster19901.excite.bot.server.emote.Emote;
+import com.gamebuster19901.excite.bot.audit.Audit;
+import com.gamebuster19901.excite.bot.audit.ban.ProfileBan;
+import com.gamebuster19901.excite.bot.command.MessageContext;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
+import com.gamebuster19901.excite.bot.user.UnknownDiscordUser;
 import com.gamebuster19901.excite.output.OutputCSV;
 import com.gamebuster19901.excite.util.FileUtils;
 
@@ -98,13 +103,14 @@ public class Player implements OutputCSV{
 		}
 		if(isVerified()) {
 			DiscordUser user = DiscordUser.getDiscordUserIncludingUnknown(discord);
-			if(!user.isBanned()) {
-				suffix += Emote.getEmote(VERIFIED);
-			}
-			else {
+			suffix += Emote.getEmote(VERIFIED);
+			if(this.isBanned()) {
 				suffix += Emote.getEmote(BANNED);
 			}
 			return String.format(name +  " - FC❲" + friendCode +  "❳ - PID❲"  + playerID + "❳ - Discord❲" + getPrettyDiscord() + "❳" + suffix);
+		}
+		else if(this.isBanned()) {
+			suffix += Emote.getEmote(BANNED);
 		}
 		if(!suffix.isEmpty()) {
 			suffix = suffix + " ";
@@ -160,6 +166,10 @@ public class Player implements OutputCSV{
 		}
 		return false;
 	}
+
+	public boolean isBanned() {
+		return ProfileBan.isProfileBanned(this);
+	}
 	
 	public boolean isZeroLoss() {
 		return zeroLoss;
@@ -175,6 +185,17 @@ public class Player implements OutputCSV{
 	
 	public void setDiscord(long discordId) {
 		this.discord = discordId;
+	}
+	
+	@SuppressWarnings("rawtypes")
+	public ProfileBan ban(MessageContext context, Duration duration, String reason) {
+		ProfileBan profileBan = new ProfileBan(context, reason, duration, this);
+		profileBan = Audit.addAudit(profileBan); //future proofing in case we ever need to return a different audit
+		DiscordUser discord = DiscordUser.getDiscordUserIncludingUnknown(getDiscord());
+		if(!(discord instanceof UnknownDiscordUser)) {
+			discord.sendMessage(context, toString() + " " + reason);
+		}
+		return profileBan;
 	}
 	
 	@Override
@@ -205,7 +226,7 @@ public class Player implements OutputCSV{
 				return player;
 			}
 		}
-		return null;
+		return UnknownPlayer.INSTANCE;
 	}
 	
 	public static Player[] getPlayersByName(String name) {

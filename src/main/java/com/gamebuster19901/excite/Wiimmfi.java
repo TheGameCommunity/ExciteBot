@@ -96,13 +96,13 @@ public class Wiimmfi {
 					int playerId = Integer.parseInt(parseLine(e.html(), 1));
 					
 					Player player = Player.getPlayerByID(playerId);
-					if(player != null) {
-						player.setName(name);
-					}
-					else {
+					if(player instanceof UnknownPlayer) {
 						String friendCode = parseLine(e.html(), 2);
 						player = new Player(name, friendCode, playerId);
 						Player.addPlayer(player);
+					}
+					else {
+						player.setName(name);
 					}
 					players.add(player);
 				}

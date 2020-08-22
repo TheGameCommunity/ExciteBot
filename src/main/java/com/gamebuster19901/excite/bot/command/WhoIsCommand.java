@@ -3,13 +3,12 @@ package com.gamebuster19901.excite.bot.command;
 import com.gamebuster19901.excite.Main;
 import com.gamebuster19901.excite.Player;
 import com.gamebuster19901.excite.Wiimmfi;
-import com.gamebuster19901.excite.bot.WiimmfiCommand;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 
 @SuppressWarnings("rawtypes")
-public class WhoIsCommand extends WiimmfiCommand{
+public class WhoIsCommand {
 
 	public static void register(CommandDispatcher<MessageContext> dispatcher) {
 		LiteralCommandNode<MessageContext> builder = dispatcher.register(Commands.literal("!whois")
@@ -25,7 +24,7 @@ public class WhoIsCommand extends WiimmfiCommand{
 	public static int sendResponse(MessageContext context, String lookingFor) {
 		Wiimmfi wiimmfi = Main.discordBot.getWiimmfi();
 		String response = "";
-		if(checkNotErrored(context)) {
+		if(wiimmfi.getError() == null) {
 			Player[] players = wiimmfi.getKnownPlayers();
 			
 			if(!lookingFor.isEmpty()) {
