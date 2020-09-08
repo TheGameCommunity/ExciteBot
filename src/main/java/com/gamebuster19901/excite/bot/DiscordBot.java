@@ -79,7 +79,7 @@ public class DiscordBot {
 	public void updatePresence() {
 		Presence presence = jda.getPresence();
 		if(wiimmfi.getError() == null) {
-			int playerCount = Wiimmfi.getOnlinePlayers().size();
+			int playerCount = Wiimmfi.getOnlinePlayers().size() - Wiimmfi.getIgnoredOnlinePlayers().size();
 			if (presence.getStatus() != OnlineStatus.ONLINE || presence.getActivity() == null || presence.getActivity().getType() != ActivityType.WATCHING || !presence.getActivity().getName().equals(playerCount + " racers online")) {
 				presence.setPresence(OnlineStatus.ONLINE, Activity.of(ActivityType.WATCHING, playerCount + " racers online"));
 				System.out.println("set presence");

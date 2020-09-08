@@ -116,13 +116,32 @@ public class Wiimmfi {
 		return ONLINE_PLAYERS;
 	}
 	
+	public static HashSet<Player> getIgnoredOnlinePlayers() {
+		HashSet<Player> players = new HashSet<Player>();
+		for(Player player : getOnlinePlayers()) {
+			if(player.isBanned() || player.isBot()) {
+				players.add(player);
+			}
+		}
+		return players;
+	}
+	
 	@SuppressWarnings("rawtypes")
 	public static String getOnlinePlayerList(MessageContext messageContext) {
-		Player[] players = getOnlinePlayers().toArray(new Player[]{});
-		String response = "Players Online: (" + players.length + ")" + "\n\n";
+		Player[] onlinePlayers = getOnlinePlayers().toArray(new Player[]{});
+		Player[] ignoredPlayers = getIgnoredOnlinePlayers().toArray(new Player[]{});
 		
-		for(int i = 0; i < players.length ; i++) {
-			response += players[i].toString() + '\n';
+		String response;
+		
+		if(ignoredPlayers.length == 0) {
+			response = "Players Online: (" + onlinePlayers.length + ")\n\n";
+		}
+		else {
+			response = "Players Online: " + (onlinePlayers.length - ignoredPlayers.length) + " (" + onlinePlayers.length + ")" + "\n\n";
+		}
+		
+		for(int i = 0; i < onlinePlayers.length ; i++) {
+			response += onlinePlayers[i].toString() + '\n';
 		}
 		return response;
 	}
