@@ -146,6 +146,18 @@ public class Wiimmfi {
 		return response;
 	}
 	
+	public static int getIgnoredOnlinePlayerCount() {
+		return getIgnoredOnlinePlayers().size();
+	}
+	
+	public static int getOnlinePlayerCount() {
+		return getOnlinePlayers().size();
+	}
+	
+	public static int getAcknowledgedPlayerCount() {
+		return getOnlinePlayerCount() - getIgnoredOnlinePlayerCount();
+	}
+	
 	public Throwable getError() {
 		return error;
 	}

@@ -240,7 +240,7 @@ public class UserPreferences implements OutputCSV{
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	void updateCooldowns() {
 		if(!isBanned()) {
-			int playerCount = Wiimmfi.getOnlinePlayers().size() - Wiimmfi.getIgnoredOnlinePlayers().size();
+			int playerCount = Wiimmfi.getAcknowledgedPlayerCount();
 			int threshold = notifyThreshold.getValue();
 			if(threshold == -1) {
 				return;
