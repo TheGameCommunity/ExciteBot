@@ -23,7 +23,7 @@ public class Wiimmfi {
 	private static HashSet<Player> ONLINE_PLAYERS = new HashSet<Player>();
 	static {
 		try {
-			EXCITEBOTS = new URL("https://wiimmfi.de/game/exciteracewii");
+			EXCITEBOTS = new URL("https://wiimmfi.de/stats/game/exciteracewii");
 		} catch (MalformedURLException e) {
 			throw new AssertionError(e);
 		}
