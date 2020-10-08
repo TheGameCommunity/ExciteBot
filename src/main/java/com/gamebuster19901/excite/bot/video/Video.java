@@ -15,7 +15,7 @@ import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 
 import com.gamebuster19901.excite.util.CSVHelper;
-import com.gamebuster19901.excite.util.FileUtils;
+import com.gamebuster19901.excite.util.file.FileUtils;
 import com.gamebuster19901.excite.game.Bot;
 import com.gamebuster19901.excite.game.Course;
 import com.gamebuster19901.excite.game.Placement;
@@ -24,7 +24,7 @@ import com.gamebuster19901.excite.game.Stars;
 public class Video {
 
 	private static final int DB_VERSION = 1;
-	private static final File VIDEOS = new File("./run/videos.csv");
+	private static final File VIDEOS = new File("./run/videos/");
 	private static final File OLD_VIDEOS = new File("./run/videos.old");
 	public static final File VIDEO_DL = new File("./run/videosDL.csv");
 	private static ArrayList<Video> videos = new ArrayList<Video>();
@@ -32,7 +32,7 @@ public class Video {
 	static {
 		try {
 			if(!VIDEOS.exists()) {
-				VIDEOS.getParentFile().mkdirs();
+				VIDEOS.mkdirs();
 				VIDEOS.createNewFile();
 			}
 			else {
@@ -42,7 +42,7 @@ public class Video {
 					}
 				}
 			}
-			for(Video video : getVideosFromFile()) {
+			for(Video video : getVideosFromDirectory()) {
 				addVideo(video);
 			}
 		}
@@ -78,14 +78,13 @@ public class Video {
 	String sixthPlace = "";
 	String imageName = "";
 	URI video = null;
-	String uploader = null;
 	String youtubeDescription = null;
 	String notes = null;
 	String rankHelper = null;
 	int starTimeRank;
 	String recordFinder = null;
 	
-	Object[] nonNull = new Object[] {date, course, placement, bot, firstStars, secondStars, thirdStars, fourthStars, fifthStars, sixthStars, base, timestamp, firstPlace, secondPlace, thirdPlace, fourthPlace, fifthPlace, sixthPlace, imageName, video, uploader, youtubeDescription, notes, rankHelper, recordFinder}; 
+	Object[] nonNull = new Object[] {date, course, placement, bot, firstStars, secondStars, thirdStars, fourthStars, fifthStars, sixthStars, base, timestamp, firstPlace, secondPlace, thirdPlace, fourthPlace, fifthPlace, sixthPlace, imageName, video, youtubeDescription, notes, rankHelper, recordFinder}; 
 	
 	public Video(CSVHelper record) {
 		try {
@@ -116,7 +115,6 @@ public class Video {
 			this.sixthPlace = record.getNull("P6");
 			this.imageName = record.getNull("Image Name");
 			this.video = new URI(record.getNonNull("Race Link"));
-			this.uploader = record.getNonNull("Uploader");
 			this.youtubeDescription = record.getNull("YouTube Description Timestamp C/P");
 			this.notes = record.getNull("Notes");
 			this.rankHelper = record.getNonNull("Rank Helper");
@@ -164,25 +162,27 @@ public class Video {
 		return videos.get(index);
 	}
 	
-	private static final Video[] getVideosFromFile() {
+	private static final Video[] getVideosFromDirectory() {
 		HashSet<Video> videos = new HashSet<Video>();
 		try {
-			BufferedReader reader = new BufferedReader(new FileReader(VIDEOS));
-			CSVParser csvParser = new CSVParser(reader, CSVFormat.DEFAULT.withHeader());
-			try {
-				
-				for(CSVRecord csvRecord : csvParser) {
-					Video video = new Video(new CSVHelper(csvRecord));
-					addVideo(video);
+			for(File f : VIDEOS.listFiles()) {
+				BufferedReader reader = new BufferedReader(new FileReader(f));
+				CSVParser csvParser = new CSVParser(reader, CSVFormat.DEFAULT.withHeader());
+				try {
+					
+					for(CSVRecord csvRecord : csvParser) {
+						Video video = new Video(new CSVHelper(csvRecord));
+						addVideo(video);
+					}
+					
 				}
-				
-			}
-			finally {
-				if(reader != null) {
-					reader.close();
-				}
-				if(csvParser != null) {
-					csvParser.close();
+				finally {
+					if(reader != null) {
+						reader.close();
+					}
+					if(csvParser != null) {
+						csvParser.close();
+					}
 				}
 			}
 		}

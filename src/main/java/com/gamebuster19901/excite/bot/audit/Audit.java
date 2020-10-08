@@ -38,8 +38,8 @@ import com.gamebuster19901.excite.bot.user.DiscordUser;
 import com.gamebuster19901.excite.bot.user.InstantPreference;
 import com.gamebuster19901.excite.output.OutputCSV;
 import com.gamebuster19901.excite.util.DataPoint;
-import com.gamebuster19901.excite.util.FileUtils;
 import com.gamebuster19901.excite.util.Permission;
+import com.gamebuster19901.excite.util.file.FileUtils;
 
 import static com.gamebuster19901.excite.util.Permission.ANYONE;
 

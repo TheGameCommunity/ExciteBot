@@ -1,4 +1,4 @@
-package com.gamebuster19901.excite.util;
+package com.gamebuster19901.excite.util.file;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -55,6 +55,10 @@ public class FileUtils {
 		else {
 			throw new IOException(file1.getAbsoluteFile() + " does not exist or is a directory!");
 		}
+	}
+	
+	public static boolean isSecret(File f) throws IOException {
+		return f.isFile() && f.getCanonicalPath().endsWith(".secret");
 	}
 	
 }
