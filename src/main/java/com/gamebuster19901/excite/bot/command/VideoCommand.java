@@ -14,7 +14,7 @@ public class VideoCommand {
 
 	@SuppressWarnings("rawtypes")
 	public static void register(CommandDispatcher<MessageContext> dispatcher) {
-		dispatcher.register(Commands.literal("!video").executes((context) -> {
+		dispatcher.register(Commands.literal("video").executes((context) -> {
 			return getVideo(context.getSource());
 		}).then(Commands.argument("number", IntegerArgumentType.integer(0)).executes((context) -> {
 			return getVideo(context.getSource(), context.getArgument("number", Integer.class));

@@ -12,7 +12,7 @@ public class NotifyCommand {
 
 	@SuppressWarnings("rawtypes")
 	public static void register(CommandDispatcher<MessageContext> dispatcher) {
-		dispatcher.register(Commands.literal("!notify").then(Commands.literal("threshold").then(Commands.argument("amount", IntegerArgumentType.integer()).executes((context) -> {
+		dispatcher.register(Commands.literal("notify").then(Commands.literal("threshold").then(Commands.argument("amount", IntegerArgumentType.integer()).executes((context) -> {
 			return setThreshold(context.getSource(), context.getArgument("amount", Integer.class));
 		})))
 		.then(Commands.literal("frequency").then(Commands.argument("amount", IntegerArgumentType.integer()).then(Commands.argument("timeUnit", StringArgumentType.word()).executes((context) -> {

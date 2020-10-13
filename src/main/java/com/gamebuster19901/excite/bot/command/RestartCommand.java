@@ -6,7 +6,7 @@ import com.mojang.brigadier.CommandDispatcher;
 public class RestartCommand {
 	@SuppressWarnings("rawtypes")
 	public static void register(CommandDispatcher<MessageContext> dispatcher) {
-		dispatcher.register(Commands.literal("!restart").executes((context) -> {
+		dispatcher.register(Commands.literal("restart").executes((context) -> {
 			return stop(context.getSource());
 		}));
 	}

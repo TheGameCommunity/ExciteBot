@@ -14,7 +14,7 @@ public class BanlistCommand {
 	
 	@SuppressWarnings("rawtypes")
 	public static void register(CommandDispatcher<MessageContext> dispatcher) {
-		dispatcher.register(Commands.literal("!banlist").executes((context) -> {
+		dispatcher.register(Commands.literal("banlist").executes((context) -> {
 			return sendBannedUsers(context.getSource());
 		})
 		.then(Commands.argument("user", StringArgumentType.greedyString()).executes((context) -> {

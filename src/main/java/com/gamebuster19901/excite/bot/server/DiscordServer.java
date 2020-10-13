@@ -7,27 +7,25 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOError;
 import java.io.IOException;
-import java.io.StringWriter;
 import java.util.HashSet;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
-import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.csv.CSVRecord;
 
 import com.gamebuster19901.excite.Main;
-import com.gamebuster19901.excite.bot.common.preferences.LongPreference;
-import com.gamebuster19901.excite.bot.common.preferences.StringPreference;
 import com.gamebuster19901.excite.output.OutputCSV;
 import com.gamebuster19901.excite.util.FileUtils;
+
+import static com.gamebuster19901.excite.bot.command.Commands.DEFAULT_PREFIX;
 
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Role;
 
-public class DiscordServer implements OutputCSV{
-
+public class DiscordServer implements OutputCSV {
+	private static final int DB_VERSION = 2;
 	private static final File SERVER_PREFS = new File("./run/serverPreferences.csv");
 	private static final File OLD_SERVER_PREFS = new File("./run/serverPreferences.csv.old");
 	private static ConcurrentHashMap<Long, DiscordServer> servers = new ConcurrentHashMap<Long, DiscordServer>();
@@ -54,28 +52,25 @@ public class DiscordServer implements OutputCSV{
 		}
 	}
 	
-	StringPreference name;
-	protected final LongPreference id;
+	protected final long id;
+	ServerPreferences preferences;
 	
-	public DiscordServer(String name, long guildId) {
-		this.name = new StringPreference(name);
-		this.id = new LongPreference(guildId);
+	public DiscordServer(Guild guild) {
+		if(guild == null) {
+			throw new NullPointerException();
+		}
+		this.id = guild.getIdLong();
+		this.preferences = new ServerPreferences(this);
+	}
+	
+	public DiscordServer(long guildId) {
+		this.id = guildId;
+		this.preferences = new ServerPreferences(this);
 	}
 
 	@Override
 	public String toCSV() {
-		final Guild guild = getGuild();
-		try (
-			StringWriter writer = new StringWriter();
-			CSVPrinter printer = new CSVPrinter(writer, CSVFormat.DEFAULT.withTrim(false));
-		)
-		{
-			printer.printRecord(name, id);
-			printer.flush();
-			return writer.toString();
-		} catch (IOException e) {
-			throw new IOError(e);
-		}
+		return preferences.toCSV();
 	}
 
 	public Guild getGuild() {
@@ -87,7 +82,7 @@ public class DiscordServer implements OutputCSV{
 	}
 	
 	public long getId() {
-		return id.getValue();
+		return id;
 	}
 	
 	public Role[] getRoles() {
@@ -95,7 +90,15 @@ public class DiscordServer implements OutputCSV{
 	}
 	
 	public String getName() {
-		return name.toString();
+		return preferences.getName();
+	}
+	
+	public String getPrefix() {
+		return preferences.getPrefix();
+	}
+	
+	public boolean setPrefix(String prefix) {
+		return preferences.setPrefix(prefix);
 	}
 	
 	@Override
@@ -120,6 +123,8 @@ public class DiscordServer implements OutputCSV{
 			DiscordServer s = serverEntry.getValue();
 			if(server.equals(s)) {
 				if(s instanceof UnloadedDiscordServer && !(server instanceof UnloadedDiscordServer)) {
+					ServerPreferences preferences = s.preferences;
+					server.preferences = preferences;
 					servers.put(s.getId(), server);
 					System.out.println("Loaded previously unloaded server " + server.getGuild().getName());
 				}
@@ -158,7 +163,15 @@ public class DiscordServer implements OutputCSV{
 	
 	public static void updateServerList() {
 		for(Guild guild : Main.discordBot.jda.getGuilds()) {
-			addServer(new DiscordServer(guild.getName(), guild.getIdLong()));
+			addServer(new DiscordServer(guild.getIdLong()));
+		}
+		for(DiscordServer discordServer : DiscordServer.getKnownDiscordServers()) {
+			if(discordServer.getClass() == DiscordServer.class && discordServer.getGuild() == null) {
+				UnloadedDiscordServer unloadedServer = new UnloadedDiscordServer(discordServer.id);
+				unloadedServer.preferences = discordServer.preferences;
+				servers.put(discordServer.id, unloadedServer);
+				System.out.println("Unloaded previously loaded server with id (" + discordServer.id + ")");
+			}
 		}
 	}
 	
@@ -199,18 +212,54 @@ public class DiscordServer implements OutputCSV{
 			CSVParser csvParser = new CSVParser(reader, CSVFormat.DEFAULT);
 			try {
 				for(CSVRecord csvRecord : csvParser) {
-					String name = csvRecord.get(0);
-					long guildId = Long.parseLong(csvRecord.get(1));
+					
+					ServerPreferences preferences = new ServerPreferences();
+					
+					int version = -1;
+					if(csvRecord.size() == 2) {
+						version = 1;
+					}
+					else {
+						version = Integer.parseInt(csvRecord.get(0));
+					}
+					
+					String name;
+					long guildId;
+					String prefix;
+					
+					if(version == -1) { 
+						version = Integer.parseInt(csvRecord.get(0));
+					}
+					if(version == 1) {
+						name = csvRecord.get(0);
+						guildId = Long.parseLong(csvRecord.get(1));
+						prefix = DEFAULT_PREFIX;
+					}	
+					else if(version == 2) {
+						name = csvRecord.get(1);
+						guildId = Long.parseLong(csvRecord.get(2));
+						prefix = csvRecord.get(3);
+					}
+					else {
+						throw new IllegalArgumentException("Future database version " + version);
+					}
+					
 					DiscordServer discordServer;
-					if(Main.discordBot.jda.getGuildById(guildId) != null) {
-						discordServer = new DiscordServer(name, guildId);
+					Guild guild = Main.discordBot.jda.getGuildById(guildId);
+					if(guild != null) {
+						discordServer = new DiscordServer(guild);
 					}
 					else {
 						discordServer = new UnloadedDiscordServer(guildId);
 						System.out.println("Could not find Guild for server " + name + " (" + guildId + ")");
 					}
+					preferences.parsePreferences(name, guildId, prefix);
+					discordServer.preferences = preferences;
 					discordServers.add(discordServer);
 				}
+			}
+			catch(Throwable t) {
+				t.printStackTrace();
 			}
 			finally {
 				if(reader != null) {
@@ -226,4 +275,5 @@ public class DiscordServer implements OutputCSV{
 		}
 		return discordServers.toArray(new DiscordServer[]{});
 	}
+
 }

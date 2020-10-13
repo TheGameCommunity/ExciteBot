@@ -7,7 +7,7 @@ public class StopCommand {
 
 	@SuppressWarnings("rawtypes")
 	public static void register(CommandDispatcher<MessageContext> dispatcher) {
-		dispatcher.register(Commands.literal("!stop").executes((context) -> {
+		dispatcher.register(Commands.literal("stop").executes((context) -> {
 			return stop(context.getSource());
 		}));
 	}

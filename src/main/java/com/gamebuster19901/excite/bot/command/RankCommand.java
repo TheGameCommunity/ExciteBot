@@ -10,7 +10,7 @@ public class RankCommand {
 
 	@SuppressWarnings("rawtypes")
 	public static void register(CommandDispatcher<MessageContext> dispatcher) {
-		dispatcher.register(Commands.literal("!rank")
+		dispatcher.register(Commands.literal("rank")
 				.then(Commands.literal("add")
 						.then(Commands.argument("rank", StringArgumentType.word())
 								.then(Commands.argument("user", StringArgumentType.greedyString())

@@ -7,7 +7,7 @@ public class BackupCommand {
 
 	@SuppressWarnings("rawtypes")
 	public static void register(CommandDispatcher<MessageContext> dispatcher) {
-		dispatcher.register(Commands.literal("!backup").executes((context) -> {
+		dispatcher.register(Commands.literal("backup").executes((context) -> {
 			return Backup.backup(context.getSource());
 		}));
 	}

@@ -8,7 +8,7 @@ public class PlayersCommand {
 	
 	@SuppressWarnings("rawtypes")
 	public static void register(CommandDispatcher<MessageContext> dispatcher) {
-		dispatcher.register(Commands.literal("!players").executes((command) -> {
+		dispatcher.register(Commands.literal("players").executes((command) -> {
 			return sendResponse(command.getSource());
 		}));	
 	}

@@ -1,5 +1,7 @@
 package com.gamebuster19901.excite.bot.command;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.gamebuster19901.excite.bot.audit.Audit;
 import com.gamebuster19901.excite.bot.audit.CommandAudit;
 import com.gamebuster19901.excite.bot.user.ConsoleUser;
@@ -18,6 +20,7 @@ import net.dv8tion.jda.api.events.message.priv.PrivateMessageReceivedEvent;
 public class Commands {
 	private final CommandDispatcher<MessageContext> dispatcher = new CommandDispatcher<>();
 	public static final Commands DISPATCHER = new Commands();
+	public static final String DEFAULT_PREFIX = "!";
 	
 	public Commands() {
 		OnlineCommand.register(dispatcher);
@@ -37,6 +40,7 @@ public class Commands {
 		VideoCommand.register(dispatcher);
 		GameDataCommand.register(dispatcher);
 		RankCommand.register(dispatcher);
+		PrefixCommand.register(dispatcher);
 	}
 	
 	public void handleCommand(String command) {
@@ -62,13 +66,16 @@ public class Commands {
 	public void handleCommand(GuildMessageReceivedEvent e) {
 		MessageContext<GuildMessageReceivedEvent> context = new MessageContext<GuildMessageReceivedEvent>(e);
 		try {
-			if(e.getMessage().getContentRaw().startsWith("!")) {
+			String message = e.getMessage().getContentRaw();
+			String prefix = context.getServer().getPrefix();
+			if(message.startsWith(prefix)) {
+				message = StringUtils.replaceOnce(message, prefix, "");
 				DiscordUser sender = DiscordUser.getDiscordUser(e.getAuthor().getIdLong());
 				if(!sender.isBanned()) {
 					sender.sentCommand(context);
 					if(!sender.isBanned()) {
 						Audit.addAudit(new CommandAudit(context, e.getMessage().getContentRaw()));
-						this.dispatcher.execute(e.getMessage().getContentRaw(), context);
+						this.dispatcher.execute(message, context);
 					}
 				}
 			}
@@ -125,6 +132,32 @@ public class Commands {
 	
 	public CommandDispatcher<MessageContext> getDispatcher() {
 		return this.dispatcher;
+	}
+	
+	public boolean setPrefix(MessageContext context, String prefix) {
+		if(context.isAdmin() && context.isGuildMessage() && isValidPrefix(prefix)) {
+			return context.getServer().setPrefix(prefix);
+		}
+		return false;
+	}
+	
+	public String getPrefix(MessageContext context) {
+		if(context.isGuildMessage()) {
+			return context.getServer().getPrefix();
+		}
+		return DEFAULT_PREFIX;
+	}
+	
+	public static boolean isValidPrefix(String prefix) {
+		if(prefix == null || prefix.isEmpty()) {
+			return false;
+		}
+		for(int c : prefix.toCharArray()) {
+			if(Character.isWhitespace(c) || Character.isSupplementaryCodePoint(c) || Character.isISOControl(c) || c == '@' || c == '#' || c == '`') {
+				return false;
+			}
+		}
+		return true;
 	}
 	
 }

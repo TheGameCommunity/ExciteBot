@@ -21,7 +21,7 @@ public class BanCommand {
 
 	@SuppressWarnings("rawtypes")
 	public static void register(CommandDispatcher<MessageContext> dispatcher) {
-		dispatcher.register(Commands.literal("!ban")
+		dispatcher.register(Commands.literal("ban")
 			.then(Commands.literal("discord").then(Commands.argument("discordUser", StringArgumentType.string()).then((Commands.argument("discriminator", StringArgumentType.string()).executes((context) -> {
 					return banDiscordUserForever(context.getSource(), getDiscordUser(context.getArgument("discordUser", String.class), context.getArgument("discriminator", String.class)));
 				}).then(Commands.argument("reason", StringArgumentType.greedyString()).executes((context) -> {

@@ -11,7 +11,7 @@ public class PardonCommand {
 
 	@SuppressWarnings("rawtypes")
 	public static void register(CommandDispatcher<MessageContext> dispatcher) {
-		dispatcher.register(Commands.literal("!pardon").then(Commands.argument("discordUser", StringArgumentType.string()).then(Commands.argument("discriminator", StringArgumentType.string()).executes((context) -> {
+		dispatcher.register(Commands.literal("pardon").then(Commands.argument("discordUser", StringArgumentType.string()).then(Commands.argument("discriminator", StringArgumentType.string()).executes((context) -> {
 			return pardon(context.getSource(), context.getArgument("discordUser", String.class), context.getArgument("discriminator", String.class));
 		}).then(Commands.argument("banId", LongArgumentType.longArg()).executes((context) -> {
 			return pardon(context.getSource(), context.getArgument("discordUser", String.class), context.getArgument("discriminator", String.class), context.getArgument("banId", Long.class));

@@ -15,7 +15,7 @@ public class BanInfoCommand {
 	
 	@SuppressWarnings("rawtypes")
 	public static void register(CommandDispatcher<MessageContext> dispatcher) {
-		dispatcher.register(Commands.literal("!baninfo").then(Commands.argument("discordUser", StringArgumentType.greedyString()).executes((context) -> {
+		dispatcher.register(Commands.literal("baninfo").then(Commands.argument("discordUser", StringArgumentType.greedyString()).executes((context) -> {
 			return sendBanInfo(context.getSource(), getDiscordUser(context.getArgument("discordUser", String.class)));
 		}))
 		.then(Commands.argument("discordId", LongArgumentType.longArg()).executes((context) -> {

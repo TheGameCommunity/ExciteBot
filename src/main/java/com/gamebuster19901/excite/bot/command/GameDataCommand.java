@@ -13,7 +13,7 @@ public class GameDataCommand {
 
 	@SuppressWarnings("rawtypes")
 	public static void register(CommandDispatcher<MessageContext> dispatcher) {
-		dispatcher.register(Commands.literal("!gameData").executes((context) -> {
+		dispatcher.register(Commands.literal("gameData").executes((context) -> {
 			return getData(context.getSource());
 		}));
 	}

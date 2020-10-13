@@ -13,7 +13,7 @@ public class IconDumpCommand {
 
 	@SuppressWarnings("rawtypes")
 	public static void register(CommandDispatcher<MessageContext> dispatcher) {
-		dispatcher.register(Commands.literal("!icondump").executes((context) -> {
+		dispatcher.register(Commands.literal("icondump").executes((context) -> {
 			context.getSource().sendMessage("Provide a server id");
 			return 0;
 		}).then(Commands.argument("server", LongArgumentType.longArg()).executes((command) -> {

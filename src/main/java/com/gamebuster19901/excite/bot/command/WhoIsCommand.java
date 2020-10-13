@@ -11,13 +11,13 @@ import com.mojang.brigadier.tree.LiteralCommandNode;
 public class WhoIsCommand {
 
 	public static void register(CommandDispatcher<MessageContext> dispatcher) {
-		LiteralCommandNode<MessageContext> builder = dispatcher.register(Commands.literal("!whois")
+		LiteralCommandNode<MessageContext> builder = dispatcher.register(Commands.literal("whois")
 			.then(Commands.argument("player", StringArgumentType.greedyString()).executes((command) -> {
 				return sendResponse(command.getSource(), command.getArgument("player", String.class));
 			}
 		)));
 		
-		dispatcher.register(Commands.literal("!wi").redirect(builder));
+		dispatcher.register(Commands.literal("wi").redirect(builder));
 	}
 	
 	@SuppressWarnings("static-access")

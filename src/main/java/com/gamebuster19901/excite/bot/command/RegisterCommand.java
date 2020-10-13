@@ -11,7 +11,7 @@ public class RegisterCommand {
 
 	@SuppressWarnings("rawtypes")
 	public static void register(CommandDispatcher<MessageContext> dispatcher) {
-		dispatcher.register(Commands.literal("!register").then(Commands.argument("player", StringArgumentType.greedyString()).executes(context -> {
+		dispatcher.register(Commands.literal("register").then(Commands.argument("player", StringArgumentType.greedyString()).executes(context -> {
 			requestRegistration(context.getSource(), context.getArgument("player", String.class));
 			return 1;
 		})));
