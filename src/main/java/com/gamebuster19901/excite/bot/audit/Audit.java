@@ -160,7 +160,7 @@ public abstract class Audit implements Comparable<Audit>, OutputCSV{
 		return auditId.getValue();
 	}
 	
-	public long getIssuerDiscordId() {
+	public long getIssuerId() {
 		return issuerDiscordId.getValue();
 	}
 	

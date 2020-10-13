@@ -17,7 +17,7 @@ public class StopCommand {
 		if(context.isAdmin()) {
 			try {
 				context.sendMessage("Stopping!");
-				DiscordUser.messageAllAdmins(context.getAuthor().toDetailedString() + " Stopped the bot!");
+				DiscordUser.messageAllAdmins(context.getDiscordAuthor().toDetailedString() + " Stopped the bot!");
 			}
 			catch (Throwable t) {
 				t.printStackTrace();

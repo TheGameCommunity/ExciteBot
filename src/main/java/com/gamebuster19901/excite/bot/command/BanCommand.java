@@ -200,7 +200,7 @@ public class BanCommand {
 					privateChannel = (PrivateChannel) context.getChannel();
 				}
 				else {
-					privateChannel = context.getAuthor().getJDAUser().openPrivateChannel().complete();
+					privateChannel = context.getDiscordAuthor().getJDAUser().openPrivateChannel().complete();
 				}
 				privateChannel.sendMessage(message);
 			}
@@ -225,7 +225,7 @@ public class BanCommand {
 					privateChannel = (PrivateChannel) context.getChannel();
 				}
 				else {
-					privateChannel = context.getAuthor().getJDAUser().openPrivateChannel().complete();
+					privateChannel = context.getDiscordAuthor().getJDAUser().openPrivateChannel().complete();
 				}
 				privateChannel.sendMessage(message);
 			}

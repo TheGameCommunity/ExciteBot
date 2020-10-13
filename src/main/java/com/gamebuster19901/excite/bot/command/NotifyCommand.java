@@ -30,11 +30,11 @@ public class NotifyCommand {
 	private static int setThreshold(MessageContext context, int threshold) {
 		if(!context.isConsoleMessage()) {
 			if(threshold > 0) {
-				context.getAuthor().setNotifyThreshold(threshold);
+				context.getDiscordAuthor().setNotifyThreshold(threshold);
 				context.sendMessage(context.getMention() + ", the player count must now be " + threshold + " or higher for you to be notified");
 			}
 			else if (threshold == -1) {
-				context.getAuthor().setNotifyThreshold(threshold);
+				context.getDiscordAuthor().setNotifyThreshold(threshold);
 				context.sendMessage(context.getMention() + ", you will no longer be notified if players are online.");
 			}
 			else {
@@ -54,7 +54,7 @@ public class NotifyCommand {
 			if(frequency != null) {
 				Duration min = Duration.ofMinutes(5);
 				if(frequency.compareTo(min) >= 0) {
-					context.getAuthor().setNotifyFrequency(frequency);
+					context.getDiscordAuthor().setNotifyFrequency(frequency);
 					context.sendMessage(context.getMention() + ", You will now be notified of online players a maximum of once every " + TimeUtils.readableDuration(frequency));
 				}
 				else {
@@ -74,8 +74,8 @@ public class NotifyCommand {
 	@SuppressWarnings("rawtypes")
 	private static int setContinuous(MessageContext context, boolean continuous) {
 		if(!context.isConsoleMessage()) {
-			context.getAuthor().setNotifyContinuously(continuous);
-			context.sendMessage(context.getAuthor().getJDAUser().getAsMention() + ", you have set continuous notifications to " + continuous);
+			context.getDiscordAuthor().setNotifyContinuously(continuous);
+			context.sendMessage(context.getDiscordAuthor().getJDAUser().getAsMention() + ", you have set continuous notifications to " + continuous);
 		}
 		else {
 			context.sendMessage("This command must be executed from discord");

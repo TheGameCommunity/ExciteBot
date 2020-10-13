@@ -20,7 +20,7 @@ public class RegisterCommand {
 	@SuppressWarnings("rawtypes")
 	private static void requestRegistration(MessageContext context, String player) {
 		HashSet<Player> players = new HashSet<Player>();
-		DiscordUser discordUser = context.getAuthor();
+		DiscordUser discordUser = context.getDiscordAuthor();
 		if(context.isConsoleMessage()) {
 			context.sendMessage("This command must be executed from discord.");
 			return;
@@ -71,7 +71,7 @@ public class RegisterCommand {
 	
 	@SuppressWarnings("rawtypes")
 	private static void sendInfo(MessageContext context, DiscordUser discordUser, Player desiredProfile, String securityCode) {
-		context.getAuthor().sendMessage(
+		context.getDiscordAuthor().sendMessage(
 				discordUser.getJDAUser().getAsMention() + 
 				", you have requested registration of the following profile:\n\n"
 				+ desiredProfile 

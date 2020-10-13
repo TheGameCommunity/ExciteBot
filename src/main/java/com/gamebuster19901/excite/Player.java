@@ -22,6 +22,7 @@ import org.apache.commons.csv.CSVRecord;
 
 import com.gamebuster19901.excite.bot.server.emote.Emote;
 import com.gamebuster19901.excite.bot.audit.Audit;
+import com.gamebuster19901.excite.bot.audit.NameChangeAudit;
 import com.gamebuster19901.excite.bot.audit.ban.ProfileBan;
 import com.gamebuster19901.excite.bot.command.MessageContext;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
@@ -137,6 +138,9 @@ public class Player implements OutputCSV{
 	}
 	
 	public void setName(String name) {
+		if(this.name != null && !this.name.equals(name)) {
+			Audit.addAudit(new NameChangeAudit(this, name));
+		}
 		this.name = name;
 	}
 	

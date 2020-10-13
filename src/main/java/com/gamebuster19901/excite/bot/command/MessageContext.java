@@ -1,5 +1,6 @@
 package com.gamebuster19901.excite.bot.command;
 
+import com.gamebuster19901.excite.Player;
 import com.gamebuster19901.excite.bot.server.DiscordServer;
 import com.gamebuster19901.excite.bot.user.ConsoleUser;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
@@ -14,7 +15,7 @@ public class MessageContext<E>{
 	private E event;
 	
 	public MessageContext(E e) {
-		if(e instanceof GuildMessageReceivedEvent || e instanceof PrivateMessageReceivedEvent || e instanceof DiscordUser) {
+		if(e instanceof GuildMessageReceivedEvent || e instanceof PrivateMessageReceivedEvent || e instanceof DiscordUser || e instanceof Player) {
 			this.event = e;
 		}
 		else {
@@ -39,11 +40,15 @@ public class MessageContext<E>{
 		return event instanceof ConsoleUser;
 	}
 	
+	public boolean isIngameEvent() {
+		return event instanceof Player;
+	}
+	
 	public E getEvent() {
 		return event;
 	}
 	
-	public DiscordUser getAuthor() {
+	public DiscordUser getDiscordAuthor() {
 		if(event instanceof GuildMessageReceivedEvent) {
 			return DiscordUser.getDiscordUser(((GuildMessageReceivedEvent)event).getMessage().getAuthor().getIdLong());
 		}
@@ -56,19 +61,26 @@ public class MessageContext<E>{
 		return null;
 	}
 	
+	public Player getPlayerAuthor() {
+		if(event instanceof Player) {
+			return (Player) event;
+		}
+		return null;
+	}
+	
 	public boolean isAdmin() {
 		if (isOperator()){
 			return true;
 		}
 		else if(event instanceof GuildMessageReceivedEvent) {
 			GuildMessageReceivedEvent e = (GuildMessageReceivedEvent) event;
-			return getAuthor().isAdmin();
+			return getDiscordAuthor().isAdmin();
 		}
 		return false;
 	}
 	
 	public boolean isOperator() {
-		return isConsoleMessage() || getAuthor().isOperator();
+		return isConsoleMessage() || getDiscordAuthor().isOperator();
 	}
 	
 	public void sendMessage(String message) {
@@ -89,6 +101,9 @@ public class MessageContext<E>{
 				}
 			}
 		}
+		if(isIngameEvent()) {
+			throw new UnsupportedOperationException();
+		}
 		else {
 			System.out.println(message);
 		}
@@ -98,21 +113,39 @@ public class MessageContext<E>{
 		if(isConsoleMessage()) {
 			return "@CONSOLE";
 		}
-		return getAuthor().getJDAUser().getAsMention();
+		if(isIngameEvent()) {
+			throw new UnsupportedOperationException();
+		}
+		return getDiscordAuthor().getJDAUser().getAsMention();
 	}
 	
 	public String getTag() {
 		if(isConsoleMessage()) {
 			return "CONSOLE";
 		}
-		return getAuthor().getJDAUser().getAsTag();
+		if(isIngameEvent()) {
+			return getPlayerAuthor().toString();
+		}
+		return getDiscordAuthor().getJDAUser().getAsTag();
 	}
 	
 	public long getSenderId() {
 		if(isConsoleMessage()) {
 			return -1;
 		}
-		return getAuthor().getJDAUser().getIdLong();
+		if(event instanceof DiscordUser) {
+			return getDiscordAuthor().getJDAUser().getIdLong();
+		}
+		if(event instanceof GuildMessageReceivedEvent) {
+			return ((GuildMessageReceivedEvent) event).getAuthor().getIdLong();
+		}
+		if(event instanceof PrivateMessageReceivedEvent) {
+			return ((PrivateMessageReceivedEvent)event).getAuthor().getIdLong();
+		}
+		if (event instanceof Player) {
+			return ((Player) event).getPlayerID();
+		}
+		throw new IllegalStateException(event.getClass().getCanonicalName());
 	}
 	
 	public DiscordServer getServer() {

@@ -13,6 +13,7 @@ import javax.security.auth.login.LoginException;
 
 import com.gamebuster19901.excite.backup.Backup;
 import com.gamebuster19901.excite.bot.DiscordBot;
+import com.gamebuster19901.excite.bot.audit.Audit;
 import com.gamebuster19901.excite.bot.command.Commands;
 import com.gamebuster19901.excite.bot.command.MessageContext;
 import com.gamebuster19901.excite.bot.server.DiscordServer;
@@ -113,6 +114,7 @@ public class Main {
 							DiscordUser.updateUserPreferencesFile();
 							discordBot.updatePresence();
 							UserPreferences.attemptRegister();
+							Audit.updateAuditsFile();
 						}
 						if(updateCooldowns.isBefore(Instant.now())) {
 							updateCooldowns = Instant.now().plus(Duration.ofSeconds(4));

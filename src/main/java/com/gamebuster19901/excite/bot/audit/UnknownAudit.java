@@ -18,7 +18,7 @@ public class UnknownAudit extends Audit{
 	}
 	
 	@Override
-	public long getIssuerDiscordId() {
+	public long getIssuerId() {
 		throw new AssertionError();
 	}
 	

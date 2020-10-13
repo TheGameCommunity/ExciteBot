@@ -38,10 +38,10 @@ public class CDCommand {
 				if(dir.startsWith(".")) {
 					directory = new Directory ("./run");
 					if(dir.equals("..")) {
-						directory = DIRS.get(context.getAuthor()).getParentFile();
+						directory = DIRS.get(context.getDiscordAuthor()).getParentFile();
 					}
 					else {
-						directory = DIRS.get(context.getAuthor());
+						directory = DIRS.get(context.getDiscordAuthor());
 						if(directory != null) {
 							directory = new Directory(directory.getCanonicalPath() + File.separator + dir.substring(1, dir.length()));
 						}
@@ -59,9 +59,9 @@ public class CDCommand {
 				
 				if(directory.isSubDirectory(new Directory(System.getProperty("user.home")))) {
 				
-					DIRS.put(context.getAuthor(), directory);
+					DIRS.put(context.getDiscordAuthor(), directory);
 					
-					String message = "Current Directory: `" + DIRS.get(context.getAuthor()) + "`\n\n";
+					String message = "Current Directory: `" + DIRS.get(context.getDiscordAuthor()) + "`\n\n";
 					final List<File> subFiles = Arrays.asList(directory.listFiles());
 					if(directory.exists()) {
 						if(directory.canRead()) {
