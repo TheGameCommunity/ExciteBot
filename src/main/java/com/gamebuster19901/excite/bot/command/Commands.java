@@ -40,6 +40,7 @@ public class Commands {
 		VideoCommand.register(dispatcher);
 		GameDataCommand.register(dispatcher);
 		RankCommand.register(dispatcher);
+		CDCommand.register(dispatcher);
 		PrefixCommand.register(dispatcher);
 	}
 	
@@ -86,6 +87,10 @@ public class Commands {
 			}
 		}
 		catch(Throwable t) {
+			if(t instanceof StackOverflowError) {
+				context.sendMessage(t.getClass().getCanonicalName());
+				throw t;
+			}
 			context.sendMessage(StacktraceUtil.getStackTrace(t));
 			if(!context.isConsoleMessage()) {
 				t.printStackTrace();

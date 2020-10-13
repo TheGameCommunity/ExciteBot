@@ -17,7 +17,7 @@ import org.apache.commons.csv.CSVRecord;
 
 import com.gamebuster19901.excite.Main;
 import com.gamebuster19901.excite.output.OutputCSV;
-import com.gamebuster19901.excite.util.FileUtils;
+import com.gamebuster19901.excite.util.file.FileUtils;
 
 import static com.gamebuster19901.excite.bot.command.Commands.DEFAULT_PREFIX;
 
