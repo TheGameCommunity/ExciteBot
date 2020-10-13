@@ -23,7 +23,7 @@ public class CDCommand {
 	
 	@SuppressWarnings("rawtypes")
 	public static void register(CommandDispatcher<MessageContext> dispatcher) {
-		dispatcher.register(Commands.literal("!cd")
+		dispatcher.register(Commands.literal("cd")
 			.then(Commands.argument("dir", StringArgumentType.greedyString()).executes((context) -> {
 				return cd(context.getSource(), context.getArgument("dir", String.class));
 			})));
