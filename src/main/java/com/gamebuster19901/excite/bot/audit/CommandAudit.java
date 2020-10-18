@@ -70,11 +70,8 @@ public class CommandAudit extends Audit {
 		super.parseAudit(record);
 		//0-7 is audit
 		int i = super.getRecordSize();
-		System.out.println(i);
 		i++; //8 is commandAudit version
-		System.out.println(i);
 		serverName = new StringPreference(record.get(i++));
-		System.out.println(i);
 		serverId = new LongPreference(Long.parseLong(record.get(i++).substring(1)));
 		channelName = new StringPreference(record.get(i++));
 		channelId = new LongPreference(Long.parseLong(record.get(i++).substring(1)));
