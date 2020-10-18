@@ -36,6 +36,10 @@ public class RankChangeAudit extends Audit {
 		return this;
 	}
 	
+	protected int getRecordSize() {
+		return super.getRecordSize() + 1;
+	}
+	
 	@Override
 	public List<Object> getParameters() {
 		List<Object> params = super.getParameters();

@@ -39,12 +39,18 @@ public class NameChangeAudit extends Audit {
 	public Audit parseAudit(CSVRecord record) {
 		super.parseAudit(record);
 		//0-7 is audit
-		//8 is NameChangeAudit version
-		oldName = new StringPreference(record.get(9));
-		newName = new StringPreference(record.get(10));
-		pid = new IntegerPreference(record.get(11));
-		fc = new StringPreference(record.get(12));
+		int i = super.getRecordSize();
+		i++; //8 is NameChangeAudit version
+		oldName = new StringPreference(record.get(i++));
+		newName = new StringPreference(record.get(i++));
+		pid = new IntegerPreference(record.get(i++));
+		fc = new StringPreference(record.get(i++));
 		return this;
+	}
+	
+	@Override
+	protected int getRecordSize() {
+		return super.getRecordSize() + 5;
 	}
 	
 	@Override

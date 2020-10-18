@@ -115,12 +115,18 @@ public abstract class Ban extends Audit{
 		super.parseAudit(record);
 		
 		//0-7 is audit
-		//8 is ban version
-		banDuration = new DurationPreference(Duration.parse(record.get(9)));
-		banExpire = new InstantPreference(Instant.parse(record.get(10)));
-		pardon = new LongPreference(Long.parseLong(record.get(11).substring((1))));
+		int i = super.getRecordSize(); 
+		i++; //8 is ban version
+		banDuration = new DurationPreference(Duration.parse(record.get(i++)));
+		banExpire = new InstantPreference(Instant.parse(record.get(i++)));
+		pardon = new LongPreference(Long.parseLong(record.get(i++).substring((1))));
 		
 		return this;
+	}
+	
+	@Override
+	protected int getRecordSize() {
+		return super.getRecordSize() + 4;
 	}
 	
 	@Override

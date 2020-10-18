@@ -75,11 +75,16 @@ public class ProfileBan extends Ban {
 		
 		//0-7 is Verdict
 		//8-11 is Ban
-		//12 is profileBan version
-		bannedPlayer = new IntegerPreference(Integer.parseInt(record.get(13).substring(1)));
-		bannedUsername = new StringPreference(record.get(14));
+		int i = super.getRecordSize(); 
+		i++; //12 is profileBan version
+		bannedPlayer = new IntegerPreference(Integer.parseInt(record.get(i++).substring(1)));
+		bannedUsername = new StringPreference(record.get(i++));
 		
 		return this;
+	}
+	
+	protected int getRecordSize() {
+		return super.getRecordSize() + 3;
 	}
 	
 	@Override

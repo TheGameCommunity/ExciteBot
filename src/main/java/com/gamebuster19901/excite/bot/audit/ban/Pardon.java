@@ -56,11 +56,15 @@ public class Pardon extends Audit{
 	@Override
 	public Audit parseAudit(CSVRecord record) {
 		super.parseAudit(record);
-		//0-6 is audit
-		//7 is pardon version
-		banId = new LongPreference(Long.parseLong(record.get(8).substring(1)));
+		//0-7 is audit
+		int i = super.getRecordSize(); //8 is pardon version
+		banId = new LongPreference(Long.parseLong(record.get(i++).substring(1)));
 		
 		return this;
+	}
+	
+	protected int getRecordSize() {
+		return super.getRecordSize() + 2;
 	}
 	
 	@Override
