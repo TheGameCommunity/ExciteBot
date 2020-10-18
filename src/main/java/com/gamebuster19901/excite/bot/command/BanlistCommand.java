@@ -1,14 +1,11 @@
 package com.gamebuster19901.excite.bot.command;
 
-import java.util.Map.Entry;
+import com.gamebuster19901.excite.Player;
 
 //import java.time.Instant;
 
-import com.gamebuster19901.excite.bot.audit.Audit;
-import com.gamebuster19901.excite.bot.audit.ban.Ban;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
 import com.mojang.brigadier.CommandDispatcher;
-import com.mojang.brigadier.arguments.StringArgumentType;
 
 public class BanlistCommand {
 	
@@ -16,28 +13,29 @@ public class BanlistCommand {
 	public static void register(CommandDispatcher<MessageContext> dispatcher) {
 		dispatcher.register(Commands.literal("banlist").executes((context) -> {
 			return sendBannedUsers(context.getSource());
-		})
-		.then(Commands.argument("user", StringArgumentType.greedyString()).executes((context) -> {
-			//return getBanInfo(context.getSource(), context.getArgument("user", String.class));
-			return 1;
-		})));
+		}));
 	}
 	
 	@SuppressWarnings("rawtypes")
 	public static int sendBannedUsers(MessageContext context) {
 		if(context.isAdmin()) {
-			String response = "";
-			int amount = 0;
+			String response = "Discord Users:\n\n";
+			int discordAmount = 0;
+			int playerAmount = 0;
 			for(DiscordUser user : DiscordUser.getKnownUsers()) {
 				if(user.isBanned()) {
 					response += user.toDetailedString() + "\n";
-					amount++;
+					discordAmount++;
 				}
 			}
-			context.sendMessage("There are (" + amount + ") discord users banned from using this bot. \n" + response);
-			for(Entry<Long, Ban> ban : Audit.BANS.entrySet()) {
-				context.sendMessage(ban.toString());
+			response += "Profiles:\n\n";
+			for(Player player : Player.getEncounteredPlayers()) {
+				if(player.isBanned()) {
+					response += player.toString() + "\n";
+					playerAmount++;
+				}
 			}
+			context.sendMessage("There are (" + discordAmount + ") discord users and " + playerAmount +" profiles banned from using this bot:\n\n" + response);
 			return 1;
 		}
 		else {

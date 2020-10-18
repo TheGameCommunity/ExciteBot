@@ -31,7 +31,6 @@ import com.gamebuster19901.excite.bot.audit.ban.Pardon;
 import com.gamebuster19901.excite.bot.command.MessageContext;
 import com.gamebuster19901.excite.output.OutputCSV;
 import com.gamebuster19901.excite.util.CSVHelper;
-import com.gamebuster19901.excite.util.file.FileUtils;
 
 import net.dv8tion.jda.api.entities.PrivateChannel;
 import net.dv8tion.jda.api.entities.User;
@@ -41,7 +40,6 @@ import net.dv8tion.jda.api.exceptions.ErrorResponseException;
 public class DiscordUser implements OutputCSV{
 	
 	public static final File USER_PREFS = new File("./run/userPreferences.csv");
-	private static final File OLD_USER_PREFS = new File("./run/userPreferences.csv.old");
 	private static ConcurrentHashMap<Long, DiscordUser> users = new ConcurrentHashMap<Long, DiscordUser>();
 	
 	static {
@@ -49,13 +47,6 @@ public class DiscordUser implements OutputCSV{
 			if(!USER_PREFS.exists()) {
 				USER_PREFS.getParentFile().mkdirs();
 				USER_PREFS.createNewFile();
-			}
-			else {
-				if(OLD_USER_PREFS.exists()) {
-					if(!FileUtils.contentEquals(USER_PREFS, OLD_USER_PREFS)) {
-						throw new IOException("File content differs!");
-					}
-				}
 			}
 			for(DiscordUser user : getEncounteredUsersFromFile()) {
 				addUser(user);
@@ -479,12 +470,6 @@ public class DiscordUser implements OutputCSV{
 	public static void updateUserPreferencesFile() {
 		BufferedWriter writer = null;
 		try {
-			if(OLD_USER_PREFS.exists()) {
-				OLD_USER_PREFS.delete();
-			}
-			if(!USER_PREFS.renameTo(OLD_USER_PREFS)) {
-				throw new IOException();
-			}
 			USER_PREFS.createNewFile();
 			writer = new BufferedWriter(new FileWriter(USER_PREFS));
 			for(Entry<Long, DiscordUser> discordUser : users.entrySet()) {

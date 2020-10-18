@@ -108,13 +108,8 @@ public class Main {
 					if(discordBot != null) {
 						if(nextDiscordPing.isBefore(Instant.now())) {
 							nextDiscordPing = Instant.now().plus(Duration.ofSeconds(5));
-							DiscordServer.updateServerList();
-							DiscordServer.updateServerPreferencesFile();
-							DiscordUser.updateUserList();
-							DiscordUser.updateUserPreferencesFile();
-							discordBot.updatePresence();
-							UserPreferences.attemptRegister();
-							Audit.updateAuditsFile();
+							updateLists(true, true);
+							updateFiles(true, true);
 						}
 						if(updateCooldowns.isBefore(Instant.now())) {
 							updateCooldowns = Instant.now().plus(Duration.ofSeconds(4));
@@ -198,5 +193,40 @@ public class Main {
 		consoleThread.setName("consoleReader");
 		consoleThread.setDaemon(true);
 		consoleThread.start();
+	}
+	
+	public static Thread updateLists(boolean start, boolean join) throws InterruptedException {
+		Thread listUpdater = new Thread() {
+			public void run() {
+				DiscordServer.updateServerList();
+				DiscordUser.updateUserList();
+				discordBot.updatePresence();
+				UserPreferences.attemptRegister();
+			}
+		};
+		if(start) {
+			listUpdater.start();
+			if(join) {
+				listUpdater.join();
+			}
+		}
+		return listUpdater;
+	}
+	
+	public static Thread updateFiles(boolean start, boolean join) throws InterruptedException {
+		Thread fileUpdater = new Thread() {
+			public void run() {
+				DiscordServer.updateServerPreferencesFile();
+				DiscordUser.updateUserPreferencesFile();
+				Audit.updateAuditsFile();
+			}
+		};
+		if(start) {
+			fileUpdater.start();
+			if(join) {
+				fileUpdater.join();
+			}
+		}
+		return fileUpdater;
 	}
 }

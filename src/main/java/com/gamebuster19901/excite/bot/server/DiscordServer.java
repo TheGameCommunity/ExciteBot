@@ -17,7 +17,6 @@ import org.apache.commons.csv.CSVRecord;
 
 import com.gamebuster19901.excite.Main;
 import com.gamebuster19901.excite.output.OutputCSV;
-import com.gamebuster19901.excite.util.file.FileUtils;
 
 import static com.gamebuster19901.excite.bot.command.Commands.DEFAULT_PREFIX;
 
@@ -27,7 +26,6 @@ import net.dv8tion.jda.api.entities.Role;
 public class DiscordServer implements OutputCSV {
 	private static final int DB_VERSION = 2;
 	private static final File SERVER_PREFS = new File("./run/serverPreferences.csv");
-	private static final File OLD_SERVER_PREFS = new File("./run/serverPreferences.csv.old");
 	private static ConcurrentHashMap<Long, DiscordServer> servers = new ConcurrentHashMap<Long, DiscordServer>();
 	
 	static {
@@ -35,13 +33,6 @@ public class DiscordServer implements OutputCSV {
 			if(!SERVER_PREFS.exists()) {
 				SERVER_PREFS.getParentFile().mkdirs();
 				SERVER_PREFS.createNewFile();
-			}
-			else {
-				if(OLD_SERVER_PREFS.exists()) {
-					if(!FileUtils.contentEquals(SERVER_PREFS, OLD_SERVER_PREFS)) {
-						throw new IOException("File content differs!");
-					}
-				}
 			}
 			for(DiscordServer server : getEncounteredServersFromFile()) {
 				addServer(server);
@@ -178,12 +169,6 @@ public class DiscordServer implements OutputCSV {
 	public static void updateServerPreferencesFile() {
 		BufferedWriter writer = null;
 		try {
-			if(OLD_SERVER_PREFS.exists()) {
-				OLD_SERVER_PREFS.delete();
-			}
-			if(!SERVER_PREFS.renameTo(OLD_SERVER_PREFS)) {
-				throw new IOException();
-			}
 			SERVER_PREFS.createNewFile();
 			writer = new BufferedWriter(new FileWriter(SERVER_PREFS));
 			for(Entry<Long, DiscordServer> discordServer : servers.entrySet()) {

@@ -1,6 +1,7 @@
 package com.gamebuster19901.excite.bot.command;
 
 import com.gamebuster19901.excite.bot.user.DiscordUser;
+import com.gamebuster19901.excite.util.ThreadService;
 import com.mojang.brigadier.CommandDispatcher;
 
 public class RestartCommand {
@@ -22,7 +23,7 @@ public class RestartCommand {
 				t.printStackTrace();
 			}
 			finally {
-				System.exit(-1);
+				ThreadService.shutdown(context);
 			}
 		}
 		else {
