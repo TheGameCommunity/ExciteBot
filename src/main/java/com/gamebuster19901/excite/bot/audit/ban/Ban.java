@@ -14,6 +14,7 @@ import com.gamebuster19901.excite.Player;
 import com.gamebuster19901.excite.bot.audit.Audit;
 import com.gamebuster19901.excite.bot.command.MessageContext;
 import com.gamebuster19901.excite.bot.common.preferences.LongPreference;
+import com.gamebuster19901.excite.bot.common.preferences.PermissionPreference;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
 import com.gamebuster19901.excite.bot.user.DurationPreference;
 import com.gamebuster19901.excite.bot.user.InstantPreference;
@@ -31,7 +32,7 @@ public abstract class Ban extends Audit{
 	protected LongPreference pardon = new LongPreference(NotPardoned.INSTANCE.getAuditId());
 	
 	{
-		secrecy = ADMIN_ONLY;
+		secrecy = new PermissionPreference(ADMIN_ONLY);
 	}
 	
 	@SuppressWarnings("rawtypes")
@@ -113,11 +114,11 @@ public abstract class Ban extends Audit{
 	protected Ban parseAudit(CSVRecord record) {
 		super.parseAudit(record);
 		
-		//0-6 is audit
-		//7 is ban version
-		banDuration = new DurationPreference(Duration.parse(record.get(8)));
-		banExpire = new InstantPreference(Instant.parse(record.get(9)));
-		pardon = new LongPreference(Long.parseLong(record.get(10).substring((1))));
+		//0-7 is audit
+		//8 is ban version
+		banDuration = new DurationPreference(Duration.parse(record.get(9)));
+		banExpire = new InstantPreference(Instant.parse(record.get(10)));
+		pardon = new LongPreference(Long.parseLong(record.get(11).substring((1))));
 		
 		return this;
 	}

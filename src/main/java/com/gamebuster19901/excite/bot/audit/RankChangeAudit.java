@@ -7,7 +7,9 @@ import org.apache.commons.csv.CSVRecord;
 
 import com.gamebuster19901.excite.Main;
 import com.gamebuster19901.excite.bot.command.MessageContext;
+import com.gamebuster19901.excite.bot.common.preferences.PermissionPreference;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
+import static com.gamebuster19901.excite.util.Permission.ADMIN_ONLY;
 
 public class RankChangeAudit extends Audit {
 
@@ -16,6 +18,9 @@ public class RankChangeAudit extends Audit {
 	@SuppressWarnings("rawtypes")
 	public RankChangeAudit(MessageContext promoter, MessageContext<DiscordUser> promotee, String rank, boolean added) {
 		super(promoter, getMessage(promoter, promotee, rank, added));
+		if(promoter.isAdmin()) {
+			this.secrecy = new PermissionPreference(ADMIN_ONLY);
+		}
 	}
 	
 	protected RankChangeAudit() {

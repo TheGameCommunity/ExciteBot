@@ -73,11 +73,11 @@ public class ProfileBan extends Ban {
 	public ProfileBan parseAudit(CSVRecord record) {
 		super.parseAudit(record);
 		
-		//0-6 is Verdict
-		//7-10 is Ban
-		//11 is profileBan version
-		bannedPlayer = new IntegerPreference(Integer.parseInt(record.get(12).substring(1)));
-		bannedUsername = new StringPreference(record.get(13));
+		//0-7 is Verdict
+		//8-11 is Ban
+		//12 is profileBan version
+		bannedPlayer = new IntegerPreference(Integer.parseInt(record.get(13).substring(1)));
+		bannedUsername = new StringPreference(record.get(14));
 		
 		return this;
 	}

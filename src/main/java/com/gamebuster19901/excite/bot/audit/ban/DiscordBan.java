@@ -68,9 +68,9 @@ public class DiscordBan extends Ban {
 	public DiscordBan parseAudit(CSVRecord record) {
 		super.parseAudit(record);
 		
-		//0-6 is Verdict
-		//7-10 is Ban
-		//11 is discordBan version
+		//0-7 is Verdict
+		//8-11 is Ban
+		//12 is discordBan version
 		bannedDiscordId = new LongPreference(Long.parseLong(record.get(12).substring(1)));
 		bannedUsername = new StringPreference(record.get(13));
 		

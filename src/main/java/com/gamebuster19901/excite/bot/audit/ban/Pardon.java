@@ -9,6 +9,7 @@ import com.gamebuster19901.excite.bot.audit.Audit;
 import com.gamebuster19901.excite.bot.audit.UnknownAudit;
 import com.gamebuster19901.excite.bot.command.MessageContext;
 import com.gamebuster19901.excite.bot.common.preferences.LongPreference;
+import com.gamebuster19901.excite.bot.common.preferences.PermissionPreference;
 
 import static com.gamebuster19901.excite.util.Permission.ADMIN_ONLY;
 
@@ -19,7 +20,7 @@ public class Pardon extends Audit{
 	private LongPreference banId = new LongPreference(UnknownAudit.DEFAULT_INSTANCE.getAuditId());
 	
 	{
-		secrecy = ADMIN_ONLY;
+		secrecy = new PermissionPreference(ADMIN_ONLY);
 	}
 	
 	@SuppressWarnings("rawtypes")

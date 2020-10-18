@@ -32,6 +32,7 @@ import com.gamebuster19901.excite.bot.audit.ban.Pardon;
 import com.gamebuster19901.excite.bot.audit.ban.ProfileBan;
 import com.gamebuster19901.excite.bot.command.MessageContext;
 import com.gamebuster19901.excite.bot.common.preferences.LongPreference;
+import com.gamebuster19901.excite.bot.common.preferences.PermissionPreference;
 import com.gamebuster19901.excite.bot.common.preferences.StringPreference;
 import com.gamebuster19901.excite.bot.user.ConsoleUser;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
@@ -39,18 +40,16 @@ import com.gamebuster19901.excite.bot.user.InstantPreference;
 import com.gamebuster19901.excite.output.OutputCSV;
 import com.gamebuster19901.excite.util.DataPoint;
 import com.gamebuster19901.excite.util.Permission;
-import com.gamebuster19901.excite.util.file.FileUtils;
-
-import static com.gamebuster19901.excite.util.Permission.ANYONE;
+import com.gamebuster19901.excite.util.ThreadService;
+import static com.gamebuster19901.excite.util.Permission.*;
 
 public abstract class Audit implements Comparable<Audit>, OutputCSV{
 
 	static transient final ReentrantLock MAP_LOCK = new ReentrantLock();
 	
-	private static final int DB_VERSION = 0;
+	private static final int DB_VERSION = 2;
 	
 	private static transient final File AUDIT_DB = new File("./run/verdicts.csv");
-	private static transient final File OLD_AUDIT_DB = new File("./run/verdicts.csv.old");
 	protected static transient final ConcurrentHashMap<Long, Audit> AUDITS = new ConcurrentHashMap<Long, Audit>();
 	public static transient final ConcurrentHashMap<Long, Ban> BANS = new ConcurrentHashMap<Long, Ban>();
 	protected static transient final ConcurrentHashMap<Long, ProfileBan> PROFILE_BANS = new ConcurrentHashMap<Long, ProfileBan>();
@@ -63,13 +62,6 @@ public abstract class Audit implements Comparable<Audit>, OutputCSV{
 			if(!AUDIT_DB.exists()) {
 				AUDIT_DB.getParentFile().mkdirs();
 				AUDIT_DB.createNewFile();
-			}
-			else {
-				if(OLD_AUDIT_DB.exists()) {
-					if(!FileUtils.contentEquals(AUDIT_DB, OLD_AUDIT_DB)) {
-						throw new IOException("File content differs!");
-					}
-				}
 			}
 			try {
 				MAP_LOCK.lock();
@@ -97,7 +89,7 @@ public abstract class Audit implements Comparable<Audit>, OutputCSV{
 	protected StringPreference issuerUsername;
 	protected StringPreference description;
 	protected InstantPreference dateIssued;
-	protected transient Permission secrecy = ANYONE;
+	protected PermissionPreference secrecy;
 	
 	@SuppressWarnings("rawtypes")
 	protected Audit(MessageContext context) {
@@ -126,33 +118,39 @@ public abstract class Audit implements Comparable<Audit>, OutputCSV{
 	}
 	
 	public static <T extends Audit> T addAudit(T audit) {
-		try {
-			MAP_LOCK.lock();
-			if(audit.auditId == null) {
-				long auditId = generateUniqueId();
-				audit.auditId = new LongPreference(auditId);
-			}
-			long auditId = audit.auditId.getValue();
-			AUDITS.put(auditId, audit);
-			if(audit instanceof Ban) {
-				BANS.put(auditId, (Ban) audit);
-				if(audit instanceof DiscordBan) {
-					DISCORD_BANS.put(auditId, (DiscordBan) audit);
+		Thread addThread = new Thread() {
+			@Override
+			public void run() {
+				try {
+					MAP_LOCK.lock();
+					if(audit.auditId == null) {
+						long auditId = generateUniqueId();
+						audit.auditId = new LongPreference(auditId);
+					}
+					long auditId = audit.auditId.getValue();
+					AUDITS.put(auditId, audit);
+					if(audit instanceof Ban) {
+						BANS.put(auditId, (Ban) audit);
+						if(audit instanceof DiscordBan) {
+							DISCORD_BANS.put(auditId, (DiscordBan) audit);
+						}
+						else if (audit instanceof ProfileBan) {
+							PROFILE_BANS.put(auditId, (ProfileBan) audit);
+						}
+						else {
+							throw new AssertionError(audit.getClass());
+						}
+					}
+					else if (audit instanceof Pardon) {
+						PARDONS.put(auditId, (Pardon) audit);
+					}
 				}
-				else if (audit instanceof ProfileBan) {
-					PROFILE_BANS.put(auditId, (ProfileBan) audit);
-				}
-				else {
-					throw new AssertionError(audit.getClass());
+				finally {
+					MAP_LOCK.unlock();
 				}
 			}
-			else if (audit instanceof Pardon) {
-				PARDONS.put(auditId, (Pardon) audit);
-			}
-		}
-		finally {
-			MAP_LOCK.unlock();
-		}
+		};
+		ThreadService.run(addThread);
 		return audit;
 	}
 	
@@ -174,6 +172,15 @@ public abstract class Audit implements Comparable<Audit>, OutputCSV{
 	
 	public Instant getDateIssued() {
 		return dateIssued.getValue();
+	}
+	
+	public Permission getSecrecy() {
+		return secrecy.getValue();
+	}
+	
+	@SuppressWarnings("rawtypes")
+	public final boolean isSecret(MessageContext context) {
+		return getSecrecy().hasPermission(context);
 	}
 	
 	public static Audit getAuditById(long id) {
@@ -205,15 +212,31 @@ public abstract class Audit implements Comparable<Audit>, OutputCSV{
 	}
 	
 	protected Audit parseAudit(CSVRecord record) {
-		//0 is verdict version
+		//0 is audit version
+		int auditVersion = Integer.parseInt(record.get(0));
 		auditType.setValue(record.get(1));
 		auditId = new LongPreference(Long.parseLong(record.get(2).substring(1)));
 		issuerDiscordId = new LongPreference(Long.parseLong(record.get(3).substring(1)));
 		issuerUsername = new StringPreference(record.get(4));
 		description = new StringPreference(record.get(5));
 		dateIssued = new InstantPreference(Instant.parse(record.get(6)));
+		if(auditVersion < 2) {
+			if(this.getClass() == NameChangeAudit.class) {
+				secrecy = new PermissionPreference(ANYONE);
+			}
+			else {
+				secrecy = new PermissionPreference(ADMIN_ONLY);
+			}
+		}
+		else {
+			secrecy = new PermissionPreference(record.get(7));
+		}
 		
 		return this;
+	}
+	
+	protected int getRecordSize() {
+		return 8;
 	}
 	
 	@Override
@@ -232,7 +255,7 @@ public abstract class Audit implements Comparable<Audit>, OutputCSV{
 	}
 	
 	public List<Object> getParameters() {
-		ArrayList<Object> params = new ArrayList<Object>(Arrays.asList(new Object[] {DB_VERSION, this.auditType, "`" + auditId, "`" + issuerDiscordId, issuerUsername, description, dateIssued}));
+		ArrayList<Object> params = new ArrayList<Object>(Arrays.asList(new Object[] {DB_VERSION, this.auditType, "`" + auditId, "`" + issuerDiscordId, issuerUsername, description, dateIssued, secrecy}));
 		return params;
 	}
 	
@@ -327,12 +350,6 @@ public abstract class Audit implements Comparable<Audit>, OutputCSV{
 		BufferedWriter writer = null;
 		try {
 			MAP_LOCK.lock();
-			if(OLD_AUDIT_DB.exists()) {
-				OLD_AUDIT_DB.delete();
-			}
-			if(!AUDIT_DB.renameTo(OLD_AUDIT_DB)) {
-				throw new IOException();
-			}
 			AUDIT_DB.createNewFile();
 			writer = new BufferedWriter(new FileWriter(AUDIT_DB));
 			for(Entry<Long, Audit> audit : AUDITS.entrySet()) {

@@ -3,6 +3,7 @@ package com.gamebuster19901.excite.bot.audit;
 import com.gamebuster19901.excite.bot.command.MessageContext;
 import com.gamebuster19901.excite.bot.common.preferences.BooleanPreference;
 import com.gamebuster19901.excite.bot.common.preferences.LongPreference;
+import com.gamebuster19901.excite.bot.common.preferences.PermissionPreference;
 import com.gamebuster19901.excite.bot.common.preferences.StringPreference;
 
 import static com.gamebuster19901.excite.util.Permission.ADMIN_ONLY;
@@ -28,7 +29,7 @@ public class CommandAudit extends Audit {
 	BooleanPreference isOperator;
 	
 	{
-		secrecy = ADMIN_ONLY;
+		secrecy = new PermissionPreference(ADMIN_ONLY);
 	}
 	
 	@SuppressWarnings("rawtypes")
@@ -67,19 +68,28 @@ public class CommandAudit extends Audit {
 	@Override
 	public Audit parseAudit(CSVRecord record) {
 		super.parseAudit(record);
-		//0-6 is audit
-		//7 is commandAudit version
-		serverName = new StringPreference(record.get(8));
-		serverId = new LongPreference(Long.parseLong(record.get(9).substring(1)));
-		channelName = new StringPreference(record.get(10));
-		channelId = new LongPreference(Long.parseLong(record.get(11).substring(1)));
-		isGuildMessage = new BooleanPreference(Boolean.parseBoolean(record.get(12)));
-		isPrivateMessage = new BooleanPreference(Boolean.parseBoolean(record.get(13)));
-		isConsoleMessage = new BooleanPreference(Boolean.parseBoolean(record.get(14)));
-		isAdmin = new BooleanPreference(Boolean.parseBoolean(record.get(15)));
-		isOperator = new BooleanPreference(Boolean.parseBoolean(record.get(16)));
+		//0-7 is audit
+		int i = super.getRecordSize();
+		System.out.println(i);
+		i++; //8 is commandAudit version
+		System.out.println(i);
+		serverName = new StringPreference(record.get(i++));
+		System.out.println(i);
+		serverId = new LongPreference(Long.parseLong(record.get(i++).substring(1)));
+		channelName = new StringPreference(record.get(i++));
+		channelId = new LongPreference(Long.parseLong(record.get(i++).substring(1)));
+		isGuildMessage = new BooleanPreference(Boolean.parseBoolean(record.get(i++)));
+		isPrivateMessage = new BooleanPreference(Boolean.parseBoolean(record.get(i++)));
+		isConsoleMessage = new BooleanPreference(Boolean.parseBoolean(record.get(i++)));
+		isAdmin = new BooleanPreference(Boolean.parseBoolean(record.get(i++)));
+		isOperator = new BooleanPreference(Boolean.parseBoolean(record.get(i++)));
 		
 		return this;
+	}
+	
+	@Override
+	public int getRecordSize() {
+		return super.getRecordSize() + 10;
 	}
 	
 	@Override
