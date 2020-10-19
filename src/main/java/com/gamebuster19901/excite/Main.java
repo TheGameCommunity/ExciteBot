@@ -36,6 +36,8 @@ public class Main {
 	public static DiscordBot discordBot;
 	
 	private static ConcurrentLinkedDeque<String> consoleCommandsAwaitingProcessing = new ConcurrentLinkedDeque<String>();
+
+	public static ConsoleUser CONSOLE;
 	
 	@SuppressWarnings("rawtypes")
 	public static void main(String[] args) throws InterruptedException {
@@ -69,6 +71,8 @@ public class Main {
 			}
 		}
 	
+		CONSOLE = new ConsoleUser();
+		
 		Throwable prevError = null;
 		Instant nextWiimmfiPing = Instant.now();
 		Instant nextDiscordPing = Instant.now();
@@ -127,8 +131,8 @@ public class Main {
 					prevError = error;
 				}
 				catch(ErrorResponseException e) {
-					ConsoleUser.INSTANCE.sendMessage(StacktraceUtil.getStackTrace(e));
-					ConsoleUser.INSTANCE.sendMessage("An ErrorResponseException occurred... waiting 10 seconds");
+					CONSOLE.sendMessage(StacktraceUtil.getStackTrace(e));
+					CONSOLE.sendMessage("An ErrorResponseException occurred... waiting 10 seconds");
 				}
 				Thread.sleep(1000);
 			}
@@ -145,13 +149,13 @@ public class Main {
 						}
 					}
 					catch(Throwable t2) {
-						ConsoleUser.INSTANCE.sendMessage(StacktraceUtil.getStackTrace(t));
+						CONSOLE.sendMessage(StacktraceUtil.getStackTrace(t));
 					}
 				}
 				while(true) {Thread.sleep(1000);}
 			}
 			else {
-				ConsoleUser.INSTANCE.sendMessage(StacktraceUtil.getStackTrace(t));
+				CONSOLE.sendMessage(StacktraceUtil.getStackTrace(t));
 			}
 		}
 		System.exit(-1);

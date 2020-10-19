@@ -422,7 +422,7 @@ public class DiscordUser implements OutputCSV{
 	public static final void messageAllAdmins(String message) {
 		ArrayList<DiscordUser> users = new ArrayList<DiscordUser>();
 		users.addAll(DiscordUser.users.values());
-		users.add(ConsoleUser.INSTANCE);
+		users.add(Main.CONSOLE);
 		for(DiscordUser user : users) {
 			if(user.isAdmin()) {
 				user.sendMessage(message);
@@ -433,7 +433,7 @@ public class DiscordUser implements OutputCSV{
 	public static final void messageAllOperators(String message) {
 		ArrayList<DiscordUser> users = new ArrayList<DiscordUser>();
 		users.addAll(DiscordUser.users.values());
-		users.add(ConsoleUser.INSTANCE);
+		users.add(Main.CONSOLE);
 		for(DiscordUser user : users) {
 			if(user.isOperator()) {
 				user.sendMessage(message);

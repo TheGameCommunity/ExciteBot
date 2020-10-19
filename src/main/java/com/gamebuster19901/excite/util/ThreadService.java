@@ -4,7 +4,6 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 
 import com.gamebuster19901.excite.Main;
 import com.gamebuster19901.excite.bot.command.MessageContext;
-import com.gamebuster19901.excite.bot.user.ConsoleUser;
 
 public class ThreadService {
 
@@ -70,8 +69,8 @@ public class ThreadService {
 						context.sendMessage("Iterrupted, Emergency Stop!");
 						String stacktrace = StacktraceUtil.getStackTrace(e);
 						context.sendMessage(stacktrace);
-						if(context.getDiscordAuthor() != ConsoleUser.INSTANCE) {
-							ConsoleUser.INSTANCE.sendMessage(stacktrace);
+						if(context.getDiscordAuthor() != Main.CONSOLE) {
+							Main.CONSOLE.sendMessage(stacktrace);
 						}
 						break;
 					}

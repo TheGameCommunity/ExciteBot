@@ -26,6 +26,7 @@ import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.csv.CSVRecord;
 
+import com.gamebuster19901.excite.Main;
 import com.gamebuster19901.excite.Player;
 import com.gamebuster19901.excite.bot.audit.ban.Ban;
 import com.gamebuster19901.excite.bot.audit.ban.DiscordBan;
@@ -35,7 +36,6 @@ import com.gamebuster19901.excite.bot.command.MessageContext;
 import com.gamebuster19901.excite.bot.common.preferences.LongPreference;
 import com.gamebuster19901.excite.bot.common.preferences.PermissionPreference;
 import com.gamebuster19901.excite.bot.common.preferences.StringPreference;
-import com.gamebuster19901.excite.bot.user.ConsoleUser;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
 import com.gamebuster19901.excite.bot.user.InstantPreference;
 import com.gamebuster19901.excite.output.OutputCSV;
@@ -90,7 +90,7 @@ public abstract class Audit implements Comparable<Audit>, OutputCSV{
 	protected StringPreference issuerUsername;
 	protected StringPreference description;
 	protected InstantPreference dateIssued;
-	protected PermissionPreference secrecy;
+	protected PermissionPreference secrecy = new PermissionPreference(ANYONE);
 	
 	@SuppressWarnings("rawtypes")
 	protected Audit(MessageContext context) {
@@ -267,7 +267,7 @@ public abstract class Audit implements Comparable<Audit>, OutputCSV{
 	
 	public DiscordUser getIssuerDiscord() {
 		if(auditId.getValue() == -1) {
-			return ConsoleUser.INSTANCE;
+			return Main.CONSOLE;
 		}
 		return DiscordUser.getDiscordUser(issuerDiscordId.getValue());
 	}

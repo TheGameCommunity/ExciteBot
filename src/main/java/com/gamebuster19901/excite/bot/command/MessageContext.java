@@ -1,5 +1,6 @@
 package com.gamebuster19901.excite.bot.command;
 
+import com.gamebuster19901.excite.Main;
 import com.gamebuster19901.excite.Player;
 import com.gamebuster19901.excite.bot.server.DiscordServer;
 import com.gamebuster19901.excite.bot.user.ConsoleUser;
@@ -25,7 +26,7 @@ public class MessageContext<E>{
 	
 	@SuppressWarnings("unchecked")
 	public MessageContext() {
-		this.event = (E) ConsoleUser.INSTANCE;
+		this.event = (E) Main.CONSOLE;
 	}
 	
 	public boolean isGuildMessage() {
