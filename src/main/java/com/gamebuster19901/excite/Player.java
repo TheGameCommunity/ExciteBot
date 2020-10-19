@@ -23,6 +23,7 @@ import org.apache.commons.csv.CSVRecord;
 import com.gamebuster19901.excite.bot.server.emote.Emote;
 import com.gamebuster19901.excite.bot.audit.Audit;
 import com.gamebuster19901.excite.bot.audit.NameChangeAudit;
+import com.gamebuster19901.excite.bot.audit.ProfileDiscoveryAudit;
 import com.gamebuster19901.excite.bot.audit.ban.ProfileBan;
 import com.gamebuster19901.excite.bot.command.MessageContext;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
@@ -77,18 +78,29 @@ public class Player implements OutputCSV{
 	
 	private boolean zeroLoss = false;
 	private long discord = -1;
+	private ProfileDiscoveryAudit discoveryAudit;
 	
-	public Player(String name, String friendCode, int playerID) {
-		this(name, friendCode, playerID, -1, false);
-	}
-	
+	@Deprecated
 	public Player(String name, String friendCode, int playerID, long discord, boolean zeroLoss) {
 		this.name = name;
 		this.friendCode = friendCode;
 		this.playerID = playerID;
 		this.discord = discord;
 		this.zeroLoss = zeroLoss;
-		
+		this.discoveryAudit = Audit.addAudit(new ProfileDiscoveryAudit(this));
+	}
+	
+	public Player(String name, String friendCode, int playerID) {
+		this(name, friendCode, playerID, -1, false);
+	}
+	
+	public Player(String name, String friendCode, int playerID, long discord, boolean zeroLoss, long discoveryAudit) {
+		this.name = name;
+		this.friendCode = friendCode;
+		this.playerID = playerID;
+		this.discord = discord;
+		this.zeroLoss = zeroLoss;
+		this.discoveryAudit = (ProfileDiscoveryAudit) Audit.getAuditById(discoveryAudit);
 	}
 	
 	public String toString() {
@@ -349,6 +361,7 @@ public class Player implements OutputCSV{
 				String name = null;
 				long discord = -1;
 				boolean zeroLoss = false;
+				long discoveryAudit = -1;
 				
 				for(CSVRecord csvRecord : csvParser ) {
 					playerID = Integer.parseInt(csvRecord.get(0));
@@ -360,8 +373,13 @@ public class Player implements OutputCSV{
 					}
 					discord = Long.parseLong(discordId.substring(1));
 					zeroLoss = Boolean.parseBoolean(csvRecord.get(4));
-					
-					players.add(new Player(name, friendCode, playerID, discord, zeroLoss));
+					if(csvRecord.size() > 6) {
+						discoveryAudit = Long.parseLong(csvRecord.get(5).substring(1));
+						players.add(new Player(name, friendCode, playerID, discord, zeroLoss, discoveryAudit));
+					}
+					else {
+						players.add(new Player(name, friendCode, playerID, discord, zeroLoss));
+					}
 				}
 			}
 			finally {
