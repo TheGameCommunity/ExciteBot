@@ -64,9 +64,4 @@ public class NameChangeAudit extends Audit {
 		return context.getPlayerAuthor().getName() + "(" + context.getPlayerAuthor().getPlayerID() + ") changed their name to " + newName; 
 	}
 	
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	private static MessageContext getContext(Player player) {
-		return new MessageContext(player);
-	}
-	
 }

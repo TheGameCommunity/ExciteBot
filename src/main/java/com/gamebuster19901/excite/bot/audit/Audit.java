@@ -26,6 +26,7 @@ import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.csv.CSVRecord;
 
+import com.gamebuster19901.excite.Player;
 import com.gamebuster19901.excite.bot.audit.ban.Ban;
 import com.gamebuster19901.excite.bot.audit.ban.DiscordBan;
 import com.gamebuster19901.excite.bot.audit.ban.Pardon;
@@ -195,6 +196,11 @@ public abstract class Audit implements Comparable<Audit>, OutputCSV{
 		finally {
 			MAP_LOCK.unlock();
 		}
+	}
+	
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	protected static MessageContext getContext(Player player) {
+		return new MessageContext(player);
 	}
 	
 	@Override
