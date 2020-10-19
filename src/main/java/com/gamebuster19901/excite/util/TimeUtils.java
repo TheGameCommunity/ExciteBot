@@ -2,6 +2,8 @@ package com.gamebuster19901.excite.util;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.Month;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
@@ -93,6 +95,10 @@ public final class TimeUtils {
 	
 	public static String getDate(TemporalAccessor temporal) {
 		return DB_DATE_FORMATTER.format(temporal);
+	}
+	
+	public static Month getMonth(LocalDate date) {
+		return date.getMonth();
 	}
 	
 	private static boolean isSeconds(String timeUnit) {
