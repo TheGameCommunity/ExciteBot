@@ -21,6 +21,7 @@ public class Wiimmfi {
 	private static final URL EXCITEBOTS;
 	private static Document document;
 	private static HashSet<Player> ONLINE_PLAYERS = new HashSet<Player>();
+	private static HashSet<Player> HOSTING_PLAYERS = new HashSet<Player>();
 	static {
 		try {
 			EXCITEBOTS = new URL("https://wiimmfi.de/stats/game/exciteracewii");
@@ -78,7 +79,8 @@ public class Wiimmfi {
 	}
 	
 	public static Player[] updateOnlinePlayers() {
-		HashSet<Player> players = new HashSet<Player>();
+		HashSet<Player> onlinePlayers = new HashSet<Player>();
+		HashSet<Player> hostingPlayers = new HashSet<Player>();
 		if(document != null) {
 			document.getElementsByAttributeValueContaining("id", "game").remove();
 			Elements elements = document.getElementsByClass("tr0");
@@ -93,6 +95,11 @@ public class Wiimmfi {
 				for(Element e : playerEntries) {
 					
 					String name = parseLine(e.html(), 10);
+					boolean hosting = Integer.parseInt(parseLine(e.html(), 4)) != 0;
+					String status = parseLine(e.html(), 7);
+					
+					hosting = !status.equals("o") && hosting;
+					
 					int playerId = Integer.parseInt(parseLine(e.html(), 1));
 					
 					Player player = Player.getPlayerByID(playerId);
@@ -103,13 +110,15 @@ public class Wiimmfi {
 					}
 					else {
 						player.setName(name);
+						player.setStatus(status);
 					}
-					players.add(player);
+					onlinePlayers.add(player);
 				}
 			}
 		}
-		ONLINE_PLAYERS = players;
-		return players.toArray(new Player[]{});
+		ONLINE_PLAYERS = onlinePlayers;
+		HOSTING_PLAYERS = hostingPlayers;
+		return onlinePlayers.toArray(new Player[]{});
 	}
 	
 	public static HashSet<Player> getOnlinePlayers() {
@@ -127,7 +136,7 @@ public class Wiimmfi {
 	}
 	
 	@SuppressWarnings("rawtypes")
-	public static String getOnlinePlayerList(MessageContext messageContext) {
+	public static String getOnlinePlayerList(MessageContext messageContext, boolean full) {
 		Player[] onlinePlayers = getOnlinePlayers().toArray(new Player[]{});
 		Player[] ignoredPlayers = getIgnoredOnlinePlayers().toArray(new Player[]{});
 		
@@ -140,9 +149,17 @@ public class Wiimmfi {
 			response = "Players Online: " + (onlinePlayers.length - ignoredPlayers.length) + " (" + onlinePlayers.length + ")" + "\n\n";
 		}
 		
-		for(int i = 0; i < onlinePlayers.length ; i++) {
-			response += onlinePlayers[i].toString() + '\n';
+		if(full) {
+			for(int i = 0; i < onlinePlayers.length ; i++) {
+				response += onlinePlayers[i].toFullString() + '\n';
+			}
 		}
+		else {
+			for(int i = 0; i < onlinePlayers.length ; i++) {
+				response += onlinePlayers[i].toString() + '\n';
+			}
+		}
+
 		return response;
 	}
 	

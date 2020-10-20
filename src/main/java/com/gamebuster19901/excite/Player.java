@@ -48,6 +48,8 @@ public class Player implements OutputCSV{
 	protected static final String SPECTATING = new String("spectating");
 	protected static final String FRIENDS_LIST = new String("friend_list");
 	protected static final String BOT = new String(Character.toChars(0x1F916));
+	protected static final String BOT_ADMIN = new String("bot_admin");
+	protected static final String BOT_OPERATOR = new String("bot_operator");
 	protected static final File KNOWN_PLAYERS = new File("./run/encounteredPlayers.csv");
 	protected static final File OLD_KNOWN_PLAYERS = new File("./run/encounteredPlayers.csv.old");
 	
@@ -80,6 +82,9 @@ public class Player implements OutputCSV{
 	private long discord = -1;
 	private ProfileDiscoveryAudit discoveryAudit;
 	
+	private transient boolean hosting;
+	private transient String status;
+	
 	@Deprecated
 	public Player(String name, String friendCode, int playerID, long discord, boolean zeroLoss) {
 		this.name = name;
@@ -107,13 +112,39 @@ public class Player implements OutputCSV{
 		}
 	}
 	
+	@Override
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public String toString() {
+		String prefix = "";
 		String suffix = "";
+		if(isOnline()) {
+			if(isBanned()) {
+				prefix = prefix + Emote.getEmote(BANNED);
+			}
+			if(isHosting()) {
+				prefix = prefix + Emote.getEmote(HOSTING);
+			}
+			else if (!isBanned()){
+				prefix = prefix + Emote.getEmote(ONLINE);
+			}
+		}
+		else {
+			prefix = prefix + Emote.getEmote(OFFLINE);
+		}
 		if(isZeroLoss()) {
 			suffix += Emote.getEmote(ZEROLOSS);
 		}
 		if(isBot()) {
 			suffix += BOT;
+		}
+		if(discord != -1) {
+			MessageContext context = new MessageContext(DiscordUser.getDiscordUserIncludingUnknown(discord));
+			if(context.isOperator()) {
+				suffix = suffix + Emote.getEmote(BOT_OPERATOR);
+			}
+			else if(context.isAdmin()) {
+				suffix = suffix + Emote.getEmote(BOT_ADMIN);
+			}
 		}
 		if(isLegacy()) {
 			suffix += Emote.getEmote(LEGACY);
@@ -122,17 +153,78 @@ public class Player implements OutputCSV{
 			DiscordUser user = DiscordUser.getDiscordUserIncludingUnknown(discord);
 			suffix += Emote.getEmote(VERIFIED);
 			if(this.isBanned()) {
-				suffix += Emote.getEmote(BANNED);
+				if(!isOnline()) {
+					suffix += Emote.getEmote(BANNED);
+				}
 			}
-			return String.format(name +  " - FC❲" + friendCode +  "❳ - PID❲"  + playerID + "❳ - Discord❲" + getPrettyDiscord() + "❳" + suffix);
+			return String.format(prefix + " " + name +  " - Discord❲" + getPrettyDiscord() + "❳" + suffix);
 		}
 		else if(this.isBanned()) {
-			suffix += Emote.getEmote(BANNED);
+			if(!isOnline()) {
+				suffix += Emote.getEmote(BANNED);
+			}
 		}
 		if(!suffix.isEmpty()) {
 			suffix = suffix + " ";
 		}
-		return String.format(name + " - FC❲" + friendCode +  "❳ - PID❲"  + playerID + "❳" + suffix);
+		return String.format(prefix + " " + name + " " + suffix);
+	}
+	
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public String toFullString() {
+		String prefix = "";
+		String suffix = "";
+		if(isOnline()) {
+			if(isBanned()) {
+				prefix = prefix + Emote.getEmote(BANNED);
+			}
+			if(isHosting()) {
+				prefix = prefix + Emote.getEmote(HOSTING);
+			}
+			else if (!isBanned()){
+				prefix = prefix + Emote.getEmote(ONLINE);
+			}
+		}
+		else {
+			prefix = prefix + Emote.getEmote(OFFLINE);
+		}
+		if(isZeroLoss()) {
+			suffix += Emote.getEmote(ZEROLOSS);
+		}
+		if(isBot()) {
+			suffix += BOT;
+		}
+		if(discord != -1) {
+			MessageContext context = new MessageContext(DiscordUser.getDiscordUserIncludingUnknown(discord));
+			if(context.isOperator()) {
+				suffix = suffix + Emote.getEmote(BOT_OPERATOR);
+			}
+			else if(context.isAdmin()) {
+				suffix = suffix + Emote.getEmote(BOT_ADMIN);
+			}
+		}
+		if(isLegacy()) {
+			suffix += Emote.getEmote(LEGACY);
+		}
+		if(isVerified()) {
+			DiscordUser user = DiscordUser.getDiscordUserIncludingUnknown(discord);
+			suffix += Emote.getEmote(VERIFIED);
+			if(this.isBanned()) {
+				if(!isOnline()) {
+					suffix += Emote.getEmote(BANNED);
+				}
+			}
+			return String.format(prefix + " " + name +  " - FC❲" + friendCode +  "❳ - PID❲"  + playerID + "❳ - Discord❲" + getPrettyDiscord() + "❳" + suffix);
+		}
+		else if(this.isBanned()) {
+			if(!isOnline()) {
+				suffix += Emote.getEmote(BANNED);
+			}
+		}
+		if(!suffix.isEmpty()) {
+			suffix = suffix + " ";
+		}
+		return String.format(prefix + " " + name + " - FC❲" + friendCode +  "❳ - PID❲"  + playerID + "❳" + suffix);
 	}
 	
 	public String toCSV() {
@@ -158,6 +250,11 @@ public class Player implements OutputCSV{
 			Audit.addAudit(new NameChangeAudit(this, name));
 		}
 		this.name = name;
+	}
+	
+	
+	public void setStatus(String status) {
+		this.status = status;
 	}
 	
 	public String getFriendCode() {
@@ -193,6 +290,18 @@ public class Player implements OutputCSV{
 	
 	public boolean isZeroLoss() {
 		return zeroLoss;
+	}
+	
+	public boolean isOnline() {
+		return Wiimmfi.getOnlinePlayers().contains(this);
+	}
+	
+	public boolean isHosting() {
+		return hosting;
+	}
+	
+	public String getStatus() {
+		return status;
 	}
 	
 	public long getDiscord() {

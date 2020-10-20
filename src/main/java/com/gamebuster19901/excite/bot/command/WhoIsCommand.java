@@ -30,19 +30,19 @@ public class WhoIsCommand {
 			if(!lookingFor.isEmpty()) {
 				for(Player p : players) {
 					if(p.getName().equalsIgnoreCase(lookingFor)) {
-						response = response + p + "\n";
+						response = response + p.toFullString() + "\n";
 					}
 					else if (p.getPrettyDiscord().toLowerCase().startsWith(lookingFor.toLowerCase())) {
-						response = response + p + "\n";
+						response = response + p.toFullString() + "\n";
 					}
 					else if (p.getFriendCode().equals(lookingFor)) {
-						response = response + p + "\n";
+						response = response + p.toFullString() + "\n";
 					}
 					else if (lookingFor.equals("" + p.getPlayerID())) {
-						response = response + p + "\n";
+						response = response + p.toFullString() + "\n";
 					}
 					else if (lookingFor.equals("" + p.getDiscord())) {
-						response = response + p + "\n";
+						response = response + p.toFullString() + "\n";
 					}
 				}
 				if(response.isEmpty()) {

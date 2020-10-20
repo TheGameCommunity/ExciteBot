@@ -64,6 +64,8 @@ public abstract class Audit implements Comparable<Audit>, OutputCSV{
 	private static transient final TypedConcurrentHashMap<Long, Pardon> PARDONS = new TypedConcurrentHashMap<Long, Pardon>(Pardon.class);
 	private static transient final TypedConcurrentHashMap<Long, CommandAudit> COMMANDS = new TypedConcurrentHashMap<Long, CommandAudit>(CommandAudit.class);
 	private static transient final TypedConcurrentHashMap<Long, ProfileDiscoveryAudit> PROFILE_DISCOVERIES = new TypedConcurrentHashMap<Long, ProfileDiscoveryAudit>(ProfileDiscoveryAudit.class);
+	private static transient final TypedConcurrentHashMap<Long, NameChangeAudit> NAME_CHANGES = new TypedConcurrentHashMap<Long, NameChangeAudit>(NameChangeAudit.class);
+	private static transient final TypedConcurrentHashMap<Long, RankChangeAudit> RANK_CHANGES = new TypedConcurrentHashMap<Long, RankChangeAudit>(RankChangeAudit.class);
 	static {
 		AUDIT_MAPS.put(Audit.class, AUDITS);
 		AUDIT_MAPS.put(Ban.class, BANS);
@@ -72,6 +74,8 @@ public abstract class Audit implements Comparable<Audit>, OutputCSV{
 		AUDIT_MAPS.put(Pardon.class, PARDONS);
 		AUDIT_MAPS.put(CommandAudit.class, COMMANDS);
 		AUDIT_MAPS.put(ProfileDiscoveryAudit.class, PROFILE_DISCOVERIES);
+		AUDIT_MAPS.put(NameChangeAudit.class, NAME_CHANGES);
+		AUDIT_MAPS.put(RankChangeAudit.class, RANK_CHANGES);
 	}
 	private static transient final Method PARSE_AUDIT;
 	

@@ -264,7 +264,7 @@ public class UserPreferences implements OutputCSV{
 								}
 							}
 							user.sendMessage(user.getJDAUser().getAsMention() + ", there are " + playerCount + " players online!\n\n" +
-								Wiimmfi.getOnlinePlayerList(new MessageContext(user))
+								Wiimmfi.getOnlinePlayerList(new MessageContext(user), false)
 							);
 							lastNotification.setValue(Instant.now());
 						}

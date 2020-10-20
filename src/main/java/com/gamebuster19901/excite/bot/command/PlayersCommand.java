@@ -19,7 +19,7 @@ public class PlayersCommand {
 			Player[] players = Player.getEncounteredPlayers();
 			String response = "Known players: (" + players.length + ") \n\n";
 			for(Player player : players) {
-				response += player + "\n";
+				response += player.toFullString() + "\n";
 			}
 			context.sendMessage(response);
 			if(!context.isConsoleMessage()) {
