@@ -81,7 +81,6 @@ public abstract class Audit implements Comparable<Audit>, OutputCSV{
 	private static transient final Method PARSE_AUDIT;
 	
 	static {
-		MAP_LOCK.lock();
 		try {
 			if(!AUDIT_DB.exists()) {
 				AUDIT_DB.getParentFile().mkdirs();
@@ -98,9 +97,6 @@ public abstract class Audit implements Comparable<Audit>, OutputCSV{
 		}
 		catch (NoSuchMethodException | SecurityException e) {
 			throw new AssertionError(e);
-		}
-		finally {
-			MAP_LOCK.unlock();
 		}
 	}
 	
