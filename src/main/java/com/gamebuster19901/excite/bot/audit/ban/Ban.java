@@ -18,7 +18,7 @@ import com.gamebuster19901.excite.bot.common.preferences.PermissionPreference;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
 import com.gamebuster19901.excite.bot.user.DurationPreference;
 import com.gamebuster19901.excite.bot.user.InstantPreference;
-import com.gamebuster19901.excite.util.DataPoint;
+import com.gamebuster19901.excite.util.DataMethod;
 import com.gamebuster19901.excite.util.TimeUtils;
 
 import static com.gamebuster19901.excite.util.Permission.ADMIN_ONLY;
@@ -29,7 +29,7 @@ public abstract class Ban extends Audit{
 	
 	protected DurationPreference banDuration;
 	protected InstantPreference banExpire;
-	protected LongPreference pardon = new LongPreference(NotPardoned.INSTANCE.getAuditId());
+	protected LongPreference pardon = new LongPreference(-1l);
 	
 	{
 		secrecy = new PermissionPreference(ADMIN_ONLY);
@@ -57,7 +57,7 @@ public abstract class Ban extends Audit{
 	
 	@SuppressWarnings("rawtypes")
 	public Ban(MessageContext context, String reason, Duration banDuration, Instant banExpire) {
-		this(context, reason, banDuration, banExpire, NotPardoned.INSTANCE.getAuditId());
+		this(context, reason, banDuration, banExpire, -1);
 	}
 	
 	@SuppressWarnings("rawtypes")
@@ -89,17 +89,17 @@ public abstract class Ban extends Audit{
 		}
 	}
 	
-	@DataPoint
+	@DataMethod
 	public boolean isPardoned() {
-		return pardon.getValue() != NotPardoned.INSTANCE.getAuditId();
+		return pardon.getValue() != -1;
 	}
 	
-	@DataPoint
+	@DataMethod
 	public boolean isActive() {
 		return Instant.now().isBefore(banExpire.getValue()) && !isPardoned();
 	}
 	
-	@DataPoint
+	@DataMethod
 	public abstract String getBannedUsername();
 	
 	public boolean endsAfter(Ban ban) {
@@ -139,7 +139,7 @@ public abstract class Ban extends Audit{
 	public static Ban[] getBansOfUser(DiscordUser user) {
 		HashSet<Ban> bans = new HashSet<Ban>();
 		Set<Player> profiles = user.getProfiles();
-		for(Entry<Long, Ban> verdict : BANS.entrySet()) {
+		for(Entry<Long, Ban> verdict : getAuditsOfType(Ban.class).entrySet()) {
 			Ban ban = verdict.getValue();
 			if(ban instanceof DiscordBan) {
 				if(((DiscordBan)ban).getBannedDiscordId() == user.getId()) {
@@ -165,7 +165,7 @@ public abstract class Ban extends Audit{
 	}
 	
 	public static Ban getBanById(long id) throws IllegalArgumentException {
-		Ban ban = Audit.BANS.get(id);
+		Ban ban = getAuditsOfType(Ban.class).get(id);
 		if(ban == null) {
 			throw new IllegalArgumentException("No ban with id " + id + " exists ");
 		}

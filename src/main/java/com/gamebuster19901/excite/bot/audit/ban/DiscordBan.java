@@ -9,7 +9,6 @@ import java.util.Map.Entry;
 
 import org.apache.commons.csv.CSVRecord;
 
-import com.gamebuster19901.excite.bot.audit.Audit;
 import com.gamebuster19901.excite.bot.command.MessageContext;
 import com.gamebuster19901.excite.bot.common.preferences.LongPreference;
 import com.gamebuster19901.excite.bot.common.preferences.StringPreference;
@@ -45,7 +44,7 @@ public class DiscordBan extends Ban {
 	
 	@SuppressWarnings("rawtypes")
 	public DiscordBan(MessageContext context, String reason, Duration banDuration, Instant banExpire, DiscordUser bannedDiscordUser) {
-		this(context, reason, banDuration, banExpire, NotPardoned.INSTANCE.getAuditId(), bannedDiscordUser);
+		this(context, reason, banDuration, banExpire, -1, bannedDiscordUser);
 	}
 	
 	@SuppressWarnings("rawtypes")
@@ -99,7 +98,7 @@ public class DiscordBan extends Ban {
 	}
 	
 	public static boolean isUserBanned(DiscordUser user) {
-		for(Entry<Long, DiscordBan> banEntry : Audit.DISCORD_BANS.entrySet()) {
+		for(Entry<Long, DiscordBan> banEntry : getAuditsOfType(DiscordBan.class).entrySet()) {
 			DiscordBan ban = banEntry.getValue();
 			if(ban.bannedDiscordId.getValue() == user.getId()) {
 				return ban.isActive();
@@ -121,7 +120,7 @@ public class DiscordBan extends Ban {
 			throw new AssertionError();
 		}
 		HashSet<DiscordBan> bans = new HashSet<DiscordBan>();
-		for(Entry<Long, DiscordBan> verdict : DISCORD_BANS.entrySet()) {
+		for(Entry<Long, DiscordBan> verdict : getAuditsOfType(DiscordBan.class).entrySet()) {
 			DiscordBan ban = (DiscordBan) verdict.getValue();
 			if(ban.bannedDiscordId.getValue() == id) {
 				bans.add(ban);
@@ -131,8 +130,8 @@ public class DiscordBan extends Ban {
 	}
 	
 	public static DiscordBan getBanById(long id) throws IllegalArgumentException {
-		Ban ban = Audit.BANS.get(id);
-		if(ban instanceof DiscordBan && !(ban instanceof NotDiscordBanned)) {
+		Ban ban = getAuditsOfType(DiscordBan.class).get(id);
+		if(ban instanceof DiscordBan) {
 			return (DiscordBan) ban;
 		}
 		throw new IllegalArgumentException("No discord ban with id " + id + " exists.");

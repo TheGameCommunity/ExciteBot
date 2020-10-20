@@ -26,7 +26,6 @@ import com.gamebuster19901.excite.Player;
 import com.gamebuster19901.excite.bot.audit.Audit;
 import com.gamebuster19901.excite.bot.audit.RankChangeAudit;
 import com.gamebuster19901.excite.bot.audit.ban.DiscordBan;
-import com.gamebuster19901.excite.bot.audit.ban.NotDiscordBanned;
 import com.gamebuster19901.excite.bot.audit.ban.Pardon;
 import com.gamebuster19901.excite.bot.command.MessageContext;
 import com.gamebuster19901.excite.output.OutputCSV;
@@ -107,7 +106,7 @@ public class DiscordUser implements OutputCSV{
 	}
 	
 	public DiscordBan getLongestActiveBan() {
-		DiscordBan longest = NotDiscordBanned.INSTANCE;
+		DiscordBan longest = null;
 		for(DiscordBan ban : DiscordBan.getBansOfUser(this)) {
 			if(ban.isActive()) {
 				if(ban.endsAfter(longest)) {
@@ -135,7 +134,7 @@ public class DiscordUser implements OutputCSV{
 	@SuppressWarnings("rawtypes")
 	public void pardon(MessageContext context) {
 		DiscordBan discordBan = getLongestActiveBan();
-		if(!(getLongestActiveBan() instanceof NotDiscordBanned)) {
+		if(getLongestActiveBan() != null) {
 			Pardon pardon = new Pardon(context, discordBan);
 			if(checkPardon(context, pardon)) {
 				discordBan.pardon(context, pardon);

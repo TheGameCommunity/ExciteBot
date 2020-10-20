@@ -15,8 +15,10 @@ import java.lang.reflect.Modifier;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
@@ -39,9 +41,12 @@ import com.gamebuster19901.excite.bot.common.preferences.StringPreference;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
 import com.gamebuster19901.excite.bot.user.InstantPreference;
 import com.gamebuster19901.excite.output.OutputCSV;
+import com.gamebuster19901.excite.util.DataMethod;
 import com.gamebuster19901.excite.util.DataPoint;
 import com.gamebuster19901.excite.util.Permission;
 import com.gamebuster19901.excite.util.ThreadService;
+import com.gamebuster19901.excite.util.TypedConcurrentHashMap;
+
 import static com.gamebuster19901.excite.util.Permission.*;
 
 public abstract class Audit implements Comparable<Audit>, OutputCSV{
@@ -51,11 +56,23 @@ public abstract class Audit implements Comparable<Audit>, OutputCSV{
 	private static final int DB_VERSION = 2;
 	
 	private static transient final File AUDIT_DB = new File("./run/verdicts.csv");
-	protected static transient final ConcurrentHashMap<Long, Audit> AUDITS = new ConcurrentHashMap<Long, Audit>();
-	public static transient final ConcurrentHashMap<Long, Ban> BANS = new ConcurrentHashMap<Long, Ban>();
-	protected static transient final ConcurrentHashMap<Long, ProfileBan> PROFILE_BANS = new ConcurrentHashMap<Long, ProfileBan>();
-	protected static transient final ConcurrentHashMap<Long, DiscordBan> DISCORD_BANS = new ConcurrentHashMap<Long, DiscordBan>();
-	protected static transient final ConcurrentHashMap<Long, Pardon> PARDONS = new ConcurrentHashMap<Long, Pardon>();
+	private static transient final ConcurrentHashMap<Class<? extends Audit>, TypedConcurrentHashMap<Long, ? extends Audit>>  AUDIT_MAPS = new ConcurrentHashMap();
+	private static transient final TypedConcurrentHashMap<Long, Audit> AUDITS = new TypedConcurrentHashMap<Long, Audit>(Audit.class);
+	private static transient final TypedConcurrentHashMap<Long, Ban> BANS = new TypedConcurrentHashMap<Long, Ban>(Ban.class);
+	private static transient final TypedConcurrentHashMap<Long, ProfileBan> PROFILE_BANS = new TypedConcurrentHashMap<Long, ProfileBan>(ProfileBan.class);
+	private static transient final TypedConcurrentHashMap<Long, DiscordBan> DISCORD_BANS = new TypedConcurrentHashMap<Long, DiscordBan>(DiscordBan.class);
+	private static transient final TypedConcurrentHashMap<Long, Pardon> PARDONS = new TypedConcurrentHashMap<Long, Pardon>(Pardon.class);
+	private static transient final TypedConcurrentHashMap<Long, CommandAudit> COMMANDS = new TypedConcurrentHashMap<Long, CommandAudit>(CommandAudit.class);
+	private static transient final TypedConcurrentHashMap<Long, ProfileDiscoveryAudit> PROFILE_DISCOVERIES = new TypedConcurrentHashMap<Long, ProfileDiscoveryAudit>(ProfileDiscoveryAudit.class);
+	static {
+		AUDIT_MAPS.put(Audit.class, AUDITS);
+		AUDIT_MAPS.put(Ban.class, BANS);
+		AUDIT_MAPS.put(ProfileBan.class, PROFILE_BANS);
+		AUDIT_MAPS.put(DiscordBan.class, DISCORD_BANS);
+		AUDIT_MAPS.put(Pardon.class, PARDONS);
+		AUDIT_MAPS.put(CommandAudit.class, COMMANDS);
+		AUDIT_MAPS.put(ProfileDiscoveryAudit.class, PROFILE_DISCOVERIES);
+	}
 	private static transient final Method PARSE_AUDIT;
 	
 	static {
@@ -90,6 +107,9 @@ public abstract class Audit implements Comparable<Audit>, OutputCSV{
 	protected InstantPreference dateIssued;
 	protected PermissionPreference secrecy = new PermissionPreference(ANYONE);
 	
+	@SuppressWarnings("rawtypes")
+	private transient HashMap<String, DataPoint> dataPoints = new HashMap<String, DataPoint>();
+	
 	public static void init() {}
 	
 	@SuppressWarnings("rawtypes")
@@ -115,13 +135,48 @@ public abstract class Audit implements Comparable<Audit>, OutputCSV{
 	 * Should only be used when parsing audits from a file
 	 */
 	protected Audit() {
-
+		setDataPoints();
 	}
 	
+	private void setDataPoints() {
+		Class<?> clazz = getClass();
+		while(Audit.class.isAssignableFrom(clazz)) {
+			fieldLoop:
+			for(Field f : clazz.getDeclaredFields()) {
+				if(Modifier.isStatic(f.getModifiers()) || Modifier.isTransient(f.getModifiers())) {
+					continue fieldLoop;
+				}
+				f.setAccessible(true);
+				if(dataPoints.put(f.getName(), new DataPoint<Field>(this, f)) != null) {
+					throw new Error("Unresolved compilation problem:\n\nMultiple data points with same name: " + f.getName());
+				}
+			}
+			methodLoop:
+			for(Method m : clazz.getDeclaredMethods()) {
+				if(Modifier.isStatic(m.getModifiers()) || !m.isAnnotationPresent(DataMethod.class)) {
+					continue methodLoop;
+				}
+				if(m.getParameterCount() != 0) {
+					throw new Error("Unresolved compilation problem:\n\n@DataPoint can only be placed on methods with no paramaters! \n\nClass: " + m.getDeclaringClass() + "\n\nMethod: " + m);
+				}
+				if(m.getReturnType() == void.class) {
+					throw new Error("Unresolved compilation problem:\n\n@DataPoint cannot be placed on a void method.");
+				}
+				m.setAccessible(true);
+				if(dataPoints.put(m.getName(), new DataPoint<Method>(this, m)) != null) {
+					throw new Error("Unresolved compilation problem:\n\nMultiple data points with same name: " + m.getName());
+				}
+			}
+			clazz = clazz.getSuperclass();
+		}
+	}
+	
+	@SuppressWarnings("unchecked")
 	public static <T extends Audit> T addAudit(T audit) {
 		Thread addThread = new Thread() {
 			@Override
 			public void run() {
+				List<Class<? extends Audit>> types = new ArrayList<>();
 				try {
 					MAP_LOCK.lock();
 					if(audit.auditId == null) {
@@ -129,21 +184,18 @@ public abstract class Audit implements Comparable<Audit>, OutputCSV{
 						audit.auditId = new LongPreference(auditId);
 					}
 					long auditId = audit.auditId.getValue();
-					AUDITS.put(auditId, audit);
-					if(audit instanceof Ban) {
-						BANS.put(auditId, (Ban) audit);
-						if(audit instanceof DiscordBan) {
-							DISCORD_BANS.put(auditId, (DiscordBan) audit);
-						}
-						else if (audit instanceof ProfileBan) {
-							PROFILE_BANS.put(auditId, (ProfileBan) audit);
-						}
-						else {
-							throw new AssertionError(audit.getClass());
+					for(TypedConcurrentHashMap<Long, ? extends Audit> auditMap : AUDIT_MAPS.values()) {
+						if(auditMap.getType().isAssignableFrom(audit.getClass())) {
+							TypedConcurrentHashMap<Long, Audit> realAuditMap = (TypedConcurrentHashMap<Long, Audit>) auditMap;
+							realAuditMap.put(auditId, audit);
+							types.add((Class<? extends Audit>) realAuditMap.getType());
 						}
 					}
-					else if (audit instanceof Pardon) {
-						PARDONS.put(auditId, (Pardon) audit);
+					if(types.size() == 0) {
+						throw new AssertionError("Audit map missing?!");
+					}
+					if(!types.contains(audit.getClass())) {
+						throw new IllegalStateException("Missing dedicated audit map for type " + audit.getClass());
 					}
 				}
 				finally {
@@ -153,6 +205,21 @@ public abstract class Audit implements Comparable<Audit>, OutputCSV{
 		};
 		ThreadService.run(addThread);
 		return audit;
+	}
+	
+	@SuppressWarnings("unchecked")
+	public static <T extends Audit> HashMap<Long, T> getAuditsOfType(Class<T> type) {
+		MAP_LOCK.lock();
+		for(TypedConcurrentHashMap<Long, ? extends Audit> auditMap : AUDIT_MAPS.values()) {
+			if(auditMap.getType().equals(type)) {
+				HashMap<Long, T> ret = new HashMap<Long, T>();
+				ret.putAll((Map<? extends Long, ? extends T>) auditMap);
+				MAP_LOCK.unlock();
+				return ret;
+			}
+		}
+		MAP_LOCK.unlock();
+		throw new IllegalArgumentException("There is no audit of type " + type);
 	}
 	
 	public long getAuditId() {
@@ -189,8 +256,6 @@ public abstract class Audit implements Comparable<Audit>, OutputCSV{
 			MAP_LOCK.lock();
 			Audit audit = AUDITS.get(id);
 			if(audit == null) {
-				System.out.println("Unknown audit " + id);
-				System.out.println(Thread.currentThread().getName());
 				audit = new UnknownAudit(id);
 			}
 			return audit;
@@ -267,6 +332,14 @@ public abstract class Audit implements Comparable<Audit>, OutputCSV{
 		return params;
 	}
 	
+	public Object getParamater(String name) {
+		Object o = dataPoints.get(name);
+		if(o == null) {
+			throw new IllegalArgumentException(getClass().getName() + " has no parameter called \"" + name + "\"");
+		}
+		return o;
+	}
+	
 	public DiscordUser getIssuerDiscord() {
 		if(auditId.getValue() == -1) {
 			return Main.CONSOLE;
@@ -277,38 +350,8 @@ public abstract class Audit implements Comparable<Audit>, OutputCSV{
 	@Override
 	public String toString() {
 		String ret = getClass().getSimpleName() + " info: \n";
-		Class<?> clazz = getClass();
-		try {
-			while(clazz != Object.class) {
-				fieldLoop:
-				for(Field f : clazz.getDeclaredFields()) {
-					if(Modifier.isTransient(f.getModifiers())) {
-						continue fieldLoop;
-					}
-					f.setAccessible(true);
-					Object val = f.get(this);
-					ret = ret + f.getName() + ": " + val + " \n";
-				}
-				methodLoop:
-				for(Method m : clazz.getDeclaredMethods()) {
-					if(Modifier.isStatic(m.getModifiers()) || !m.isAnnotationPresent(DataPoint.class)) {
-						continue methodLoop;
-					}
-					if(m.getParameterCount() != 0) {
-						throw new Error("Unresolved compilation problem:\n\n@DataPoint can only be placed on methods with no paramaters! \n\nClass: " + m.getDeclaringClass() + "\n\nMethod: " + m);
-					}
-					if(m.getReturnType() == void.class) {
-						throw new Error("Unresolved compilation problem:\n\n@DataPoint cannot be placed on a void method.");
-					}
-					m.setAccessible(true);
-					Object val = m.invoke(this);
-					ret = ret + m.getName() + ": " + val + " \n";
-				}
-				clazz = clazz.getSuperclass();
-			}
-		}
-		catch(IllegalAccessException | InvocationTargetException e) {
-			throw new RuntimeException(e);
+		for(DataPoint<?> data : dataPoints.values()) {
+			ret = ret + data.getName() + ": " + data.getValue() + "\n";
 		}
 		return ret;
 	}

@@ -9,7 +9,6 @@ import java.util.Map.Entry;
 import org.apache.commons.csv.CSVRecord;
 
 import com.gamebuster19901.excite.Player;
-import com.gamebuster19901.excite.bot.audit.Audit;
 import com.gamebuster19901.excite.bot.command.MessageContext;
 import com.gamebuster19901.excite.bot.common.preferences.IntegerPreference;
 import com.gamebuster19901.excite.bot.common.preferences.StringPreference;
@@ -43,7 +42,7 @@ public class ProfileBan extends Ban {
 	
 	@SuppressWarnings("rawtypes")
 	public ProfileBan(MessageContext context, String reason, Duration banDuration, Instant banExpire, Player bannedPlayer) {
-		this(context, reason, banDuration, banExpire, NotPardoned.INSTANCE.getAuditId(), bannedPlayer);
+		this(context, reason, banDuration, banExpire, -1, bannedPlayer);
 	}
 	
 	@SuppressWarnings("rawtypes")
@@ -101,7 +100,7 @@ public class ProfileBan extends Ban {
 				return true;
 			}
 		}
-		for(Entry<Long, ProfileBan> verdict : Audit.PROFILE_BANS.entrySet()) {
+		for(Entry<Long, ProfileBan> verdict : getAuditsOfType(ProfileBan.class).entrySet()) {
 			ProfileBan ban = (ProfileBan) verdict.getValue();
 			if(ban.bannedPlayer.getValue() == profile.getPlayerID()) {
 				if(ban.isActive()) {
