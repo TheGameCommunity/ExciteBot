@@ -57,15 +57,16 @@ public abstract class Audit implements Comparable<Audit>, OutputCSV{
 	protected static transient final ConcurrentHashMap<Long, DiscordBan> DISCORD_BANS = new ConcurrentHashMap<Long, DiscordBan>();
 	protected static transient final ConcurrentHashMap<Long, Pardon> PARDONS = new ConcurrentHashMap<Long, Pardon>();
 	private static transient final Method PARSE_AUDIT;
+	private static transient boolean initialized = false;
 	
 	static {
+		MAP_LOCK.lock();
 		try {
 			if(!AUDIT_DB.exists()) {
 				AUDIT_DB.getParentFile().mkdirs();
 				AUDIT_DB.createNewFile();
 			}
 			try {
-				MAP_LOCK.lock();
 				PARSE_AUDIT = Audit.class.getDeclaredMethod("parseAudit", CSVRecord.class);
 				PARSE_AUDIT.setAccessible(true);
 				for(Audit audit : getAuditsFromFile()) {
@@ -74,6 +75,7 @@ public abstract class Audit implements Comparable<Audit>, OutputCSV{
 			}
 			finally {
 				MAP_LOCK.unlock();
+				initialized = true;
 			}
 		}
 		catch(IOException e) {
@@ -91,6 +93,8 @@ public abstract class Audit implements Comparable<Audit>, OutputCSV{
 	protected StringPreference description;
 	protected InstantPreference dateIssued;
 	protected PermissionPreference secrecy = new PermissionPreference(ANYONE);
+	
+	public static void init() {}
 	
 	@SuppressWarnings("rawtypes")
 	protected Audit(MessageContext context) {
@@ -189,6 +193,8 @@ public abstract class Audit implements Comparable<Audit>, OutputCSV{
 			MAP_LOCK.lock();
 			Audit audit = AUDITS.get(id);
 			if(audit == null) {
+				System.out.println("Unknown audit " + id);
+				System.out.println(Thread.currentThread().getName());
 				audit = new UnknownAudit(id);
 			}
 			return audit;

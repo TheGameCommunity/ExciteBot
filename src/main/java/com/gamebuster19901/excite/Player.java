@@ -87,7 +87,9 @@ public class Player implements OutputCSV{
 		this.playerID = playerID;
 		this.discord = discord;
 		this.zeroLoss = zeroLoss;
-		this.discoveryAudit = Audit.addAudit(new ProfileDiscoveryAudit(this));
+		if(!(this instanceof UnknownPlayer)) {
+			this.discoveryAudit = Audit.addAudit(new ProfileDiscoveryAudit(this));
+		}
 	}
 	
 	public Player(String name, String friendCode, int playerID) {
@@ -100,7 +102,9 @@ public class Player implements OutputCSV{
 		this.playerID = playerID;
 		this.discord = discord;
 		this.zeroLoss = zeroLoss;
-		this.discoveryAudit = (ProfileDiscoveryAudit) Audit.getAuditById(discoveryAudit);
+		if(!(this instanceof UnknownPlayer)) {
+			this.discoveryAudit = (ProfileDiscoveryAudit) Audit.getAuditById(discoveryAudit);
+		}
 	}
 	
 	public String toString() {
@@ -137,7 +141,7 @@ public class Player implements OutputCSV{
 			CSVPrinter printer = new CSVPrinter(writer, CSVFormat.EXCEL);
 		)
 		{
-			printer.printRecord(playerID, friendCode, name, "`" + discord, zeroLoss);
+			printer.printRecord(playerID, friendCode, name, "`" + discord, zeroLoss, "`" + discoveryAudit.getAuditId());
 			printer.flush();
 			return writer.toString();
 		} catch (IOException e) {
@@ -373,7 +377,7 @@ public class Player implements OutputCSV{
 					}
 					discord = Long.parseLong(discordId.substring(1));
 					zeroLoss = Boolean.parseBoolean(csvRecord.get(4));
-					if(csvRecord.size() > 6) {
+					if(csvRecord.size() > 5) {
 						discoveryAudit = Long.parseLong(csvRecord.get(5).substring(1));
 						players.add(new Player(name, friendCode, playerID, discord, zeroLoss, discoveryAudit));
 					}

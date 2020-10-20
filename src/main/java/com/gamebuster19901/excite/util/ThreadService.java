@@ -39,6 +39,14 @@ public class ThreadService {
 		}
 	}
 	
+	public static void add(Thread thread) {
+		Thread.State state = thread.getState();
+		if(state == Thread.State.NEW) {
+			throw new IllegalStateException("Thread " + thread + "has not started!");
+		}
+		threads.add(thread);
+	}
+	
 	@SuppressWarnings("rawtypes")
 	public static void shutdown(MessageContext context) {
 		Thread shutdownHandler = new Thread() {

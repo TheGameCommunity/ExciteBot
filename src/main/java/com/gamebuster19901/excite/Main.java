@@ -21,6 +21,7 @@ import com.gamebuster19901.excite.bot.user.ConsoleUser;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
 import com.gamebuster19901.excite.bot.user.UserPreferences;
 import com.gamebuster19901.excite.util.StacktraceUtil;
+import com.gamebuster19901.excite.util.ThreadService;
 
 import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.entities.Activity;
@@ -71,6 +72,7 @@ public class Main {
 			}
 		}
 	
+		Audit.init(); //Audit.class must be initialized before ConsoleUser can be created
 		CONSOLE = new ConsoleUser();
 		
 		Throwable prevError = null;
@@ -210,6 +212,7 @@ public class Main {
 		};
 		if(start) {
 			listUpdater.start();
+			ThreadService.add(listUpdater);
 			if(join) {
 				listUpdater.join();
 			}
@@ -227,6 +230,7 @@ public class Main {
 		};
 		if(start) {
 			fileUpdater.start();
+			ThreadService.add(fileUpdater);
 			if(join) {
 				fileUpdater.join();
 			}
