@@ -65,15 +65,10 @@ public abstract class Audit implements Comparable<Audit>, OutputCSV{
 				AUDIT_DB.getParentFile().mkdirs();
 				AUDIT_DB.createNewFile();
 			}
-			try {
-				PARSE_AUDIT = Audit.class.getDeclaredMethod("parseAudit", CSVRecord.class);
-				PARSE_AUDIT.setAccessible(true);
-				for(Audit audit : getAuditsFromFile()) {
-					addAudit(audit);
-				}
-			}
-			finally {
-				MAP_LOCK.unlock();
+			PARSE_AUDIT = Audit.class.getDeclaredMethod("parseAudit", CSVRecord.class);
+			PARSE_AUDIT.setAccessible(true);
+			for(Audit audit : getAuditsFromFile()) {
+				addAudit(audit);
 			}
 		}
 		catch(IOException e) {
@@ -81,6 +76,9 @@ public abstract class Audit implements Comparable<Audit>, OutputCSV{
 		}
 		catch (NoSuchMethodException | SecurityException e) {
 			throw new AssertionError(e);
+		}
+		finally {
+			MAP_LOCK.unlock();
 		}
 	}
 	
