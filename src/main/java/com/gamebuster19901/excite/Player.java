@@ -108,7 +108,13 @@ public class Player implements OutputCSV{
 		this.discord = discord;
 		this.zeroLoss = zeroLoss;
 		if(!(this instanceof UnknownPlayer)) {
-			this.discoveryAudit = (ProfileDiscoveryAudit) Audit.getAuditById(discoveryAudit);
+			try {
+				this.discoveryAudit = (ProfileDiscoveryAudit) Audit.getAuditById(discoveryAudit);
+			}
+			catch(Throwable t) {
+				System.out.println(discoveryAudit);
+				throw t;
+			}
 		}
 	}
 	
