@@ -57,7 +57,6 @@ public abstract class Audit implements Comparable<Audit>, OutputCSV{
 	protected static transient final ConcurrentHashMap<Long, DiscordBan> DISCORD_BANS = new ConcurrentHashMap<Long, DiscordBan>();
 	protected static transient final ConcurrentHashMap<Long, Pardon> PARDONS = new ConcurrentHashMap<Long, Pardon>();
 	private static transient final Method PARSE_AUDIT;
-	private static transient boolean initialized = false;
 	
 	static {
 		MAP_LOCK.lock();
@@ -75,7 +74,6 @@ public abstract class Audit implements Comparable<Audit>, OutputCSV{
 			}
 			finally {
 				MAP_LOCK.unlock();
-				initialized = true;
 			}
 		}
 		catch(IOException e) {
