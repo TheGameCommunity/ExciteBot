@@ -15,6 +15,7 @@ import java.lang.reflect.Modifier;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -394,7 +395,16 @@ public abstract class Audit implements Comparable<Audit>, OutputCSV{
 	private static long generateUniqueId() {
 		try {
 			MAP_LOCK.lock();
-			return AUDITS.size();
+			Enumeration <Long> keys = AUDITS.keys();
+			Long last = 0l;
+			while(keys.hasMoreElements()) {
+				Long next = keys.nextElement();
+				if(next > last) {
+					last = next + 1;
+				}
+			}
+			System.out.println(last);
+			return last;
 		}
 		finally {
 			MAP_LOCK.unlock();
