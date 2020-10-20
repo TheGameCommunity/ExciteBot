@@ -69,7 +69,8 @@ public class DiscordBan extends Ban {
 		
 		//0-7 is Verdict
 		//8-11 is Ban
-		int i = super.getRecordSize(); //12 is discordBan version
+		int i = super.getRecordSize(); 
+		i++; //12 is discordBan version
 		bannedDiscordId = new LongPreference(Long.parseLong(record.get(12).substring(1)));
 		bannedUsername = new StringPreference(record.get(13));
 		
@@ -83,6 +84,10 @@ public class DiscordBan extends Ban {
 	
 	public long getBannedDiscordId() {
 		return bannedDiscordId.getValue();
+	}
+	
+	public DiscordUser getBannedUser() {
+		return DiscordUser.getDiscordUserIncludingUnknown(bannedDiscordId.getValue());
 	}
 
 	@Override

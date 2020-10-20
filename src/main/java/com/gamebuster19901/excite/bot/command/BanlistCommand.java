@@ -1,10 +1,11 @@
 package com.gamebuster19901.excite.bot.command;
 
 import com.gamebuster19901.excite.Player;
+import com.gamebuster19901.excite.bot.audit.Audit;
+import com.gamebuster19901.excite.bot.audit.ban.DiscordBan;
 
 //import java.time.Instant;
 
-import com.gamebuster19901.excite.bot.user.DiscordUser;
 import com.mojang.brigadier.CommandDispatcher;
 
 public class BanlistCommand {
@@ -22,9 +23,9 @@ public class BanlistCommand {
 			String response = "Discord Users:\n\n";
 			int discordAmount = 0;
 			int playerAmount = 0;
-			for(DiscordUser user : DiscordUser.getKnownUsers()) {
-				if(user.isBanned()) {
-					response += user.toDetailedString() + "\n";
+			for(DiscordBan ban : Audit.getAuditsOfType(DiscordBan.class).values()) {
+				if(ban.isActive()) {
+					response += ban.getBannedUser().toDetailedString() + "\n";
 					discordAmount++;
 				}
 			}
