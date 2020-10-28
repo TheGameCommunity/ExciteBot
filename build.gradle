@@ -12,6 +12,7 @@ repositories {
 }
 
 dependencies {
+	compile group: 'org.apache.commons', name: 'commons-text', version: '1.9'
 	compile group: 'org.jsoup', name: 'jsoup', version: '1.13.1'
     compile ('net.dv8tion:JDA:4.2.0_168') {
         exclude module: 'opus-java'
