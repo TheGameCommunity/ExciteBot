@@ -53,12 +53,6 @@ public class ThreadService {
 			@Override
 			public void run() {
 				
-				try {
-					ThreadService.run(Main.updateFiles(false, false));
-				} catch (InterruptedException e1) {
-					throw new AssertionError(e1);
-				}
-				
 				int threadCount;
 				int waitTime = 0;
 				do {
