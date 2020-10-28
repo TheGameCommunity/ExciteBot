@@ -587,5 +587,21 @@ public class DiscordUser {
 		}
 		return false;
 	}
+
+	public static void attemptRegister() {
+		DesiredProfile[] profiles = desiredProfiles.toArray(new DesiredProfile[] {});
+		for(DesiredProfile profile : profiles) {
+			if(profile.getRegistrationTimeout().isAfter(Instant.now())) {
+				profile.getRequester().sendMessage("Registration for " + profile.getDesiredProfile() + " timed out");
+				desiredProfiles.remove(profile);
+				continue;
+			}
+			if(profile.isVerified()) {
+				profile.register();
+				desiredProfiles.remove(profile);
+				continue;
+			}
+		}
+	}
 	
 }
