@@ -12,13 +12,12 @@ repositories {
 }
 
 dependencies {
-	compile group: 'org.apache.commons', name: 'commons-text', version: '1.9'
-	compile group: 'org.apache.commons', name: 'commons-csv', version: '1.8'
 	compile group: 'org.jsoup', name: 'jsoup', version: '1.13.1'
     compile ('net.dv8tion:JDA:4.2.0_168') {
         exclude module: 'opus-java'
     }
     compile 'com.mojang:brigadier:1.0.17'
+    compile group: 'mysql', name: 'mysql-connector-java', version: '8.0.22'
 }
 
 jar {

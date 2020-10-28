@@ -1,44 +1,38 @@
 package com.gamebuster19901.excite;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOError;
-import java.io.IOException;
-import java.io.StringWriter;
-import java.time.Duration;
-import java.util.Arrays;
-import java.util.Collections;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.HashSet;
-import java.util.Set;
 import java.util.logging.Logger;
 
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVParser;
-import org.apache.commons.csv.CSVPrinter;
-import org.apache.commons.csv.CSVRecord;
-
 import com.gamebuster19901.excite.bot.server.emote.Emote;
-import com.gamebuster19901.excite.bot.audit.Audit;
-import com.gamebuster19901.excite.bot.audit.NameChangeAudit;
-import com.gamebuster19901.excite.bot.audit.ProfileDiscoveryAudit;
-import com.gamebuster19901.excite.bot.audit.ban.ProfileBan;
+import com.gamebuster19901.excite.bot.command.ConsoleContext;
 import com.gamebuster19901.excite.bot.command.MessageContext;
+import com.gamebuster19901.excite.bot.database.SQLSerializeable;
+import com.gamebuster19901.excite.bot.database.Table;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
-import com.gamebuster19901.excite.bot.user.UnknownDiscordUser;
-import com.gamebuster19901.excite.output.OutputCSV;
-import com.gamebuster19901.excite.util.file.FileUtils;
+
+import static com.gamebuster19901.excite.bot.database.Table.PLAYERS;
+import static com.gamebuster19901.excite.bot.user.DiscordUser.DISCORD_ID;
 
 import net.dv8tion.jda.api.entities.User;
 
-public class Player implements OutputCSV{
+public class Player extends SQLSerializeable {
 	private static final Logger LOGGER = Logger.getLogger(Player.class.getName());
+	
+	public static final String PLAYER_ID = "playerID";
+	public static final String FRIEND_CODE = "friendCode";
+	public static final String NAME = "name";
+	public static final String REDACTED = "redacted";
+	
+	public static final String PLAYER_ID_EQUALS = PLAYER_ID + " =";
+
+	public static final String PLAYER_NAME_EQUALS = NAME + " =";
 	
 	protected static final String LEGACY = new String("legacy");
 	protected static final String VERIFIED = new String("verified");
-	protected static final String ZEROLOSS = new String(Character.toChars(0x2B50));
 	protected static final String BANNED = new String("banned");
 	protected static final String ONLINE = new String("online");
 	protected static final String OFFLINE = new String("offline");
@@ -50,77 +44,25 @@ public class Player implements OutputCSV{
 	protected static final String BOT = new String(Character.toChars(0x1F916));
 	protected static final String BOT_ADMIN = new String("bot_admin");
 	protected static final String BOT_OPERATOR = new String("bot_operator");
+	
 	protected static final File KNOWN_PLAYERS = new File("./run/encounteredPlayers.csv");
 	protected static final File OLD_KNOWN_PLAYERS = new File("./run/encounteredPlayers.csv.old");
 	
-	private static Set<Player> knownPlayers;
-	static {
-		try {
-			if(!KNOWN_PLAYERS.exists()) {
-				KNOWN_PLAYERS.getParentFile().mkdirs();
-				KNOWN_PLAYERS.createNewFile();
-			}
-			else {
-				if(OLD_KNOWN_PLAYERS.exists()) {
-					if(!FileUtils.contentEquals(KNOWN_PLAYERS, OLD_KNOWN_PLAYERS)) {
-						throw new IOException("File content differs!");
-					}
-				}
-			}
-			knownPlayers = Collections.synchronizedSet(new HashSet<Player>(Arrays.asList(getEncounteredPlayersFromFile())));
-		}
-		catch(IOException e) {
-			throw new IOError(e);
-		}
-	}
-	
-	private String name;
-	private final String friendCode;
 	private final int playerID;
-	
-	private boolean zeroLoss = false;
-	private long discord = -1;
-	private ProfileDiscoveryAudit discoveryAudit;
 	
 	private transient boolean hosting;
 	private transient String status;
 	
-	@Deprecated
-	public Player(String name, String friendCode, int playerID, long discord, boolean zeroLoss) {
-		this.name = name;
-		this.friendCode = friendCode;
-		this.playerID = playerID;
-		this.discord = discord;
-		this.zeroLoss = zeroLoss;
-		if(!(this instanceof UnknownPlayer)) {
-			this.discoveryAudit = Audit.addAudit(new ProfileDiscoveryAudit(this));
-		}
-	}
-	
-	public Player(String name, String friendCode, int playerID) {
-		this(name, friendCode, playerID, -1, false);
-	}
-	
-	public Player(String name, String friendCode, int playerID, long discord, boolean zeroLoss, long discoveryAudit) {
-		this.name = name;
-		this.friendCode = friendCode;
-		this.playerID = playerID;
-		this.discord = discord;
-		this.zeroLoss = zeroLoss;
-		if(!(this instanceof UnknownPlayer)) {
-			try {
-				this.discoveryAudit = (ProfileDiscoveryAudit) Audit.getAuditById(discoveryAudit);
-			}
-			catch(Throwable t) {
-				System.out.println(discoveryAudit);
-				throw t;
-			}
-		}
+	public Player(ResultSet results) throws SQLException {
+		this.playerID = results.getInt(PLAYER_ID);
 	}
 	
 	@Override
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public String toString() {
+		String name = getName();
+		long discordID = getDiscord();
+		
 		String prefix = "";
 		String suffix = "";
 		if(isOnline()) {
@@ -137,14 +79,11 @@ public class Player implements OutputCSV{
 		else {
 			prefix = prefix + Emote.getEmote(OFFLINE);
 		}
-		if(isZeroLoss()) {
-			suffix += Emote.getEmote(ZEROLOSS);
-		}
 		if(isBot()) {
 			suffix += BOT;
 		}
-		if(discord != -1) {
-			MessageContext context = new MessageContext(DiscordUser.getDiscordUserIncludingUnknown(discord));
+		if(discordID != -1) {
+			MessageContext context = new MessageContext(DiscordUser.getDiscordUserIncludingUnknown(new ConsoleContext(), discordID));
 			if(context.isOperator()) {
 				suffix = suffix + Emote.getEmote(BOT_OPERATOR);
 			}
@@ -156,7 +95,7 @@ public class Player implements OutputCSV{
 			suffix += Emote.getEmote(LEGACY);
 		}
 		if(isVerified()) {
-			DiscordUser user = DiscordUser.getDiscordUserIncludingUnknown(discord);
+			DiscordUser user = DiscordUser.getDiscordUserIncludingUnknown(new ConsoleContext(), discordID);
 			suffix += Emote.getEmote(VERIFIED);
 			if(this.isBanned()) {
 				if(!isOnline()) {
@@ -178,6 +117,10 @@ public class Player implements OutputCSV{
 	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public String toFullString() {
+		long discordID = getDiscord();
+		String name = getName();
+		String friendCode = getFriendCode();
+		
 		String prefix = "";
 		String suffix = "";
 		if(isOnline()) {
@@ -194,14 +137,11 @@ public class Player implements OutputCSV{
 		else {
 			prefix = prefix + Emote.getEmote(OFFLINE);
 		}
-		if(isZeroLoss()) {
-			suffix += Emote.getEmote(ZEROLOSS);
-		}
 		if(isBot()) {
 			suffix += BOT;
 		}
-		if(discord != -1) {
-			MessageContext context = new MessageContext(DiscordUser.getDiscordUserIncludingUnknown(discord));
+		if(discordID != -1) {
+			MessageContext context = new MessageContext(DiscordUser.getDiscordUserIncludingUnknown(new ConsoleContext(), discordID));
 			if(context.isOperator()) {
 				suffix = suffix + Emote.getEmote(BOT_OPERATOR);
 			}
@@ -213,7 +153,7 @@ public class Player implements OutputCSV{
 			suffix += Emote.getEmote(LEGACY);
 		}
 		if(isVerified()) {
-			DiscordUser user = DiscordUser.getDiscordUserIncludingUnknown(discord);
+			DiscordUser user = DiscordUser.getDiscordUserIncludingUnknown(new ConsoleContext(), discordID);
 			suffix += Emote.getEmote(VERIFIED);
 			if(this.isBanned()) {
 				if(!isOnline()) {
@@ -233,38 +173,46 @@ public class Player implements OutputCSV{
 		return String.format(prefix + " " + name + " - FC❲" + friendCode +  "❳ - PID❲"  + playerID + "❳" + suffix);
 	}
 	
-	public String toCSV() {
-		try (
-			StringWriter writer = new StringWriter();
-			CSVPrinter printer = new CSVPrinter(writer, CSVFormat.EXCEL);
-		)
-		{
-			printer.printRecord(playerID, friendCode, name, "`" + discord, zeroLoss, "`" + discoveryAudit.getAuditId());
-			printer.flush();
-			return writer.toString();
-		} catch (IOException e) {
+	public String getName() {
+		try {
+			ResultSet result = Table.selectColumnsFromWhere(new ConsoleContext(), NAME, PLAYERS, PLAYER_ID_EQUALS + playerID);
+			if(result.next()) {
+				return result.getString(NAME);
+			}
+			else {
+				throw new AssertionError("Could not find name of player with PID " + playerID);
+			}
+		}
+		catch(SQLException | AssertionError e) {
 			throw new IOError(e);
 		}
 	}
 	
-	public String getName() {
-		return name;
-	}
-	
-	public void setName(String name) {
-		if(this.name != null && !this.name.equals(name)) {
-			Audit.addAudit(new NameChangeAudit(this, name));
+	public void setName(String name) throws SQLException {
+		String oldName = getName();
+		if(oldName != null && !oldName.equals(name)) {
+			//Audit.addAudit(new NameChangeAudit(this, name));
+			Table.updateWhere(new ConsoleContext(), PLAYERS, NAME, name, PLAYER_ID_EQUALS + playerID);
 		}
-		this.name = name;
 	}
-	
 	
 	public void setStatus(String status) {
 		this.status = status;
 	}
 	
 	public String getFriendCode() {
-		return friendCode;
+		try {
+			ResultSet result = Table.selectColumnsFromWhere(new ConsoleContext(), FRIEND_CODE, PLAYERS, PLAYER_ID_EQUALS + playerID);
+			if(result.next()) {
+				return result.getString(FRIEND_CODE);
+			}
+			else {
+				throw new AssertionError("Could not find friend code of player with PID " + playerID);
+			}
+		}
+		catch(SQLException | AssertionError e) {
+			throw new IOError(e);
+		}
 	}
 	
 	public int getPlayerID() {
@@ -280,7 +228,7 @@ public class Player implements OutputCSV{
 	}
 	
 	public boolean isBot() {
-		DiscordUser discordUser = DiscordUser.getDiscordUser(getDiscord());
+		DiscordUser discordUser = DiscordUser.getDiscordUser(new ConsoleContext(), getDiscord());
 		if(discordUser != null) {
 			User user = discordUser.getJDAUser();
 			if(user != null) {
@@ -291,11 +239,8 @@ public class Player implements OutputCSV{
 	}
 
 	public boolean isBanned() {
-		return ProfileBan.isProfileBanned(this);
-	}
-	
-	public boolean isZeroLoss() {
-		return zeroLoss;
+		return false;
+		//return ProfileBan.isProfileBanned(this);
 	}
 	
 	public boolean isOnline() {
@@ -311,18 +256,37 @@ public class Player implements OutputCSV{
 	}
 	
 	public long getDiscord() {
-		return discord;
+		try {
+			ResultSet result = Table.selectColumnsFromWhere(new ConsoleContext(), DISCORD_ID, PLAYERS, PLAYER_ID_EQUALS + playerID);
+			if(result.next()) {
+				long ret = result.getLong(1);
+				if(ret != 0) {
+					return ret;
+				}
+				return -1;
+			}
+			throw new AssertionError("Could not find player with pid " + playerID);
+		} catch (SQLException e) {
+			throw new IOError(e);
+		}
 	}
 	
 	public String getPrettyDiscord() {
-		return DiscordUser.getDiscordUserIncludingUnknown(discord).toString();
+		return DiscordUser.getDiscordUserIncludingUnknown(new ConsoleContext(), getDiscord()).toString();
 	}
 	
-	public void setDiscord(long discordId) {
-		this.discord = discordId;
+	public void setDiscord(long discordID) {
+		try {
+			if(getDiscord() != discordID) {
+				Table.updateWhere(new ConsoleContext(), PLAYERS, DISCORD_ID, discordID + "", PLAYER_ID_EQUALS + playerID);
+			}
+		}
+		catch (SQLException e) {
+			throw new IOError(e);
+		}
 	}
 	
-	@SuppressWarnings("rawtypes")
+/*	@SuppressWarnings("rawtypes")
 	public ProfileBan ban(MessageContext context, Duration duration, String reason) {
 		ProfileBan profileBan = new ProfileBan(context, reason, duration, this);
 		profileBan = Audit.addAudit(profileBan); //future proofing in case we ever need to return a different audit
@@ -331,6 +295,12 @@ public class Player implements OutputCSV{
 			discord.sendMessage(context, toString() + " " + reason);
 		}
 		return profileBan;
+	}*/
+	
+
+	@Override
+	public final Table getTable() {
+		return PLAYERS;
 	}
 	
 	@Override
@@ -346,174 +316,45 @@ public class Player implements OutputCSV{
 		return getPlayerID();
 	}
 	
-	public static boolean isPlayerKnown(int pid) {
-		for(Player player : knownPlayers) {
-			if(player.playerID == pid) {
-				return true;
-			}
-		}
-		return false;
+	public static boolean isPlayerKnown(MessageContext context, int pid) {
+		return Table.existsWhere(new ConsoleContext(), PLAYERS, PLAYER_ID_EQUALS + pid);
 	}
 	
-	public static Player getPlayerByID(int pid) {
-		for(Player player : knownPlayers) {
-			if (player.playerID == pid) {
-				return player;
+	public static Player getPlayerByID(MessageContext context, int pid) {
+		try {
+			ResultSet rs = Table.selectAllFromWhere(context, PLAYERS, PLAYER_ID_EQUALS + pid);
+			if(rs.next()) {
+				return new Player(rs);
 			}
+		} catch (SQLException e) {
+			throw new IOError(e);
 		}
 		return UnknownPlayer.INSTANCE;
 	}
 	
-	public static Player[] getPlayersByName(String name) {
-		HashSet<Player> players = new HashSet<Player>();
-		for(Player player : knownPlayers) {
-			if(player.getName().equalsIgnoreCase(name)) {
-				players.add(player);
-			}
-		}
-		return players.toArray(new Player[]{});
-	}
-	
-	/**
-	 * @deprecated use DiscordUser.getProfiles()
-	 */
-	@Deprecated
-	public static Player[] getPlayersByDiscord(String name, String discriminator) {
-		return getPlayersByDiscord(DiscordUser.getJDAUser(name, discriminator));
-	}
-	
-	/**
-	 * @deprecated use DiscordUser.getProfiles()
-	 */
-	@Deprecated
-	public static Player[] getPlayersByDiscord(User user) {
-		HashSet<Player> players = new HashSet<Player>();
-		if(Main.discordBot != null) {
-			if(user != null) {
-				for(Player player : knownPlayers) {
-					if(player.getPrettyDiscord() == user.getAsTag()) {
-						players.add(player);
-					}
-				}
-			}
-		}
-		return players.toArray(new Player[]{});
-	}
-	
-	/**
-	 * @deprecated use DiscordUser.getProfiles()
-	 */
-	@Deprecated
-	public static Player[] getPlayersByDiscord(DiscordUser user) {
-		return getPlayersByDiscord(user.getJDAUser());
-	}
-	
-	/**
-	 * @deprecated use DiscordUser.getProfiles()
-	 */
-	public static Player[] getPlayersByDiscord(long id) {
-		return getPlayersByDiscord(DiscordUser.getJDAUser(id));
-	}
-	
-	public static void addPlayer(Player player) {
-		if(knownPlayers.contains(player)) {
-			throw new IllegalArgumentException("Player already known!: " + player.toString());
-		}
-		LOGGER.info("New Player found!: " + player.toString());
-		knownPlayers.add(player);
-	}
-	
-	public static void updatePlayerListFile() {
-		BufferedWriter writer = null;
-		try {
-			if(OLD_KNOWN_PLAYERS.exists()) {
-				OLD_KNOWN_PLAYERS.delete();
-			}
-			if (!KNOWN_PLAYERS.renameTo(OLD_KNOWN_PLAYERS)) {
-				throw new IOException();
-			}
-			KNOWN_PLAYERS.createNewFile();
-			writer = new BufferedWriter(new FileWriter(KNOWN_PLAYERS));
-			for(Player p : knownPlayers) {
-				writer.write(p.toCSV());
-			}
-		}
-		catch(IOException e) {
-			throw new AssertionError(e);
-		}
-		finally {
-			try {
-				if(writer != null) {
-					writer.close();
-				}
-			} catch (IOException e) {
-				throw new IOError(e);
-			}
-		}
-	}
-	
-	public static Player[] getEncounteredPlayers() {
-		return knownPlayers.toArray(new Player[] {});
-	}
-	
-	public static Player[] getPlayersFromIds(int[] ids) {
-		HashSet<Player> players = new HashSet<Player>();
-		for(int i = 0; i < ids.length; i++) {
-			Player player = getPlayerByID(ids[i]);
-			if(player != null) {
-				players.add(player);
-			}
-		}
-		return players.toArray(new Player[]{});
-	}
-	
-	private static Player[] getEncounteredPlayersFromFile() {
+	public static Player[] getPlayersByName(MessageContext context, String name) {
 		HashSet<Player> players = new HashSet<Player>();
 		try {
-			BufferedReader reader = new BufferedReader(new FileReader(KNOWN_PLAYERS));
-			CSVParser csvParser = new CSVParser(reader, CSVFormat.DEFAULT.withTrim(false));
-			try {
-				reader = new BufferedReader(new FileReader(KNOWN_PLAYERS));
-				
-				int playerID = Integer.MIN_VALUE;
-				String friendCode = null;
-				String name = null;
-				long discord = -1;
-				boolean zeroLoss = false;
-				long discoveryAudit = -1;
-				
-				for(CSVRecord csvRecord : csvParser ) {
-					playerID = Integer.parseInt(csvRecord.get(0));
-					friendCode = csvRecord.get(1);
-					name = csvRecord.get(2);
-					String discordId = csvRecord.get(3);
-					if(discordId.isEmpty()) {
-						discord = -1;
-					}
-					discord = Long.parseLong(discordId.substring(1));
-					zeroLoss = Boolean.parseBoolean(csvRecord.get(4));
-					if(csvRecord.size() > 5) {
-						discoveryAudit = Long.parseLong(csvRecord.get(5).substring(1));
-						players.add(new Player(name, friendCode, playerID, discord, zeroLoss, discoveryAudit));
-					}
-					else {
-						players.add(new Player(name, friendCode, playerID, discord, zeroLoss));
-					}
-				}
+			ResultSet rs = Table.selectAllFromWhere(context, PLAYERS, PLAYER_NAME_EQUALS + name);
+			while(rs.next()) {
+				players.add(new Player(rs));
 			}
-			finally {
-				if(reader != null) {
-					reader.close();
-				}
-				if(csvParser != null) {
-					csvParser.close();
-				}
-			}
-		}
-		catch(IOException e) {
-			throw new AssertionError(e);
+		} catch (SQLException e) {
+			throw new IOError(e);
 		}
 		return players.toArray(new Player[]{});
 	}
 	
+	public static Player[] getEncounteredPlayers(MessageContext context) {
+		HashSet<Player> players = new HashSet<Player>();
+		try {
+			ResultSet rs = Table.selectAllFrom(context, PLAYERS);
+			while(rs.next()) {
+				players.add(new Player(rs));
+			}
+		} catch (SQLException e) {
+			throw new IOError(e);
+		}
+		return players.toArray(new Player[]{});
+	}
 }
