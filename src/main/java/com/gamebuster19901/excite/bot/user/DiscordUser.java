@@ -255,6 +255,20 @@ public class DiscordUser {
 		//return preferences.getTotalBanCount();
 	}
 	
+	public int getNotifyThreshold() {
+		try {
+			ResultSet result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, THRESHOLD, DISCORD_USERS, idEqualsThis());
+			if(result.next()) {
+				return result.getInt(1);
+			}
+			else {
+				throw new AssertionError("Could not find threshold for discord user " + discordId);
+			}
+		} catch (SQLException e) {
+			throw new IOError(e);
+		}
+	}
+	
 	public void setNotifyThreshold(int threshold) {
 		if(threshold > 0 || threshold == -1) {
 			try {
@@ -265,6 +279,20 @@ public class DiscordUser {
 		}
 		else {
 			throw new IndexOutOfBoundsException(threshold + " < 1");
+		}
+	}
+	
+	public Duration getNotifyFrequency() {
+		try {
+			ResultSet result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, FREQUENCY, DISCORD_USERS, idEqualsThis());
+			if(result.next()) {
+				return Duration.parse(result.getString(1));
+			}
+			else {
+				throw new AssertionError("Could not get notification frequency for " + discordId);
+			}
+		} catch (SQLException e) {
+			throw new IOError(e);
 		}
 	}
 	
@@ -282,6 +310,18 @@ public class DiscordUser {
 		}
 	}
 	
+	public boolean isNotifyingContinuously() {
+		try {
+			ResultSet result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, NOTIFY_CONTINUOUSLY, DISCORD_USERS, idEqualsThis());
+			if(result.next()) {
+				return result.getBoolean(1);
+			}
+			throw new AssertionError("Could not get notification frequency for " + discordId);
+		} catch (SQLException e) {
+			throw new IOError(e);
+		} 
+	}
+	
 	public void setNotifyContinuously(boolean continuous) {
 		String value = continuous ? "b'1'" : "b'0'";
 		try {
@@ -294,7 +334,20 @@ public class DiscordUser {
 		}
 	}
 	
-	private void setDippedBelowThreshold(boolean dippedBelow) {
+	
+	public boolean dippedBelowThreshold() {
+		try {
+			ResultSet result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, BELOW_THRESHOLD, DISCORD_USERS, idEqualsThis());
+			if(result.next()) {
+				return result.getBoolean(1);
+			}
+			throw new AssertionError("Could not get theshold state of " + discordId);
+		} catch (SQLException e) {
+			throw new IOError(e);
+		}
+	}
+	
+	public void setDippedBelowThreshold(boolean dippedBelow) {
 		String value = dippedBelow ? "b'1'" : "b'0'";
 		try {
 			Table.updateWhere(ConsoleContext.INSTANCE, DISCORD_USERS, BELOW_THRESHOLD, value, DISCORD_ID_EQUALS + discordId);
