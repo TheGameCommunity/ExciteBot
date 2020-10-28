@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS `discord_users` (
   `discord_name` char(37) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
   `threshold` int NOT NULL DEFAULT '-1',
   `frequency` varchar(45) COLLATE utf8mb4_bin NOT NULL DEFAULT 'PT30M',
-  `lastNotification` varchar(45) COLLATE utf8mb4_bin NOT NULL DEFAULT '-1000000000-01-01T00:00:00Z',
+  `lastNotification` varchar(45) COLLATE utf8mb4_bin DEFAULT NULL,
   `dippedBelowThreshold` bit(1) NOT NULL DEFAULT b'0',
   `notifyContinuously` bit(1) NOT NULL DEFAULT b'0',
   PRIMARY KEY (`discord_id`),
