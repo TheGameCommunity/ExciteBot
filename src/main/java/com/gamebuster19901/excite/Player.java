@@ -187,7 +187,7 @@ public class Player {
 	
 	public String getName() {
 		try {
-			ResultSet result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, NAME, PLAYERS, PLAYER_ID_EQUALS + playerID);
+			ResultSet result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, NAME, PLAYERS, idEqualsThis());
 			if(result.next()) {
 				return result.getString(NAME);
 			}
@@ -204,7 +204,7 @@ public class Player {
 		String oldName = getName();
 		if(oldName != null && !oldName.equals(name)) {
 			//Audit.addAudit(new NameChangeAudit(this, name));
-			Table.updateWhere(ConsoleContext.INSTANCE, PLAYERS, NAME, name, PLAYER_ID_EQUALS + playerID);
+			Table.updateWhere(ConsoleContext.INSTANCE, PLAYERS, NAME, name, idEqualsThis());
 		}
 	}
 	
@@ -214,7 +214,7 @@ public class Player {
 	
 	public String getFriendCode() {
 		try {
-			ResultSet result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, FRIEND_CODE, PLAYERS, PLAYER_ID_EQUALS + playerID);
+			ResultSet result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, FRIEND_CODE, PLAYERS, idEqualsThis());
 			if(result.next()) {
 				return result.getString(FRIEND_CODE);
 			}
@@ -269,7 +269,7 @@ public class Player {
 	
 	public long getDiscord() {
 		try {
-			ResultSet result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, DISCORD_ID, PLAYERS, PLAYER_ID_EQUALS + playerID);
+			ResultSet result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, DISCORD_ID, PLAYERS, PLAYER_ID_EQUALS + idEqualsThis());
 			if(result.next()) {
 				long ret = result.getLong(1);
 				if(ret != 0) {
@@ -290,7 +290,7 @@ public class Player {
 	public void setDiscord(long discordID) {
 		try {
 			if(getDiscord() != discordID) {
-				Table.updateWhere(ConsoleContext.INSTANCE, PLAYERS, DISCORD_ID, discordID + "", PLAYER_ID_EQUALS + playerID);
+				Table.updateWhere(ConsoleContext.INSTANCE, PLAYERS, DISCORD_ID, discordID + "", idEqualsThis());
 			}
 		}
 		catch (SQLException e) {
@@ -366,5 +366,9 @@ public class Player {
 			throw new IOError(e);
 		}
 		return players.toArray(new Player[]{});
+	}
+
+	public String idEqualsThis() {
+		return PLAYER_ID_EQUALS + playerID;
 	}
 }
