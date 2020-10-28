@@ -10,7 +10,6 @@ import java.util.logging.Logger;
 import com.gamebuster19901.excite.bot.server.emote.Emote;
 import com.gamebuster19901.excite.bot.command.ConsoleContext;
 import com.gamebuster19901.excite.bot.command.MessageContext;
-import com.gamebuster19901.excite.bot.database.SQLSerializeable;
 import com.gamebuster19901.excite.bot.database.Table;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
 
@@ -19,7 +18,7 @@ import static com.gamebuster19901.excite.bot.user.DiscordUser.DISCORD_ID;
 
 import net.dv8tion.jda.api.entities.User;
 
-public class Player extends SQLSerializeable {
+public class Player {
 	private static final Logger LOGGER = Logger.getLogger(Player.class.getName());
 	
 	public static final String PLAYER_ID = "playerID";
@@ -83,7 +82,7 @@ public class Player extends SQLSerializeable {
 			suffix += BOT;
 		}
 		if(discordID != -1) {
-			MessageContext context = new MessageContext(DiscordUser.getDiscordUserIncludingUnknown(new ConsoleContext(), discordID));
+			MessageContext context = new MessageContext(DiscordUser.getDiscordUserIncludingUnknown(ConsoleContext.INSTANCE, discordID));
 			if(context.isOperator()) {
 				suffix = suffix + Emote.getEmote(BOT_OPERATOR);
 			}
@@ -95,7 +94,6 @@ public class Player extends SQLSerializeable {
 			suffix += Emote.getEmote(LEGACY);
 		}
 		if(isVerified()) {
-			DiscordUser user = DiscordUser.getDiscordUserIncludingUnknown(new ConsoleContext(), discordID);
 			suffix += Emote.getEmote(VERIFIED);
 			if(this.isBanned()) {
 				if(!isOnline()) {
@@ -141,7 +139,7 @@ public class Player extends SQLSerializeable {
 			suffix += BOT;
 		}
 		if(discordID != -1) {
-			MessageContext context = new MessageContext(DiscordUser.getDiscordUserIncludingUnknown(new ConsoleContext(), discordID));
+			MessageContext context = new MessageContext(DiscordUser.getDiscordUserIncludingUnknown(ConsoleContext.INSTANCE, discordID));
 			if(context.isOperator()) {
 				suffix = suffix + Emote.getEmote(BOT_OPERATOR);
 			}
@@ -153,7 +151,6 @@ public class Player extends SQLSerializeable {
 			suffix += Emote.getEmote(LEGACY);
 		}
 		if(isVerified()) {
-			DiscordUser user = DiscordUser.getDiscordUserIncludingUnknown(new ConsoleContext(), discordID);
 			suffix += Emote.getEmote(VERIFIED);
 			if(this.isBanned()) {
 				if(!isOnline()) {
@@ -175,7 +172,7 @@ public class Player extends SQLSerializeable {
 	
 	public String getName() {
 		try {
-			ResultSet result = Table.selectColumnsFromWhere(new ConsoleContext(), NAME, PLAYERS, PLAYER_ID_EQUALS + playerID);
+			ResultSet result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, NAME, PLAYERS, PLAYER_ID_EQUALS + playerID);
 			if(result.next()) {
 				return result.getString(NAME);
 			}
@@ -192,7 +189,7 @@ public class Player extends SQLSerializeable {
 		String oldName = getName();
 		if(oldName != null && !oldName.equals(name)) {
 			//Audit.addAudit(new NameChangeAudit(this, name));
-			Table.updateWhere(new ConsoleContext(), PLAYERS, NAME, name, PLAYER_ID_EQUALS + playerID);
+			Table.updateWhere(ConsoleContext.INSTANCE, PLAYERS, NAME, name, PLAYER_ID_EQUALS + playerID);
 		}
 	}
 	
@@ -202,7 +199,7 @@ public class Player extends SQLSerializeable {
 	
 	public String getFriendCode() {
 		try {
-			ResultSet result = Table.selectColumnsFromWhere(new ConsoleContext(), FRIEND_CODE, PLAYERS, PLAYER_ID_EQUALS + playerID);
+			ResultSet result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, FRIEND_CODE, PLAYERS, PLAYER_ID_EQUALS + playerID);
 			if(result.next()) {
 				return result.getString(FRIEND_CODE);
 			}
@@ -228,7 +225,7 @@ public class Player extends SQLSerializeable {
 	}
 	
 	public boolean isBot() {
-		DiscordUser discordUser = DiscordUser.getDiscordUser(new ConsoleContext(), getDiscord());
+		DiscordUser discordUser = DiscordUser.getDiscordUser(ConsoleContext.INSTANCE, getDiscord());
 		if(discordUser != null) {
 			User user = discordUser.getJDAUser();
 			if(user != null) {
@@ -257,7 +254,7 @@ public class Player extends SQLSerializeable {
 	
 	public long getDiscord() {
 		try {
-			ResultSet result = Table.selectColumnsFromWhere(new ConsoleContext(), DISCORD_ID, PLAYERS, PLAYER_ID_EQUALS + playerID);
+			ResultSet result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, DISCORD_ID, PLAYERS, PLAYER_ID_EQUALS + playerID);
 			if(result.next()) {
 				long ret = result.getLong(1);
 				if(ret != 0) {
@@ -272,13 +269,13 @@ public class Player extends SQLSerializeable {
 	}
 	
 	public String getPrettyDiscord() {
-		return DiscordUser.getDiscordUserIncludingUnknown(new ConsoleContext(), getDiscord()).toString();
+		return DiscordUser.getDiscordUserIncludingUnknown(ConsoleContext.INSTANCE, getDiscord()).toString();
 	}
 	
 	public void setDiscord(long discordID) {
 		try {
 			if(getDiscord() != discordID) {
-				Table.updateWhere(new ConsoleContext(), PLAYERS, DISCORD_ID, discordID + "", PLAYER_ID_EQUALS + playerID);
+				Table.updateWhere(ConsoleContext.INSTANCE, PLAYERS, DISCORD_ID, discordID + "", PLAYER_ID_EQUALS + playerID);
 			}
 		}
 		catch (SQLException e) {
@@ -297,12 +294,6 @@ public class Player extends SQLSerializeable {
 		return profileBan;
 	}*/
 	
-
-	@Override
-	public final Table getTable() {
-		return PLAYERS;
-	}
-	
 	@Override
 	public boolean equals(Object o) {
 		if(o instanceof Player) {
@@ -316,10 +307,12 @@ public class Player extends SQLSerializeable {
 		return getPlayerID();
 	}
 	
+	@SuppressWarnings("rawtypes")
 	public static boolean isPlayerKnown(MessageContext context, int pid) {
-		return Table.existsWhere(new ConsoleContext(), PLAYERS, PLAYER_ID_EQUALS + pid);
+		return Table.existsWhere(context, PLAYERS, PLAYER_ID_EQUALS + pid);
 	}
 	
+	@SuppressWarnings("rawtypes")
 	public static Player getPlayerByID(MessageContext context, int pid) {
 		try {
 			ResultSet rs = Table.selectAllFromWhere(context, PLAYERS, PLAYER_ID_EQUALS + pid);
@@ -332,6 +325,7 @@ public class Player extends SQLSerializeable {
 		return UnknownPlayer.INSTANCE;
 	}
 	
+	@SuppressWarnings("rawtypes")
 	public static Player[] getPlayersByName(MessageContext context, String name) {
 		HashSet<Player> players = new HashSet<Player>();
 		try {
@@ -345,6 +339,7 @@ public class Player extends SQLSerializeable {
 		return players.toArray(new Player[]{});
 	}
 	
+	@SuppressWarnings("rawtypes")
 	public static Player[] getEncounteredPlayers(MessageContext context) {
 		HashSet<Player> players = new HashSet<Player>();
 		try {
