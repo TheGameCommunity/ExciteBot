@@ -4,7 +4,9 @@ import com.gamebuster19901.excite.bot.user.ConsoleUser;
 
 public class ConsoleContext extends MessageContext<ConsoleUser>{
 
-	public ConsoleContext() {
+	public static final ConsoleContext INSTANCE = new ConsoleContext();
+	
+	private ConsoleContext() {
 		super(ConsoleUser.getConsoleUser());
 	}
 	
