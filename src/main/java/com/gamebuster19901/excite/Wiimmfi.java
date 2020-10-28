@@ -3,6 +3,7 @@ package com.gamebuster19901.excite;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -79,7 +80,7 @@ public class Wiimmfi {
 		}
 	}
 	
-	public static Player[] updateOnlinePlayers() {
+	public static Player[] updateOnlinePlayers() throws SQLException {
 		HashSet<Player> onlinePlayers = new HashSet<Player>();
 		HashSet<Player> hostingPlayers = new HashSet<Player>();
 		if(document != null) {
@@ -103,10 +104,10 @@ public class Wiimmfi {
 					
 					int playerId = Integer.parseInt(parseLine(e.html(), 1));
 					
-					Player player = Player.getPlayerByID(new ConsoleContext(), playerId);
+					Player player = Player.getPlayerByID(ConsoleContext.INSTANCE, playerId);
 					if(player instanceof UnknownPlayer) {
 						String friendCode = parseLine(e.html(), 2);
-						player = Player.addPlayer(new ConsoleContext(), name, friendCode, playerId));
+						player = Player.addPlayer(ConsoleContext.INSTANCE, playerId, friendCode, name);
 					}
 					else {
 						player.setName(name);
@@ -180,7 +181,7 @@ public class Wiimmfi {
 	}
 	
 	public static Player[] getKnownPlayers() {
-		return Player.getEncounteredPlayers();
+		return Player.getEncounteredPlayers(ConsoleContext.INSTANCE);
 	}
 	
 	private static String parseLine(String s, int line) {
