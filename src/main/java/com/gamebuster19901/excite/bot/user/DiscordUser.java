@@ -479,8 +479,12 @@ public class DiscordUser {
 	}
 	
 	public static void addUser(User user) {
-		if(getDiscordUser(ConsoleContext.INSTANCE, user.getIdLong()) == null) {
-			//TODO: add user to database
+		if(getDiscordUserIncludingUnknown(ConsoleContext.INSTANCE, user.getIdLong()) instanceof UnknownDiscordUser) {
+			try {
+				addDiscordUser(ConsoleContext.INSTANCE, user.getIdLong(), user.getAsTag());
+			} catch (SQLException e) {
+				new AssertionError("Unable to add new discord user " + user.getAsTag() + "(" + user.getIdLong() + ")", e);
+			}
 		}
 	}
 	
