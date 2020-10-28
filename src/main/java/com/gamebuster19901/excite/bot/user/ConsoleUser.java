@@ -13,7 +13,7 @@ import com.gamebuster19901.excite.bot.database.DatabaseConnection;
 
 import net.dv8tion.jda.api.entities.User;
 
-public class ConsoleUser extends UnloadedDiscordUser{
+public class ConsoleUser extends UnloadedDiscordUser {
 	
 	private final String name = "CONSOLE";
 	
@@ -42,7 +42,8 @@ public class ConsoleUser extends UnloadedDiscordUser{
 	}*/
 	
 	@Override
-	public Set<Player> getProfiles() {
+	@SuppressWarnings("rawtypes")
+	public Set<Player> getProfiles(MessageContext context) {
 		throw new AssertionError();
 	}
 /*	
