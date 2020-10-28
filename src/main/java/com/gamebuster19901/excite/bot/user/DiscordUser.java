@@ -1,100 +1,122 @@
 package com.gamebuster19901.excite.bot.user;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOError;
 import java.io.IOException;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.annotation.Nullable;
 
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVParser;
-import org.apache.commons.csv.CSVRecord;
-
 import com.gamebuster19901.excite.Main;
 import com.gamebuster19901.excite.Player;
 import com.gamebuster19901.excite.bot.audit.Audit;
-import com.gamebuster19901.excite.bot.audit.RankChangeAudit;
 import com.gamebuster19901.excite.bot.audit.ban.DiscordBan;
 import com.gamebuster19901.excite.bot.audit.ban.Pardon;
+import com.gamebuster19901.excite.bot.command.ConsoleContext;
 import com.gamebuster19901.excite.bot.command.MessageContext;
-import com.gamebuster19901.excite.output.OutputCSV;
-import com.gamebuster19901.excite.util.CSVHelper;
+import com.gamebuster19901.excite.bot.database.DatabaseConnection;
+import com.gamebuster19901.excite.bot.database.Table;
+import com.gamebuster19901.excite.util.StacktraceUtil;
+
+import static com.gamebuster19901.excite.bot.database.Table.DISCORD_USERS;
+import static com.gamebuster19901.excite.bot.database.Table.PLAYERS;
+
+import static com.gamebuster19901.excite.Player.PLAYER_ID;
 
 import net.dv8tion.jda.api.entities.PrivateChannel;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.exceptions.ErrorResponseException;
 
-public class DiscordUser implements OutputCSV{
+public class DiscordUser {
 	
-	public static final File USER_PREFS = new File("./run/userPreferences.csv");
-	private static ConcurrentHashMap<Long, DiscordUser> users = new ConcurrentHashMap<Long, DiscordUser>();
+	public static final String DISCORD_ID = "discordID";
+	public static final String DISCORD_ID_EQUALS = DISCORD_ID + " =";
+	public static final String DISCORD_NAME = "discord_name";
+	public static final String DISCORD_NAME_EQUALS = DISCORD_NAME + " =";
+	public static final String THRESHOLD = "threshold";
+	public static final String FREQUENCY = "frequency";
+	public static final String LAST_NOTIFICATION = "lastNotification";
+	public static final String BELOW_THRESHOLD = "dippedBelowThreshold";
+	public static final String NOTIFY_CONTINUOUSLY = "notifyContinuously";
 	
-	static {
-		try {
-			if(!USER_PREFS.exists()) {
-				USER_PREFS.getParentFile().mkdirs();
-				USER_PREFS.createNewFile();
-			}
-			for(DiscordUser user : getEncounteredUsersFromFile()) {
-				addUser(user);
-				System.out.println("Found user " + user);
-			}
+	private static final Set<DesiredProfile> desiredProfiles = Collections.newSetFromMap(new ConcurrentHashMap<DesiredProfile, Boolean>());
+	
+	protected transient User user;
+	protected transient DatabaseConnection connection;
+	
+	private final long discordId;
+	
+	public DiscordUser(ResultSet results) {
+		if(user == null) {
+			throw new NullPointerException();
 		}
-		catch(IOException e) {
+		this.discordId = user.getIdLong();
+		initConnection();
+	}
+	
+	protected DiscordUser(long userId) {
+		this.discordId = userId;
+		initConnection();
+	}
+	
+	public static DiscordUser addDiscordUser(MessageContext context, long discordID, String name) throws SQLException {
+		PreparedStatement ps = context.getConnection().prepareStatement("INSERT INTO ? (?, ?) VALUES (?, ?);");
+		ps.setString(1, Table.DISCORD_USERS.toString());
+		ps.setString(2, DISCORD_ID);
+		ps.setString(3, DISCORD_NAME);
+		ps.setLong(4, discordID);
+		ps.setString(5, name);
+		ps.execute();
+		return getDiscordUser(context, discordID);
+	}
+
+	public DatabaseConnection getDatabaseConnection() {
+		return connection;
+	}
+	
+	public Connection getConnection() {
+		return connection.getConnection();
+	}
+	
+	protected void initConnection() {
+		try {
+			connection = new DatabaseConnection(this);
+		} catch (IOException | SQLException e) {
 			throw new IOError(e);
 		}
 	}
 	
-	private final long id;
-	protected User user;
-	UserPreferences preferences;
-	
-	public DiscordUser(User user) {
-		if(user == null) {
-			throw new NullPointerException();
-		}
-		this.id = user.getIdLong();
-		this.preferences = new UserPreferences(this);
-	}
-	
-	protected DiscordUser(long userId) {
-		this.id = userId;
-		this.preferences = new UserPreferences(this);
-	}
-	
 	@Nullable
 	public User getJDAUser() {
-		if(id == -1) {
+		if(discordId == -1) {
 			return null;
 		}
 		if(user == null) {
 			try {
-				user = Main.discordBot.jda.retrieveUserById(id).complete();
+				user = Main.discordBot.jda.retrieveUserById(getId()).complete();
 			}
 			catch(Exception e) {
 				e.printStackTrace();
 			}
 			if(user == null) {
-				System.out.println("Could not find JDA user for " + preferences.getDiscordTag());
+				System.out.println("Could not find JDA user for " + discordId);
 			}
 		}
 		return user;
 	}
 	
 	public long getId() {
-		return id;
+		return discordId;
 	}
 	
 	@SuppressWarnings("rawtypes")
@@ -157,49 +179,62 @@ public class DiscordUser implements OutputCSV{
 		}
 	}
 	
-	@Override
-	public String toCSV() {
-		return preferences.toCSV();
+	@SuppressWarnings("rawtypes")
+	public Set<Player> getProfiles(MessageContext context) throws SQLException {
+		HashSet<Player> players = new HashSet<Player>();
+		ResultSet results = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, PLAYER_ID, PLAYERS, DISCORD_ID_EQUALS + "discordID");
+		while(results.next()) {
+			players.add(Player.getPlayerByID(context, results.getInt(1)));
+		}
+		return players;
 	}
-	
-	public Set<Player> getProfiles() {
-		return preferences.getProfiles();
-	}
-	
+
 	public boolean isBanned() {
-		return preferences.isBanned();
+		return false; //TODO: Implement
 	}
 	
 	public boolean isAdmin() {
-		return preferences.isAdmin();
+		try {
+			if(isOperator()) {
+				return true;
+			}
+			ResultSet result = Table.selectAllFromWhere(ConsoleContext.INSTANCE, Table.ADMINS, "discord_id = " + getId());
+			return result.next();
+		}
+		catch(SQLException e) {
+			throw new IOError(e);
+		}
+	}
+	
+	public boolean isOperator() {
+		try {
+			ResultSet result = Table.selectAllFromWhere(ConsoleContext.INSTANCE, Table.OPERATORS, "discord_id = " + getId());
+			return result.next();
+		}
+		catch(SQLException e) {
+			throw new IOError(e);
+		}
 	}
 	
 	@SuppressWarnings("rawtypes")
 	public void setAdmin(MessageContext promoter, boolean admin) {
-		preferences.setAdmin(promoter, admin);
-		MessageContext<DiscordUser> promotedContext = new MessageContext<DiscordUser>(this);
-		RankChangeAudit audit = new RankChangeAudit(promoter, promotedContext, "administrator", admin);
-		Audit.addAudit(audit);
-		DiscordUser.messageAllAdmins(audit.getDescription());
-		if(!admin) {
-			this.sendMessage(audit.getDescription());
+		if(admin) {
+			Table.addAdmin(promoter, this);
+		}
+		else {
+			if(isAdmin())
+			Table.removeAdmin(promoter, this);
 		}
 	}
 	
 	@SuppressWarnings("rawtypes")
 	public void setOperator(MessageContext promoter, boolean operator) {
-		preferences.setOperator(promoter, operator);
-		MessageContext<DiscordUser> promotedContext = new MessageContext<DiscordUser>(this);
-		RankChangeAudit audit = new RankChangeAudit(promoter, promotedContext, "operator", operator);
-		Audit.addAudit(audit);
-		DiscordUser.messageAllAdmins(audit.getDescription());
-		if(!operator) {
-			this.sendMessage(audit.getDescription());
+		if(operator) {
+			Table.addOperator(promoter, this);
 		}
-	}
-	
-	public boolean isOperator() {
-		return preferences.isOperator();
+		else {
+			Table.removeOperator(promoter, this);
+		}
 	}
 	
 	public Instant getBanExpireTime() {
@@ -211,16 +246,22 @@ public class DiscordUser implements OutputCSV{
 	}
 	
 	public int getUnpardonedBanCount() {
-		return preferences.getUnpardonedBanCount();
+		return 0;
+		//return preferences.getUnpardonedBanCount();
 	}
 	
 	public int getTotalBanCount() {
-		return preferences.getTotalBanCount();
+		return 0;
+		//return preferences.getTotalBanCount();
 	}
 	
 	public void setNotifyThreshold(int threshold) {
 		if(threshold > 0 || threshold == -1) {
-			preferences.setNotifyThreshold(threshold);
+			try {
+				Table.updateWhere(ConsoleContext.INSTANCE, DISCORD_USERS, THRESHOLD, threshold + "", DISCORD_ID_EQUALS + discordId);
+			} catch (SQLException e) {
+				throw new IOError(e);
+			}
 		}
 		else {
 			throw new IndexOutOfBoundsException(threshold + " < 1");
@@ -230,7 +271,11 @@ public class DiscordUser implements OutputCSV{
 	public void setNotifyFrequency(Duration frequency) {
 		Duration min = Duration.ofMinutes(5);
 		if(frequency.compareTo(min) > -1) {
-			preferences.setNotifyFrequency(frequency);
+			try {
+				Table.updateWhere(ConsoleContext.INSTANCE, DISCORD_USERS, FREQUENCY, frequency.toString(), DISCORD_ID_EQUALS + discordId);
+			} catch (SQLException e) {
+				throw new IOError(e);
+			}
 		}
 		else {
 			throw new IllegalArgumentException("Frequency is less than 5 minutes!");
@@ -238,25 +283,62 @@ public class DiscordUser implements OutputCSV{
 	}
 	
 	public void setNotifyContinuously(boolean continuous) {
-		preferences.setNotifyContinuously(continuous);
+		String value = continuous ? "b'1'" : "b'0'";
+		try {
+			Table.updateWhere(ConsoleContext.INSTANCE, DISCORD_USERS, NOTIFY_CONTINUOUSLY, value, DISCORD_ID_EQUALS + discordId);
+			if(continuous) {
+				setDippedBelowThreshold(false);
+			}
+		} catch (SQLException e) {
+			throw new IOError(e);
+		}
 	}
 	
-	public String requestRegistration(Player desiredProfile) {
-		return preferences.requestRegistration(desiredProfile);
+	private void setDippedBelowThreshold(boolean dippedBelow) {
+		String value = dippedBelow ? "b'1'" : "b'0'";
+		try {
+			Table.updateWhere(ConsoleContext.INSTANCE, DISCORD_USERS, BELOW_THRESHOLD, value, DISCORD_ID_EQUALS + discordId);
+		} catch (SQLException e) {
+			throw new IOError(e);
+		}
+	}
+	
+	public String requestRegistration(Player profile) {
+		DesiredProfile desiredProfile = new DesiredProfile(this, profile);
+		if(desiredProfiles.contains(desiredProfile)) {
+			throw new IllegalStateException(profile.toString() + " is already being registered, please wait.");
+		}
+		else {
+			desiredProfiles.add(desiredProfile);
+			return desiredProfile.getRegistrationCode();
+		}
 	}
 	
 	public boolean requestingRegistration() {
-		return preferences.requestingRegistration();
+		for(DesiredProfile profile : desiredProfiles) {
+			if(profile.getRequester().equals(this)) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	public void clearRegistration() {
+		for(DesiredProfile profile : desiredProfiles) {
+			if(profile.getRequester() == this) {
+				desiredProfiles.remove(profile);
+			}
+		}
 	}
 	
 	@SuppressWarnings("rawtypes")
 	public void sentCommand(MessageContext context) {
-		this.preferences.sentCommand(context);
+		
 	}
 	
 	@SuppressWarnings("rawtypes")
 	public void sentCommand(MessageContext context, int amount) {
-		this.preferences.sentCommand(context, amount);
+		
 	}
 	
 	public void sendMessage(String message) {
@@ -291,13 +373,13 @@ public class DiscordUser implements OutputCSV{
 	
 	@Override
 	public int hashCode() {
-		return Long.valueOf(id).hashCode();
+		return Long.valueOf(discordId).hashCode();
 	}
 	
 	@Override
 	public boolean equals(Object o) {
 		if(o instanceof DiscordUser) {
-			return ((DiscordUser) o).id == id;
+			return ((DiscordUser) o).discordId == discordId;
 		}
 		return false;
 	}
@@ -308,23 +390,17 @@ public class DiscordUser implements OutputCSV{
 	}
 	
 	public String toDetailedString() {
-		return this + " (" + id + ")";
+		return this + " (" + discordId + ")";
 	}
 	
-	public static void addUser(DiscordUser user) {
-		for(Entry<Long, DiscordUser> userEntry : users.entrySet()) {
-			DiscordUser u = userEntry.getValue();
-			if(user.equals(u)) {
-				if(u instanceof UnloadedDiscordUser && !(user instanceof UnloadedDiscordUser)) {
-					UserPreferences preferences = u.preferences;
-					user.preferences = preferences;
-					users.put(u.id, user);
-					System.out.println("Loaded previously unloaded user " + user.getJDAUser().getAsTag());
-				}
-				return;
-			}
+	public String getMySQLUsername() {
+		return "DiscordUser#" + discordId;
+	}
+	
+	public static void addUser(User user) {
+		if(getDiscordUser(ConsoleContext.INSTANCE, user.getIdLong()) == null) {
+			//TODO: add user to database
 		}
-		users.put(user.id, user);
 	}
 	
 	public static final User getJDAUser(long id) {
@@ -347,30 +423,34 @@ public class DiscordUser implements OutputCSV{
 	}
 	
 	@Deprecated
-	public static final DiscordUser getDiscordUser(long id) {
-		DiscordUser discordUser = users.get(id);
-		if(discordUser == null || discordUser instanceof UnloadedDiscordUser) {
+	@SuppressWarnings("rawtypes")
+	public static final DiscordUser getDiscordUser(MessageContext context, long id) {
+		try {
+			ResultSet results = Table.selectAllFromWhere(context, DISCORD_USERS, "discord_id = " + id);
+			
+			if(results.next()) {
+				return new DiscordUser(results.getLong("discord_id"));
+			}
 			return null;
 		}
-		return discordUser;
+		catch(SQLException e) {
+			throw new IOError(e);
+		}
 	}
 	
-	public static final DiscordUser getDiscordUserIncludingUnloaded(long id) {
-		return users.get(id);
-	}
-	
-	public static final DiscordUser getDiscordUserIncludingUnknown(long id) {
+	@SuppressWarnings("rawtypes")
+	public static final DiscordUser getDiscordUserIncludingUnknown(MessageContext context, long id) {
 		DiscordUser user;
-		user = users.get(id);
+		user = getDiscordUser(context, id);
 		if(user == null) {
 			user = new UnknownDiscordUser(id);
 		}
 		return user;
 	}
 	
-	public static final DiscordUser getDiscordUserIncludingUnknown(String discriminator) {
+	public static final DiscordUser getDiscordUserIncludingUnknown(MessageContext context, String discriminator) {
 		DiscordUser user;
-		user = getDiscordUser(discriminator);
+		user = getDiscordUser(context, discriminator);
 		if(user == null) {
 			if(discriminator.contains("#")) {
 				user = new UnknownDiscordUser(discriminator.substring(0, discriminator.indexOf('#')), discriminator.substring(discriminator.indexOf('#') + 1, discriminator.length()));
@@ -382,146 +462,55 @@ public class DiscordUser implements OutputCSV{
 		return user;
 	}
 	
-	public static final DiscordUser getDiscordUserTreatingUnknownsAsNobody(long id) {
+	public static final DiscordUser getDiscordUserTreatingUnknownsAsNobody(MessageContext context, long id) {
 		DiscordUser user;
-		user = users.get(id);
+		user = getDiscordUser(context, id);
 		if(user == null) {
 			user = Nobody.INSTANCE;
 		}
 		return user;
 	}
 	
-	public static final DiscordUser getDiscordUser(String discriminator) {
-		for(Entry<Long, DiscordUser> userEntry : users.entrySet()) {
-			if(userEntry.getValue().getClass() == DiscordUser.class) {
-				DiscordUser discordUser = userEntry.getValue();
-				if(discordUser.getJDAUser().getAsTag().trim().equalsIgnoreCase(discriminator)) {
-					return discordUser;
-				}
+	public static final DiscordUser getDiscordUser(MessageContext context, String discriminator) {
+		try {
+			ResultSet results = Table.selectAllFromWhere(context, DISCORD_USERS, "discord_name = " + discriminator);
+			if(results.next()) {
+				return new DiscordUser(results.getLong("discord_id"));
 			}
+			return null;
+		} catch (SQLException e) {
+			throw new IOError(e);
 		}
-		return null;
-	}
-	
-	@Deprecated
-	public static final DiscordUser getDiscordUserIncludingUnloaded(String discriminator) {
-		for(Entry<Long, DiscordUser> userEntry : users.entrySet()) {
-			DiscordUser discordUser = userEntry.getValue();
-			if(discordUser.getJDAUser().getAsTag().trim().equalsIgnoreCase(discriminator)) {
-				return discordUser;
-			}
-		}
-		return null;
 	}
 	
 	public static final DiscordUser[] getKnownUsers() {
-		return users.values().toArray(new DiscordUser[]{});
+		try {
+			ArrayList<DiscordUser> users = new ArrayList<DiscordUser>();
+			ResultSet results = Table.selectAllFrom(ConsoleContext.INSTANCE, DISCORD_USERS);
+			while(results.next()) {
+				users.add(new DiscordUser(results));
+			}
+			return users.toArray(new DiscordUser[]{});
+		} catch (SQLException e) {
+			throw new IOError(e);
+		}
 	}
 	
 	public static final void messageAllAdmins(String message) {
-		ArrayList<DiscordUser> users = new ArrayList<DiscordUser>();
-		users.addAll(DiscordUser.users.values());
-		users.add(Main.CONSOLE);
-		for(DiscordUser user : users) {
-			if(user.isAdmin()) {
-				user.sendMessage(message);
-			}
-		}
+		
 	}
 	
 	public static final void messageAllOperators(String message) {
-		ArrayList<DiscordUser> users = new ArrayList<DiscordUser>();
-		users.addAll(DiscordUser.users.values());
-		users.add(Main.CONSOLE);
-		for(DiscordUser user : users) {
-			if(user.isOperator()) {
-				user.sendMessage(message);
-			}
-		}
+		
 	}
 	
-	public static void updateWarningCooldowns() {
-		for(DiscordUser user : getKnownUsers()) {
-			user.preferences.updateWarningCooldown();
-		}
-	}
-	
-	public static void updateCooldowns() {
-		for(DiscordUser user : getKnownUsers()) {
-			user.preferences.updateCooldowns();
-		}
-	}
-	
-	public static void updateUserList() {
-		for(User user : Main.discordBot.jda.getUsers()) {
-			addUser(new DiscordUser(user.getIdLong()));
-		}
-		for(DiscordUser discordUser : DiscordUser.getKnownUsers()) {
-			if(discordUser.getClass() == DiscordUser.class && discordUser.getJDAUser() == null) {
-				UnloadedDiscordUser unloadedUser = new UnloadedDiscordUser(discordUser.id);
-				unloadedUser.preferences = discordUser.preferences;
-				users.put(discordUser.id, unloadedUser);
-				System.out.println("Unloaded previously loaded user with id (" + discordUser.id + ")");
-			}
-		}
-	}
-	
-	public static void updateUserPreferencesFile() {
-		BufferedWriter writer = null;
+	@Override
+	public void finalize() {
 		try {
-			USER_PREFS.createNewFile();
-			writer = new BufferedWriter(new FileWriter(USER_PREFS));
-			for(Entry<Long, DiscordUser> discordUser : users.entrySet()) {
-				writer.write(discordUser.getValue().toCSV());
-			}
+			connection.getConnection().close();
+		} catch (SQLException e) {
+			ConsoleUser.getConsoleUser().sendMessage(StacktraceUtil.getStackTrace(e));
 		}
-		catch(IOException e) {
-			throw new AssertionError(e);
-		}
-		finally {
-			try {
-				if(writer != null) {
-					writer.close();
-				}
-			} catch (IOException e) {
-				throw new IOError(e);
-			}
-		}
-	}
-	
-	private static final DiscordUser[] getEncounteredUsersFromFile() {
-		HashSet<DiscordUser> discordUsers = new HashSet<DiscordUser>();
-		try {
-			BufferedReader reader = new BufferedReader(new FileReader(USER_PREFS));
-			CSVParser csvParser = new CSVParser(reader, CSVFormat.DEFAULT);
-			try {
-				
-				int DB_VERSION = 0;
-				
-				for(CSVRecord record : csvParser) {
-					CSVHelper csvRecord = new CSVHelper(record);
-					try {
-						DB_VERSION = csvRecord.getInt(0);
-						addUser(parseDB_VERSION(csvRecord, DB_VERSION));
-					}
-					catch(NumberFormatException e) {
-						addUser(parseDB_VERSION(csvRecord, 0));
-					}
-				}
-			}
-			finally {
-				if(reader != null) {
-					reader.close();
-				}
-				if(csvParser != null) {
-					csvParser.close();
-				}
-			}
-		}
-		catch(IOException e) {
-			throw new AssertionError(e);
-		}
-		return discordUsers.toArray(new DiscordUser[]{});
 	}
 	
 	@SuppressWarnings("rawtypes")
@@ -537,125 +526,9 @@ public class DiscordUser implements OutputCSV{
 			}
 		}
 		else {
-			context.sendMessage("Ban " + banId + " does not belong to " + this + ", it belongs to " + DiscordUser.getDiscordUserTreatingUnknownsAsNobody(discordBan.getBannedDiscordId()));
+			context.sendMessage("Ban " + banId + " does not belong to " + this + ", it belongs to " + DiscordUser.getDiscordUserTreatingUnknownsAsNobody(context, discordBan.getBannedDiscordId()));
 		}
 		return false;
-	}
-	
-	private static DiscordUser parseDB_VERSION(CSVHelper csvRecord, int DB_VERSION) {
-		if(DB_VERSION < UserPreferences.DB_VERSION) {
-			System.out.println("Found legacy data of version " + DB_VERSION);
-		}
-		
-		
-		
-		String discord;
-		long discordId;
-		int notifyThreshold;
-		Duration notifyFrequency;
-		Player[] profiles;
-		//Instant banTime;
-		//Duration banDuration;
-		//Instant banExpire;
-		//String banReason;
-		//int unpardonedBanCount;
-		Instant lastNotification;
-		boolean dippedBelowThreshold;
-		//int totalBanCount;
-		boolean notifyContinuously;
-		boolean isAdmin;
-		boolean isOperator;
-		
-		DiscordUser discordUser;
-		UserPreferences preferences = new UserPreferences();
-		
-		if(DB_VERSION == 0 || DB_VERSION == 1) {
-			discord = csvRecord.get(0);
-			discordId = Long.parseLong(csvRecord.get(1).replaceFirst("'", ""));
-			notifyThreshold = Integer.parseInt(csvRecord.get(2));
-			notifyFrequency = Duration.parse(csvRecord.get(3));
-			String[] players = csvRecord.get(4).replaceAll("\"", "").replaceFirst("'", "").split(",");
-			int[] playerIDs = new int[players.length];
-			for(int i = 0; i < players.length; i++) {
-				if(!players[i].isEmpty()) {
-					playerIDs[i] = Integer.parseInt(players[i]);
-				}
-			}
-			profiles = Player.getPlayersFromIds(playerIDs);
-			
-			//records 5 - 9 were removed
-			
-			if(csvRecord.size() > 10) { //legacy data may not have this record
-				lastNotification = Instant.parse(csvRecord.get(10));
-			}
-			else {
-				lastNotification = Instant.parse(csvRecord.get(5));
-			}
-			
-			if(csvRecord.size() > 11) { //legacy data may not have this record
-				dippedBelowThreshold = Boolean.parseBoolean(csvRecord.get(11));
-			}
-			else {
-				dippedBelowThreshold = Boolean.parseBoolean(csvRecord.get(6));
-			}
-			
-			//record 12 was removed
-			
-			if(csvRecord.size() > 13) {
-				notifyContinuously = Boolean.parseBoolean(csvRecord.get(13));
-			}
-			else {
-				notifyContinuously = Boolean.parseBoolean(csvRecord.get(7));
-			}
-			
-			preferences.parsePreferences(discord, discordId, notifyThreshold, notifyFrequency, profiles, lastNotification, dippedBelowThreshold, notifyContinuously, false, false);
-			
-			User jdaUser = getJDAUser(discordId);
-			if(jdaUser != null) {
-				discordUser = new DiscordUser(jdaUser);
-			}
-			else {
-				System.out.println("Could not find JDA user for " + discord + "(" + discordId + ")");
-				discordUser = new UnloadedDiscordUser(discordId);
-			}
-			discordUser.preferences = preferences;
-		}
-		else if (DB_VERSION == 2) {
-			discord = csvRecord.get(1);
-			discordId = Long.parseLong(csvRecord.get(2).replaceFirst("'", ""));
-			notifyThreshold = Integer.parseInt(csvRecord.get(3));
-			notifyFrequency = Duration.parse(csvRecord.get(4));
-			String[] players = csvRecord.get(5).replaceAll("\"", "").replaceFirst("'", "").split(",");
-			int[] playerIDs = new int[players.length];
-			for(int i = 0; i < players.length; i++) {
-				if(!players[i].isEmpty()) {
-					playerIDs[i] = Integer.parseInt(players[i]);
-				}
-			}
-			profiles = Player.getPlayersFromIds(playerIDs);
-			lastNotification = Instant.parse(csvRecord.get(6));
-			dippedBelowThreshold = Boolean.parseBoolean(csvRecord.get(7));
-			notifyContinuously = Boolean.parseBoolean(csvRecord.get(8));
-			isAdmin = Boolean.parseBoolean(csvRecord.get(9));
-			isOperator = Boolean.parseBoolean(csvRecord.get(10));
-			
-			preferences.parsePreferences(discord, discordId, notifyThreshold, notifyFrequency, profiles, lastNotification, dippedBelowThreshold, notifyContinuously, isAdmin, isOperator);
-			
-			User jdaUser = getJDAUser(discordId);
-			if(jdaUser != null) {
-				discordUser = new DiscordUser(jdaUser);
-			}
-			else {
-				System.out.println("Could not find JDA user for " + discord + "(" + discordId + ")");
-				discordUser = new UnloadedDiscordUser(discordId);
-			}
-			discordUser.preferences = preferences;
-		}
-		else {
-			throw new IllegalArgumentException("Unknown DB version: " + DB_VERSION);
-		}
-	
-		return discordUser;
 	}
 	
 }

@@ -1,12 +1,15 @@
 package com.gamebuster19901.excite.bot.user;
 
+import java.io.IOError;
+import java.io.IOException;
+import java.sql.SQLException;
 import java.time.Duration;
 import java.util.Set;
 
 import com.gamebuster19901.excite.Main;
 import com.gamebuster19901.excite.Player;
-import com.gamebuster19901.excite.bot.audit.ban.DiscordBan;
 import com.gamebuster19901.excite.bot.command.MessageContext;
+import com.gamebuster19901.excite.bot.database.DatabaseConnection;
 
 import net.dv8tion.jda.api.entities.User;
 
@@ -19,26 +22,30 @@ public class ConsoleUser extends UnloadedDiscordUser{
 	}
 	
 	@Override
+	public void initConnection() {
+		try {
+			connection = new DatabaseConnection();
+		} catch (IOException | SQLException e) {
+			throw new IOError(e);
+		}
+	}
+	
+	@Override
 	public User getJDAUser() {
 		throw new AssertionError();
 	}
 	
-	@Override
+/*	@Override
 	@SuppressWarnings("rawtypes")
 	public DiscordBan ban(MessageContext context, Duration duration, String reason) {
 		throw new AssertionError();
-	}
-	
-	@Override
-	public String toCSV() {
-		throw new AssertionError();
-	}
+	}*/
 	
 	@Override
 	public Set<Player> getProfiles() {
 		throw new AssertionError();
 	}
-	
+/*	
 	@Override
 	public boolean isBanned() {
 		return false;
@@ -53,7 +60,7 @@ public class ConsoleUser extends UnloadedDiscordUser{
 	public int getTotalBanCount() {
 		throw new AssertionError();
 	}
-	
+*/	
 	@Override
 	public void setNotifyThreshold(int threshold) {
 		throw new AssertionError();
