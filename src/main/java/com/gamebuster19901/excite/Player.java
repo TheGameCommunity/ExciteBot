@@ -56,6 +56,10 @@ public class Player {
 		this.playerID = results.getInt(PLAYER_ID);
 	}
 
+	protected Player(int playerID) {
+		this.playerID = playerID;
+	}
+
 	@SuppressWarnings("rawtypes")
 	public static Player addPlayer(MessageContext context, int playerID, String friendCode, String name) throws SQLException {
 		//INSERT INTO `excitebot`.`players` (`playerID`, `friendCode`, `name`) VALUES ('01234', '5678-9012-3456', 'Fake');
