@@ -2,6 +2,7 @@ package com.gamebuster19901.excite;
 
 import java.io.File;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Scanner;
@@ -13,13 +14,13 @@ import javax.security.auth.login.LoginException;
 
 import com.gamebuster19901.excite.backup.Backup;
 import com.gamebuster19901.excite.bot.DiscordBot;
-import com.gamebuster19901.excite.bot.audit.Audit;
 import com.gamebuster19901.excite.bot.command.Commands;
+import com.gamebuster19901.excite.bot.command.ConsoleContext;
 import com.gamebuster19901.excite.bot.command.MessageContext;
+import com.gamebuster19901.excite.bot.database.DatabaseConnection;
 import com.gamebuster19901.excite.bot.server.DiscordServer;
 import com.gamebuster19901.excite.bot.user.ConsoleUser;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
-import com.gamebuster19901.excite.bot.user.UserPreferences;
 import com.gamebuster19901.excite.util.StacktraceUtil;
 import com.gamebuster19901.excite.util.ThreadService;
 
@@ -33,6 +34,7 @@ public class Main {
 	private static final Logger LOGGER = Logger.getLogger(Main.class.getName());
 	public static String botOwner;
 	
+	public static DatabaseConnection database;
 	public static Wiimmfi wiimmfi;
 	public static DiscordBot discordBot;
 	
@@ -41,7 +43,7 @@ public class Main {
 	public static ConsoleUser CONSOLE;
 	
 	@SuppressWarnings("rawtypes")
-	public static void main(String[] args) throws InterruptedException {
+	public static void main(String[] args) throws InterruptedException, ClassNotFoundException, IOException, SQLException {
 	
 		if(args.length % 2 != 0) {
 			throw new IllegalArgumentException("Must be started with an even number of arguments!");
@@ -72,7 +74,7 @@ public class Main {
 			}
 		}
 	
-		Audit.init(); //Audit.class must be initialized before ConsoleUser can be created
+//		Audit.init(); //Audit.class must be initialized before ConsoleUser can be created
 		CONSOLE = new ConsoleUser();
 		
 		Throwable prevError = null;
@@ -98,7 +100,6 @@ public class Main {
 								LOGGER.log(Level.SEVERE, "Error resolved.");
 							}
 							Wiimmfi.updateOnlinePlayers();
-							Player.updatePlayerListFile();
 							
 							int waitTime = 3000;
 							nextWiimmfiPing = Instant.now().plus(Duration.ofMillis(waitTime));
@@ -115,15 +116,6 @@ public class Main {
 						if(nextDiscordPing.isBefore(Instant.now())) {
 							nextDiscordPing = Instant.now().plus(Duration.ofSeconds(5));
 							updateLists(true, true);
-							updateFiles(true, true);
-						}
-						if(updateCooldowns.isBefore(Instant.now())) {
-							updateCooldowns = Instant.now().plus(Duration.ofSeconds(4));
-							DiscordUser.updateCooldowns();
-						}
-						if(updateWarningCooldowns.isBefore(Instant.now())) {
-							updateWarningCooldowns = Instant.now().plus(Duration.ofSeconds(15));
-							DiscordUser.updateWarningCooldowns();
 						}
 					}
 					
@@ -145,7 +137,7 @@ public class Main {
 				discordBot.jda.getPresence().setPresence(OnlineStatus.DO_NOT_DISTURB, Activity.of(ActivityType.DEFAULT, "Bot Crashed"));
 				if(botOwner != null) {
 					try {
-						DiscordUser user = DiscordUser.getDiscordUser(botOwner);
+						DiscordUser user = DiscordUser.getDiscordUser(ConsoleContext.INSTANCE, botOwner);
 						if(user != null) {
 							user.sendMessage(StacktraceUtil.getStackTrace(t));
 						}
@@ -165,11 +157,20 @@ public class Main {
 
 	private static Wiimmfi startWiimmfi(String[] args) {
 		for(int i = 0; i < args.length; i++) {
-				if(args[i].equalsIgnoreCase("-url")) {
+				if(args[i].equalsIgnoreCase("-wiimmfiUrl")) {
 					return new Wiimmfi(args[++i]);
 				}
 		}
 		return new Wiimmfi();
+	}
+	
+	private static DatabaseConnection startDatabase(String[] args) throws SQLException, IOException {
+		for(int i = 0; i < args.length; i++) {
+			if(args[i].equalsIgnoreCase("-dbURL")) {
+				return new DatabaseConnection(args[++i]);
+			}
+		}
+		return new DatabaseConnection();
 	}
 	
 	private static DiscordBot startDiscordBot(String[] args, Wiimmfi wiimmfi) throws LoginException, IOException {
@@ -205,9 +206,8 @@ public class Main {
 		Thread listUpdater = new Thread() {
 			public void run() {
 				DiscordServer.updateServerList();
-				DiscordUser.updateUserList();
 				discordBot.updatePresence();
-				UserPreferences.attemptRegister();
+				DiscordUser.attemptRegister();
 			}
 		};
 		if(start) {
@@ -220,21 +220,4 @@ public class Main {
 		return listUpdater;
 	}
 	
-	public static Thread updateFiles(boolean start, boolean join) throws InterruptedException {
-		Thread fileUpdater = new Thread() {
-			public void run() {
-				DiscordServer.updateServerPreferencesFile();
-				DiscordUser.updateUserPreferencesFile();
-				Audit.updateAuditsFile();
-			}
-		};
-		if(start) {
-			fileUpdater.start();
-			ThreadService.add(fileUpdater);
-			if(join) {
-				fileUpdater.join();
-			}
-		}
-		return fileUpdater;
-	}
 }
