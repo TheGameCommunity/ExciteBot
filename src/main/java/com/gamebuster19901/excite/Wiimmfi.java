@@ -12,6 +12,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import com.gamebuster19901.excite.bot.command.ConsoleContext;
 import com.gamebuster19901.excite.bot.command.MessageContext;
 
 public class Wiimmfi {
@@ -102,11 +103,10 @@ public class Wiimmfi {
 					
 					int playerId = Integer.parseInt(parseLine(e.html(), 1));
 					
-					Player player = Player.getPlayerByID(playerId);
+					Player player = Player.getPlayerByID(new ConsoleContext(), playerId);
 					if(player instanceof UnknownPlayer) {
 						String friendCode = parseLine(e.html(), 2);
-						player = new Player(name, friendCode, playerId);
-						Player.addPlayer(player);
+						player = Player.addPlayer(new ConsoleContext(), name, friendCode, playerId));
 					}
 					else {
 						player.setName(name);
