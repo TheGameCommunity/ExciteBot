@@ -2,6 +2,7 @@ package com.gamebuster19901.excite;
 
 import java.io.File;
 import java.io.IOError;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashSet;
@@ -27,7 +28,6 @@ public class Player {
 	public static final String REDACTED = "redacted";
 	
 	public static final String PLAYER_ID_EQUALS = PLAYER_ID + " =";
-
 	public static final String PLAYER_NAME_EQUALS = NAME + " =";
 	
 	protected static final String LEGACY = new String("legacy");
@@ -52,8 +52,23 @@ public class Player {
 	private transient boolean hosting;
 	private transient String status;
 	
-	public Player(ResultSet results) throws SQLException {
+	private Player(ResultSet results) throws SQLException {
 		this.playerID = results.getInt(PLAYER_ID);
+	}
+
+	@SuppressWarnings("rawtypes")
+	public static Player addPlayer(MessageContext context, int playerID, String friendCode, String name) throws SQLException {
+		//INSERT INTO `excitebot`.`players` (`playerID`, `friendCode`, `name`) VALUES ('01234', '5678-9012-3456', 'Fake');
+		PreparedStatement ps = context.getConnection().prepareStatement("INSERT INTO ? (?, ?, ?) VALUES (?, ?, ?);");
+		ps.setString(1, Table.PLAYERS.toString());
+		ps.setString(2, PLAYER_ID);
+		ps.setString(3, FRIEND_CODE);
+		ps.setString(4, NAME);
+		ps.setInt(5, playerID);
+		ps.setString(6, friendCode);
+		ps.setString(7, name);
+		ps.execute();
+		return getPlayerByID(context, playerID);
 	}
 	
 	@Override
