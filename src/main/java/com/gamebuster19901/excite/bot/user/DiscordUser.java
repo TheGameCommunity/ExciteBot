@@ -26,6 +26,7 @@ import com.gamebuster19901.excite.bot.command.MessageContext;
 import com.gamebuster19901.excite.bot.database.DatabaseConnection;
 import com.gamebuster19901.excite.bot.database.Table;
 import com.gamebuster19901.excite.util.StacktraceUtil;
+import com.gamebuster19901.excite.util.TimeUtils;
 
 import static com.gamebuster19901.excite.bot.database.Table.DISCORD_USERS;
 import static com.gamebuster19901.excite.bot.database.Table.PLAYERS;
@@ -255,6 +256,10 @@ public class DiscordUser {
 		//return preferences.getTotalBanCount();
 	}
 	
+	public String getDiscordName() {
+		return getJDAUser().getAsTag();
+	}
+	
 	public int getNotifyThreshold() {
 		try {
 			ResultSet result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, THRESHOLD, DISCORD_USERS, idEqualsThis());
@@ -334,6 +339,29 @@ public class DiscordUser {
 		}
 	}
 	
+	public Instant getLastNotification() {
+		try {
+			ResultSet result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, LAST_NOTIFICATION, DISCORD_USERS, idEqualsThis());
+			if(result.next()) {
+				return TimeUtils.parseInstant(result.getString(1));
+			}
+			throw new AssertionError("Could not get last notification of " + discordId);
+		} catch (SQLException e) {
+			throw new IOError(e);
+		}
+	}
+	
+	public void setLastNotification() {
+		setLastNotification(Instant.now());
+	}
+	
+	public void setLastNotification(Instant instant) {
+		try {
+			Table.updateWhere(ConsoleContext.INSTANCE, DISCORD_USERS, LAST_NOTIFICATION, instant.toString(), idEqualsThis());
+		} catch (SQLException e) {
+			throw new IOError(e);
+		}
+	}
 	
 	public boolean dippedBelowThreshold() {
 		try {

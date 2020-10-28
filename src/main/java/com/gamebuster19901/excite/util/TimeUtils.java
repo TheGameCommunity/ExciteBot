@@ -93,6 +93,13 @@ public final class TimeUtils {
 		return duration;
 	}
 	
+	public static Instant parseInstant(String instant) {
+		if(instant == null) {
+			return Instant.MIN;
+		}
+		return Instant.parse(instant);
+	}
+	
 	public static String getDate(TemporalAccessor temporal) {
 		return DB_DATE_FORMATTER.format(temporal);
 	}
