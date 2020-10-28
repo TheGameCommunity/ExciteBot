@@ -1,7 +1,10 @@
 package com.gamebuster19901.excite.bot.command;
 
+import java.sql.Connection;
+
 import com.gamebuster19901.excite.Main;
 import com.gamebuster19901.excite.Player;
+import com.gamebuster19901.excite.bot.database.DatabaseConnection;
 import com.gamebuster19901.excite.bot.server.DiscordServer;
 import com.gamebuster19901.excite.bot.user.ConsoleUser;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
@@ -75,7 +78,7 @@ public class MessageContext<E>{
 		}
 		else if(event instanceof GuildMessageReceivedEvent) {
 			GuildMessageReceivedEvent e = (GuildMessageReceivedEvent) event;
-			return getDiscordAuthor().isAdmin();
+			//return getDiscordAuthor().isAdmin();
 		}
 		return false;
 	}
@@ -164,5 +167,13 @@ public class MessageContext<E>{
 			return ((PrivateMessageReceivedEvent) event).getChannel();
 		}
 		return null;
+	}
+	
+	public Connection getConnection() {
+		return getDiscordAuthor().getConnection();
+	}
+	
+	public DatabaseConnection getDatabaseConnection() {
+		return getDiscordAuthor().getDatabaseConnection();
 	}
 }
