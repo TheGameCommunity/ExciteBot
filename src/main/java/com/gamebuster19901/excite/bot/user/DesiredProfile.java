@@ -1,15 +1,10 @@
 package com.gamebuster19901.excite.bot.user;
 
-import java.io.IOError;
-import java.sql.SQLException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Random;
 
 import com.gamebuster19901.excite.Player;
-import com.gamebuster19901.excite.bot.command.ConsoleContext;
-import com.gamebuster19901.excite.bot.database.Table;
-import com.gamebuster19901.excite.util.StacktraceUtil;
 
 public class DesiredProfile {
 
@@ -50,14 +45,7 @@ public class DesiredProfile {
 	}
 	
 	public void register() {
-		try {
-			Table.updateWhere(ConsoleContext.INSTANCE, Table.PLAYERS, DiscordUser.DISCORD_ID, requester.getId() + "", desiredProfile.idEqualsThis());
-		} catch (SQLException e) {
-			IOError IOError = new IOError(e);
-			getRequester().sendMessage("Unable to register profile " + desiredProfile.getPlayerID());
-			getRequester().sendMessage(StacktraceUtil.getStackTrace(IOError));
-			throw IOError;
-		}
+		desiredProfile.setDiscord(requester.getId());
 	}
 	
 	private final String generateRegistrationCode() {
