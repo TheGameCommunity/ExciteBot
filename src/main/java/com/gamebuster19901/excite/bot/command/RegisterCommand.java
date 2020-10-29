@@ -56,7 +56,7 @@ public class RegisterCommand {
 			default:
 				String ambiguities = "";
 				for(Player p : players) {
-					ambiguities += p + "\n";
+					ambiguities += p.toFullString() + "\n";
 				}
 				context.sendMessage(player + " is ambiguous as there is more than one profile known with that name. Please supply your account's PID instead of it's name." 
 					+ "\n\nAmbiguities:\n\n" + ambiguities);
@@ -69,7 +69,7 @@ public class RegisterCommand {
 		context.getDiscordAuthor().sendMessage(
 				discordUser.getJDAUser().getAsMention() + 
 				", you have requested registration of the following profile:\n\n"
-				+ desiredProfile 
+				+ desiredProfile.toFullString() 
 				+ "\n\nRegistration Code: `" + securityCode + "`\n"
 				+ "Change the profile's username to the registration code, then log in and search for a match.\n\n"
 				+ "Registration may take up to two minutes to complete. The registration code expires after 5 minutes.\n\n"
