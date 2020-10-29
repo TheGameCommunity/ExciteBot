@@ -511,10 +511,10 @@ public class DiscordUser {
 	@SuppressWarnings("rawtypes")
 	public static final DiscordUser getDiscordUser(MessageContext context, long id) {
 		try {
-			ResultSet results = Table.selectAllFromWhere(context, DISCORD_USERS, "discord_id = " + id);
+			ResultSet results = Table.selectAllFromWhere(context, DISCORD_USERS, DISCORD_ID_EQUALS + id);
 			
 			if(results.next()) {
-				return new DiscordUser(results.getLong("discord_id"));
+				return new DiscordUser(results.getLong(DISCORD_ID));
 			}
 			return null;
 		}
