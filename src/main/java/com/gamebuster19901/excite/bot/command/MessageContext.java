@@ -76,11 +76,7 @@ public class MessageContext<E>{
 		if (isOperator()){
 			return true;
 		}
-		else if(event instanceof GuildMessageReceivedEvent) {
-			GuildMessageReceivedEvent e = (GuildMessageReceivedEvent) event;
-			//return getDiscordAuthor().isAdmin();
-		}
-		return false;
+		return getDiscordAuthor().isAdmin();
 	}
 	
 	public boolean isOperator() {
