@@ -12,11 +12,9 @@ import java.util.logging.Logger;
 
 import javax.security.auth.login.LoginException;
 
-import com.gamebuster19901.excite.backup.Backup;
 import com.gamebuster19901.excite.bot.DiscordBot;
 import com.gamebuster19901.excite.bot.command.Commands;
 import com.gamebuster19901.excite.bot.command.ConsoleContext;
-import com.gamebuster19901.excite.bot.command.MessageContext;
 import com.gamebuster19901.excite.bot.database.DatabaseConnection;
 import com.gamebuster19901.excite.bot.user.ConsoleUser;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
@@ -81,17 +79,12 @@ public class Main {
 		Instant nextDiscordPing = Instant.now();
 		Instant updateCooldowns = Instant.now();
 		Instant updateWarningCooldowns = Instant.now();
-		Instant nextBackupTime = Instant.now();
 		startConsole();
 		
 		try {
 			while(true) {
 				try {
 					Throwable error = wiimmfi.getError();
-					if(nextBackupTime.isBefore(Instant.now())) {
-						Backup.backup(new MessageContext());
-						nextBackupTime = nextBackupTime.plus(Duration.ofHours(1));
-					}
 					if(nextWiimmfiPing.isBefore(Instant.now())) {
 						wiimmfi.update();
 						if(error == null) {
