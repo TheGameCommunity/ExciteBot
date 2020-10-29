@@ -18,7 +18,6 @@ import com.gamebuster19901.excite.bot.command.Commands;
 import com.gamebuster19901.excite.bot.command.ConsoleContext;
 import com.gamebuster19901.excite.bot.command.MessageContext;
 import com.gamebuster19901.excite.bot.database.DatabaseConnection;
-import com.gamebuster19901.excite.bot.server.DiscordServer;
 import com.gamebuster19901.excite.bot.user.ConsoleUser;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
 import com.gamebuster19901.excite.util.StacktraceUtil;
@@ -205,7 +204,6 @@ public class Main {
 	public static Thread updateLists(boolean start, boolean join) throws InterruptedException {
 		Thread listUpdater = new Thread() {
 			public void run() {
-				DiscordServer.updateServerList();
 				discordBot.updatePresence();
 				DiscordUser.attemptRegister();
 			}
