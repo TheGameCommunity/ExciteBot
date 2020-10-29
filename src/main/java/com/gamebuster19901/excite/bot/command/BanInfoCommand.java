@@ -16,14 +16,14 @@ public class BanInfoCommand {
 	@SuppressWarnings("rawtypes")
 	public static void register(CommandDispatcher<MessageContext> dispatcher) {
 		dispatcher.register(Commands.literal("baninfo").then(Commands.argument("discordUser", StringArgumentType.greedyString()).executes((context) -> {
-			return sendBanInfo(context.getSource(), getDiscordUser(context.getArgument("discordUser", String.class)));
+			return sendBanInfo(context.getSource(), getDiscordUser(context.getSource(), context.getArgument("discordUser", String.class)));
 		}))
 		.then(Commands.argument("discordId", LongArgumentType.longArg()).executes((context) -> {
-			return sendBanInfo(context.getSource(), getDiscordUser(context.getArgument("discordId", Long.class)));
+			return sendBanInfo(context.getSource(), getDiscordUser(context.getSource(), context.getArgument("discordId", Long.class)));
 		})));
 	}
 
-	private static DiscordUser getDiscordUser(String discordUser) {
+	private static DiscordUser getDiscordUser(MessageContext context, String discordUser) {
 		if(discordUser.indexOf('#') == -1) {
 			byte[] bytes = discordUser.getBytes();
 			for(int i = discordUser.length() - 1; i > 0; i--) {
@@ -34,15 +34,15 @@ public class BanInfoCommand {
 			}
 			discordUser = new String(bytes);
 		}
-		DiscordUser user = DiscordUser.getDiscordUser(discordUser);
+		DiscordUser user = DiscordUser.getDiscordUser(context, discordUser);
 		if(user == null) {
 			return new UnknownDiscordUser(-1);
 		}
 		return user;
 	}
 	
-	private static DiscordUser getDiscordUser(long discordId) {
-		return DiscordUser.getDiscordUserIncludingUnknown(discordId);
+	private static DiscordUser getDiscordUser(MessageContext context, long discordId) {
+		return DiscordUser.getDiscordUserIncludingUnknown(context, discordId);
 	}
 	
 	@SuppressWarnings("rawtypes")

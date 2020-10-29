@@ -25,7 +25,7 @@ public class IconDumpCommand {
 	@SuppressWarnings("rawtypes")
 	public static int sendResponse(MessageContext context, long serverId) {
 		if(context.isOperator()) {
-			DiscordServer server = DiscordServer.getServer(serverId);
+			DiscordServer server = DiscordServer.getServer(ConsoleContext.INSTANCE, serverId);
 			if(server != null && !(server instanceof UnloadedDiscordServer)) {
 				List<Emote> emotes = server.getGuild().getEmotes();
 				String ret = server.getName() + " has " + emotes.size() + " emotes:\n\n";

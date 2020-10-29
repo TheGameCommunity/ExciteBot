@@ -54,10 +54,10 @@ public class MessageContext<E>{
 	
 	public DiscordUser getDiscordAuthor() {
 		if(event instanceof GuildMessageReceivedEvent) {
-			return DiscordUser.getDiscordUser(((GuildMessageReceivedEvent)event).getMessage().getAuthor().getIdLong());
+			return DiscordUser.getDiscordUser(ConsoleContext.INSTANCE, ((GuildMessageReceivedEvent)event).getMessage().getAuthor().getIdLong());
 		}
 		else if (event instanceof PrivateMessageReceivedEvent) {
-			return DiscordUser.getDiscordUser(((PrivateMessageReceivedEvent)event).getMessage().getAuthor().getIdLong());
+			return DiscordUser.getDiscordUser(ConsoleContext.INSTANCE, ((PrivateMessageReceivedEvent)event).getMessage().getAuthor().getIdLong());
 		}
 		else if (event instanceof DiscordUser) {
 			return (DiscordUser) event;
@@ -154,7 +154,7 @@ public class MessageContext<E>{
 	
 	public DiscordServer getServer() {
 		if(event instanceof GuildMessageReceivedEvent) {
-			return DiscordServer.getServer(((GuildMessageReceivedEvent)event).getMessage().getGuild().getIdLong());
+			return DiscordServer.getServer(ConsoleContext.INSTANCE, ((GuildMessageReceivedEvent)event).getMessage().getGuild().getIdLong());
 		}
 		return null;
 	}

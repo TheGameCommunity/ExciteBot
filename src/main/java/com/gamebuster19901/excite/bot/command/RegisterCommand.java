@@ -29,7 +29,7 @@ public class RegisterCommand {
 			context.sendMessage("You are already trying to register a profile! Please wait until registration is complete or the registration code expires.");
 			return;
 		}
-		for(Player p : Player.getEncounteredPlayers()) {
+		for(Player p : Player.getEncounteredPlayers(ConsoleContext.INSTANCE)) {
 			if((p.getPlayerID() + "").equals(player)) {
 				String securityCode = discordUser.requestRegistration(p);
 				if(p.isBanned()) {

@@ -5,8 +5,6 @@ import java.time.temporal.ChronoUnit;
 
 import com.gamebuster19901.excite.Player;
 import com.gamebuster19901.excite.UnknownPlayer;
-import com.gamebuster19901.excite.bot.audit.ban.DiscordBan;
-import com.gamebuster19901.excite.bot.audit.ban.ProfileBan;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
 import com.gamebuster19901.excite.bot.user.UnknownDiscordUser;
 import com.gamebuster19901.excite.util.TimeUtils;
@@ -23,69 +21,73 @@ public class BanCommand {
 	public static void register(CommandDispatcher<MessageContext> dispatcher) {
 		dispatcher.register(Commands.literal("ban")
 			.then(Commands.literal("discord").then(Commands.argument("discordUser", StringArgumentType.string()).then((Commands.argument("discriminator", StringArgumentType.string()).executes((context) -> {
-					return banDiscordUserForever(context.getSource(), getDiscordUser(context.getArgument("discordUser", String.class), context.getArgument("discriminator", String.class)));
+					return banDiscordUserForever(context.getSource(), getDiscordUser(context.getSource(), context.getArgument("discordUser", String.class), context.getArgument("discriminator", String.class)));
 				}).then(Commands.argument("reason", StringArgumentType.greedyString()).executes((context) -> {
-					return banDiscordUserForever(context.getSource(), getDiscordUser(context.getArgument("discordUser", String.class), context.getArgument("discriminator", String.class)), context.getArgument("reason", String.class));
+					return banDiscordUserForever(context.getSource(), getDiscordUser(context.getSource(), context.getArgument("discordUser", String.class), context.getArgument("discriminator", String.class)), context.getArgument("reason", String.class));
 				}))
 				.then(Commands.argument("amount", IntegerArgumentType.integer(1)).then(Commands.argument("timeUnit", StringArgumentType.string()).executes((context) -> {
-					return banDiscordUser(context.getSource(), getDiscordUser(context.getArgument("discordUser", String.class), context.getArgument("discriminator", String.class)), context.getArgument("amount", Integer.class), context.getArgument("timeUnit", String.class));
+					return banDiscordUser(context.getSource(), getDiscordUser(context.getSource(), context.getArgument("discordUser", String.class), context.getArgument("discriminator", String.class)), context.getArgument("amount", Integer.class), context.getArgument("timeUnit", String.class));
 				}).then(Commands.argument("reason", StringArgumentType.greedyString()).executes((context) -> {
-					return banDiscordUser(context.getSource(), getDiscordUser(context.getArgument("discordUser", String.class), context.getArgument("discriminator", String.class)), context.getArgument("amount", Integer.class), context.getArgument("timeUnit", String.class), context.getArgument("reason", String.class));
+					return banDiscordUser(context.getSource(), getDiscordUser(context.getSource(), context.getArgument("discordUser", String.class), context.getArgument("discriminator", String.class)), context.getArgument("amount", Integer.class), context.getArgument("timeUnit", String.class), context.getArgument("reason", String.class));
 				})))))))
 				.then(Commands.argument("discordId", LongArgumentType.longArg()).executes((context) -> {
-					return banDiscordUserForever(context.getSource(), getDiscordUser(context.getArgument("discordId", Long.class)));
+					return banDiscordUserForever(context.getSource(), getDiscordUser(context.getSource(), context.getArgument("discordId", Long.class)));
 				}).then(Commands.argument("reason", StringArgumentType.greedyString()).executes((context) -> {
-					return banDiscordUserForever(context.getSource(), getDiscordUser(context.getArgument("discordId", Long.class)), context.getArgument("reason", String.class));
+					return banDiscordUserForever(context.getSource(), getDiscordUser(context.getSource(), context.getArgument("discordId", Long.class)), context.getArgument("reason", String.class));
 				}))
 				.then(Commands.argument("amount", IntegerArgumentType.integer(1)).then(Commands.argument("timeUnit", StringArgumentType.string()).executes((context) -> {
-					return banDiscordUser(context.getSource(), getDiscordUser(context.getArgument("discordId", Long.class)), context.getArgument("amount", Integer.class), context.getArgument("timeUnit", String.class));
+					return banDiscordUser(context.getSource(), getDiscordUser(context.getSource(), context.getArgument("discordId", Long.class)), context.getArgument("amount", Integer.class), context.getArgument("timeUnit", String.class));
 				}).then(Commands.argument("reason", StringArgumentType.greedyString()).executes((context) -> {
-					return banDiscordUser(context.getSource(), getDiscordUser(context.getArgument("discordId", Long.class)), context.getArgument("amount", Integer.class), context.getArgument("timeUnit", String.class), context.getArgument("reason", String.class));
+					return banDiscordUser(context.getSource(), getDiscordUser(context.getSource(), context.getArgument("discordId", Long.class)), context.getArgument("amount", Integer.class), context.getArgument("timeUnit", String.class), context.getArgument("reason", String.class));
 				}))))))
 			.then(Commands.literal("profile").then(Commands.argument("profile", StringArgumentType.string()).executes((context) -> {
-					return banProfileForever(context.getSource(), getProfile(context.getArgument("profile", String.class)));
+					return banProfileForever(context.getSource(), getProfile(context.getSource(), context.getArgument("profile", String.class)));
 				}).then(Commands.argument("reason", StringArgumentType.greedyString()).executes((context) -> {
-					return banProfileForever(context.getSource(), getProfile(context.getArgument("profile", String.class)), context.getArgument("reason", String.class));
+					return banProfileForever(context.getSource(), getProfile(context.getSource(), context.getArgument("profile", String.class)), context.getArgument("reason", String.class));
 				}))
 				.then(Commands.argument("amount", IntegerArgumentType.integer(1)).then(Commands.argument("timeUnit", StringArgumentType.string()).executes((context) -> {
-					return banProfile(context.getSource(), getProfile(context.getArgument("profile", String.class)), context.getArgument("amount", Integer.class), context.getArgument("timeUnit", String.class));
+					return banProfile(context.getSource(), getProfile(context.getSource(), context.getArgument("profile", String.class)), context.getArgument("amount", Integer.class), context.getArgument("timeUnit", String.class));
 				})
 				.then(Commands.argument("reason", StringArgumentType.greedyString()).executes((context) -> {
-					return banProfile(context.getSource(), getProfile(context.getArgument("profile", String.class)), context.getArgument("amount", Integer.class), context.getArgument("timeUnit", String.class), context.getArgument("reason", String.class));
+					return banProfile(context.getSource(), getProfile(context.getSource(), context.getArgument("profile", String.class)), context.getArgument("amount", Integer.class), context.getArgument("timeUnit", String.class), context.getArgument("reason", String.class));
 				})))))
 				.then(Commands.argument("pid", IntegerArgumentType.integer()).executes((context) -> {
-					return banProfileForever(context.getSource(), new Player[] {getProfile(context.getArgument("pid", Integer.class))});
+					return banProfileForever(context.getSource(), new Player[] {getProfile(context.getSource(), context.getArgument("pid", Integer.class))});
 				}).then(Commands.argument("reason", StringArgumentType.greedyString()).executes((context) -> {
-					return banProfileForever(context.getSource(), new Player[] {getProfile(context.getArgument("pid", Integer.class))}, context.getArgument("reason", String.class));
+					return banProfileForever(context.getSource(), new Player[] {getProfile(context.getSource(), context.getArgument("pid", Integer.class))}, context.getArgument("reason", String.class));
 				}))
 				.then(Commands.argument("amount", IntegerArgumentType.integer(1)).then(Commands.argument("timeUnit", StringArgumentType.string()).executes((context) -> {
-					return banProfile(context.getSource(), new Player[] {getProfile(context.getArgument("pid", Integer.class))}, context.getArgument("amount", Integer.class), context.getArgument("timeUnit", String.class));
+					return banProfile(context.getSource(), new Player[] {getProfile(context.getSource(), context.getArgument("pid", Integer.class))}, context.getArgument("amount", Integer.class), context.getArgument("timeUnit", String.class));
 				}).then(Commands.argument("reason", StringArgumentType.greedyString()).executes((context) -> {
-					return banProfile(context.getSource(), new Player[] {getProfile(context.getArgument("pid", Integer.class))}, context.getArgument("amount", Integer.class), context.getArgument("timeUnit", String.class), context.getArgument("reason", String.class));
+					return banProfile(context.getSource(), new Player[] {getProfile(context.getSource(), context.getArgument("pid", Integer.class))}, context.getArgument("amount", Integer.class), context.getArgument("timeUnit", String.class), context.getArgument("reason", String.class));
 				})))))
 			)
 		);
 	}
 	
-	private static DiscordUser getDiscordUser(String username, String discriminator) {
-		DiscordUser user = DiscordUser.getDiscordUser(username + "#" + discriminator);
+	@SuppressWarnings("rawtypes")
+	private static DiscordUser getDiscordUser(MessageContext context, String username, String discriminator) {
+		DiscordUser user = DiscordUser.getDiscordUser(context, username + "#" + discriminator);
 		if(user == null) {
 			user = new UnknownDiscordUser(username, discriminator);
 		}
 		return user;
 	}
 	
-	private static Player[] getProfile(String username) {
-		return Player.getPlayersByName(username);
+	@SuppressWarnings("rawtypes")
+	private static Player[] getProfile(MessageContext context, String username) {
+		return Player.getPlayersByName(context, username);
 	}
 	
-	private static DiscordUser getDiscordUser(long id) {
-		DiscordUser user = DiscordUser.getDiscordUserIncludingUnknown(id);
+	@SuppressWarnings("rawtypes")
+	private static DiscordUser getDiscordUser(MessageContext context, long id) {
+		DiscordUser user = DiscordUser.getDiscordUserIncludingUnknown(context, id);
 		return user;
 	}
 	
-	private static Player getProfile(int pid) {
-		return Player.getPlayerByID(pid);
+	@SuppressWarnings("rawtypes")
+	private static Player getProfile(MessageContext context, int pid) {
+		return Player.getPlayerByID(context, pid);
 	}
 	
 	@SuppressWarnings("rawtypes")
@@ -158,7 +160,7 @@ public class BanCommand {
 				return 0;
 			}
 			Duration duration = ChronoUnit.FOREVER.getDuration();
-			user.ban(context, duration, parseReason(duration, reason));
+//			user.ban(context, duration, parseReason(duration, reason));
 		}
 		else {
 			context.sendMessage("You do not have permission to execute this command");
@@ -178,7 +180,7 @@ public class BanCommand {
 				return 0;
 			}
 			Duration duration = ChronoUnit.FOREVER.getDuration();
-			profile[0].ban(context, duration, parseReason(duration, reason));
+//			profile[0].ban(context, duration, parseReason(duration, reason));
 		}
 		else {
 			context.sendMessage("You do not have permission to execute this command");
@@ -189,10 +191,10 @@ public class BanCommand {
 	@SuppressWarnings("rawtypes")
 	private static int banDiscordUser(MessageContext context, DiscordUser user, Duration duration, String reason) {
 		if(context.isAdmin()) {
-			DiscordBan ban = user.ban(new MessageContext(), duration, parseReason(duration, reason));
-			String message = "Banned discord user" + user + ": \n\n" + ban;
+//			DiscordBan ban = user.ban(new MessageContext(), duration, parseReason(duration, reason));
+//			String message = "Banned discord user" + user + ": \n\n" + ban;
 			if(context.isConsoleMessage()) {
-				context.sendMessage(message);
+//				context.sendMessage(message);
 			}
 			else {
 				PrivateChannel privateChannel;
@@ -202,7 +204,7 @@ public class BanCommand {
 				else {
 					privateChannel = context.getDiscordAuthor().getJDAUser().openPrivateChannel().complete();
 				}
-				privateChannel.sendMessage(message);
+//				privateChannel.sendMessage(message);
 			}
 		}
 		else {
@@ -214,10 +216,10 @@ public class BanCommand {
 	@SuppressWarnings("rawtypes")
 	private static int banProfile(MessageContext context, Player profile, Duration duration, String reason) {
 		if(context.isAdmin()) {
-			ProfileBan ban = profile.ban(new MessageContext(), duration, reason);
-			String message = "Banned profile " + profile.getPrettyDiscord() + ": \n\n" + ban;
+//			ProfileBan ban = profile.ban(new MessageContext(), duration, reason);
+//			String message = "Banned profile " + profile.getPrettyDiscord() + ": \n\n" + ban;
 			if(context.isConsoleMessage()) {
-				context.sendMessage(message);
+//				context.sendMessage(message);
 			}
 			else {
 				PrivateChannel privateChannel;
@@ -227,7 +229,7 @@ public class BanCommand {
 				else {
 					privateChannel = context.getDiscordAuthor().getJDAUser().openPrivateChannel().complete();
 				}
-				privateChannel.sendMessage(message);
+//				privateChannel.sendMessage(message);
 			}
 		}
 		else {

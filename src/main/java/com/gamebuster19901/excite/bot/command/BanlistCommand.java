@@ -1,8 +1,7 @@
 package com.gamebuster19901.excite.bot.command;
 
 import com.gamebuster19901.excite.Player;
-import com.gamebuster19901.excite.bot.audit.Audit;
-import com.gamebuster19901.excite.bot.audit.ban.DiscordBan;
+
 
 //import java.time.Instant;
 
@@ -23,14 +22,14 @@ public class BanlistCommand {
 			String response = "Discord Users:\n\n";
 			int discordAmount = 0;
 			int playerAmount = 0;
-			for(DiscordBan ban : Audit.getAuditsOfType(DiscordBan.class).values()) {
+/*			for(DiscordBan ban : Audit.getAuditsOfType(DiscordBan.class).values()) {
 				if(ban.isActive()) {
 					response += ban.getBannedUser().toDetailedString() + "\n";
 					discordAmount++;
 				}
 			}
-			response += "Profiles:\n\n";
-			for(Player player : Player.getEncounteredPlayers()) {
+*/			response += "Profiles:\n\n";
+			for(Player player : Player.getEncounteredPlayers(context)) {
 				if(player.isBanned()) {
 					response += player.toString() + "\n";
 					playerAmount++;

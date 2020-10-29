@@ -18,10 +18,9 @@ public class PrefixCommand {
 		if(context.isAdmin()) {
 			if(context.isGuildMessage()) {
 				if(Commands.isValidPrefix(prefix)) {
-					if(context.getServer().setPrefix(prefix)) {
-						context.sendMessage("Prefix for " + context.getServer().getName() + " set to " + context.getServer().getPrefix());
-						return 0;
-					}
+					context.getServer().setPrefix(prefix);
+					context.sendMessage("Prefix for " + context.getServer().getName() + " set to " + context.getServer().getPrefix());
+					return 0;
 				}
 				context.sendMessage(prefix + " is not a valid prefix");
 			}

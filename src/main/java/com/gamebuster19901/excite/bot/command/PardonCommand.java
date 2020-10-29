@@ -24,7 +24,7 @@ public class PardonCommand {
 	}
 	
 	private static DiscordUser getDiscordUser(String username, String discriminator) {
-		DiscordUser user = DiscordUser.getDiscordUser(username + "#" + discriminator);
+		DiscordUser user = DiscordUser.getDiscordUser(ConsoleContext.INSTANCE, username + "#" + discriminator);
 		if(user == null) {
 			user = new UnknownDiscordUser(username, discriminator);
 		}
@@ -32,7 +32,7 @@ public class PardonCommand {
 	}
 	
 	private static DiscordUser getDiscordUser(long id) {
-		DiscordUser user = DiscordUser.getDiscordUserIncludingUnknown(id);
+		DiscordUser user = DiscordUser.getDiscordUserIncludingUnknown(ConsoleContext.INSTANCE, id);
 		return user;
 	}
 	

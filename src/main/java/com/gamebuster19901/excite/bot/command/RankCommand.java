@@ -67,10 +67,10 @@ public class RankCommand {
 	private static int addAdmin(MessageContext context, String user) {
 		DiscordUser discordUser;
 		try {
-			discordUser = DiscordUser.getDiscordUserIncludingUnknown(Long.parseLong(user));
+			discordUser = DiscordUser.getDiscordUserIncludingUnknown(ConsoleContext.INSTANCE, Long.parseLong(user));
 		}
 		catch(NumberFormatException e) {
-			discordUser = DiscordUser.getDiscordUserIncludingUnknown(user);
+			discordUser = DiscordUser.getDiscordUserIncludingUnknown(ConsoleContext.INSTANCE, user);
 		}
 		
 		if(discordUser instanceof UnknownDiscordUser) {
@@ -92,10 +92,10 @@ public class RankCommand {
 	private static int removeAdmin(MessageContext context, String user) {
 		DiscordUser discordUser;
 		try {
-			discordUser = DiscordUser.getDiscordUserIncludingUnknown(Long.parseLong(user));
+			discordUser = DiscordUser.getDiscordUserIncludingUnknown(ConsoleContext.INSTANCE, Long.parseLong(user));
 		}
 		catch(NumberFormatException e) {
-			discordUser = DiscordUser.getDiscordUser(user);
+			discordUser = DiscordUser.getDiscordUser(ConsoleContext.INSTANCE, user);
 		}
 		
 		if(discordUser instanceof UnknownDiscordUser) {
@@ -120,10 +120,10 @@ public class RankCommand {
 	private static int addOperator(MessageContext context, String user) {
 		DiscordUser discordUser;
 		try {
-			discordUser = DiscordUser.getDiscordUserIncludingUnknown(Long.parseLong(user));
+			discordUser = DiscordUser.getDiscordUserIncludingUnknown(ConsoleContext.INSTANCE, Long.parseLong(user));
 		}
 		catch(NumberFormatException e) {
-			discordUser = DiscordUser.getDiscordUser(user);
+			discordUser = DiscordUser.getDiscordUser(ConsoleContext.INSTANCE, user);
 		}
 		
 		if(discordUser instanceof UnknownDiscordUser) {
@@ -145,10 +145,10 @@ public class RankCommand {
 	private static int removeOperator(MessageContext context, String user) {
 		DiscordUser discordUser;
 		try {
-			discordUser = DiscordUser.getDiscordUserIncludingUnknown(Long.parseLong(user));
+			discordUser = DiscordUser.getDiscordUserIncludingUnknown(ConsoleContext.INSTANCE, Long.parseLong(user));
 		}
 		catch(NumberFormatException e) {
-			discordUser = DiscordUser.getDiscordUser(user);
+			discordUser = DiscordUser.getDiscordUser(ConsoleContext.INSTANCE, user);
 		}
 		
 		if(discordUser instanceof UnknownDiscordUser) {

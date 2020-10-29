@@ -3,8 +3,6 @@ package com.gamebuster19901.excite.bot.command;
 import org.apache.commons.lang3.StringUtils;
 
 import com.gamebuster19901.excite.Main;
-import com.gamebuster19901.excite.bot.audit.Audit;
-import com.gamebuster19901.excite.bot.audit.CommandAudit;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
 import com.gamebuster19901.excite.util.StacktraceUtil;
 
@@ -26,21 +24,21 @@ public class Commands {
 	public Commands() {
 		OnlineCommand.register(dispatcher);
 		WhoIsCommand.register(dispatcher);
-		BanCommand.register(dispatcher);
-		PardonCommand.register(dispatcher);
+//		BanCommand.register(dispatcher);
+//		PardonCommand.register(dispatcher);
 		RegisterCommand.register(dispatcher);
 		NotifyCommand.register(dispatcher);
 		StopCommand.register(dispatcher);
 		HelpCommand.register(dispatcher);
 		BackupCommand.register(dispatcher);
-		BanlistCommand.register(dispatcher);
+//		BanlistCommand.register(dispatcher);
 		RestartCommand.register(dispatcher);
-		BanInfoCommand.register(dispatcher);
+//		BanInfoCommand.register(dispatcher);
 		PlayersCommand.register(dispatcher);
 		IconDumpCommand.register(dispatcher);
-		VideoCommand.register(dispatcher);
+//		VideoCommand.register(dispatcher);
 		GameDataCommand.register(dispatcher);
-		RankCommand.register(dispatcher);
+//		RankCommand.register(dispatcher);
 		CDCommand.register(dispatcher);
 		PrefixCommand.register(dispatcher);
 	}
@@ -48,7 +46,7 @@ public class Commands {
 	public void handleCommand(String command) {
 		MessageContext context = new MessageContext(Main.CONSOLE);
 		try {
-			Audit.addAudit(new CommandAudit(context, command));
+			//Audit.addAudit(new CommandAudit(context, command));
 			this.dispatcher.execute(command, context);
 		}
 		catch (CommandSyntaxException e) {
@@ -72,11 +70,11 @@ public class Commands {
 			String prefix = context.getServer().getPrefix();
 			if(message.startsWith(prefix)) {
 				message = StringUtils.replaceOnce(message, prefix, "");
-				DiscordUser sender = DiscordUser.getDiscordUser(e.getAuthor().getIdLong());
+				DiscordUser sender = DiscordUser.getDiscordUser(ConsoleContext.INSTANCE, e.getAuthor().getIdLong());
 				if(!sender.isBanned()) {
 					sender.sentCommand(context);
 					if(!sender.isBanned()) {
-						Audit.addAudit(new CommandAudit(context, e.getMessage().getContentRaw()));
+						//Audit.addAudit(new CommandAudit(context, e.getMessage().getContentRaw()));
 						this.dispatcher.execute(message, context);
 					}
 				}
@@ -105,11 +103,11 @@ public class Commands {
 	public void handleCommand(PrivateMessageReceivedEvent e) {
 		MessageContext<PrivateMessageReceivedEvent> context = new MessageContext<PrivateMessageReceivedEvent>(e);
 		try {
-			DiscordUser sender = DiscordUser.getDiscordUser(e.getAuthor().getIdLong());
+			DiscordUser sender = DiscordUser.getDiscordUser(ConsoleContext.INSTANCE, e.getAuthor().getIdLong());
 			if(!sender.isBanned()) {
 				sender.sentCommand(context);
 				if(!sender.isBanned()) {
-					Audit.addAudit(new CommandAudit(context, e.getMessage().getContentRaw()));
+					//Audit.addAudit(new CommandAudit(context, e.getMessage().getContentRaw()));
 					this.dispatcher.execute(e.getMessage().getContentRaw(), context);
 				}
 			}
@@ -142,7 +140,8 @@ public class Commands {
 	
 	public boolean setPrefix(MessageContext context, String prefix) {
 		if(context.isAdmin() && context.isGuildMessage() && isValidPrefix(prefix)) {
-			return context.getServer().setPrefix(prefix);
+			context.getServer().setPrefix(prefix);
+			return true;
 		}
 		return false;
 	}
