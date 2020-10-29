@@ -85,12 +85,12 @@ public enum Table {
 	
 	@Vulnerable
 	@SuppressWarnings("rawtypes")
-	public static void updateWhere(MessageContext context, Table table, @Vulnerable String parameter, Object value, String where, Comparator comparator, Object comparee) throws SQLException {
-		PreparedStatement st = context.getConnection().prepareStatement("UPDATE " + table + " SET " + parameter + " = ? WHERE ? " + comparator + " ?");
+	public static void updateWhere(MessageContext context, Table table, @Vulnerable String parameter, Object value, @Vulnerable String where, Comparator comparator, Object comparee) throws SQLException {
+		PreparedStatement st = context.getConnection().prepareStatement("UPDATE " + table + " SET " + parameter + " = ? WHERE " + where + comparator + " ?");
 		insertValue(st, 1, value);
-		st.setString(2, where);
-		insertValue(st, 3, comparee);
+		insertValue(st, 2, comparee);
 		st.execute();
+		System.out.println(st);
 	}
 	
 	@SuppressWarnings("rawtypes")
