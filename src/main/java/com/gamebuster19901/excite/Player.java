@@ -292,7 +292,7 @@ public class Player {
 	public void setDiscord(long discordID) {
 		try {
 			if(getDiscord() != discordID) {
-				Table.updateWhere(ConsoleContext.INSTANCE, PLAYERS, DISCORD_ID, discordID, DISCORD_ID, EQUALS, getPlayerID());
+				Table.updateWhere(ConsoleContext.INSTANCE, PLAYERS, DISCORD_ID, discordID, PLAYER_ID, EQUALS, getPlayerID());
 			}
 		}
 		catch (SQLException e) {
