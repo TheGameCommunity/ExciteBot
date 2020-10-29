@@ -607,7 +607,7 @@ public class DiscordUser {
 	public static void attemptRegister() {
 		DesiredProfile[] profiles = desiredProfiles.toArray(new DesiredProfile[] {});
 		for(DesiredProfile profile : profiles) {
-			if(profile.getRegistrationTimeout().isAfter(Instant.now())) {
+			if(profile.getRegistrationTimeout().isBefore(Instant.now())) {
 				profile.getRequester().sendMessage("Registration for " + profile.getDesiredProfile() + " timed out");
 				desiredProfiles.remove(profile);
 				continue;
