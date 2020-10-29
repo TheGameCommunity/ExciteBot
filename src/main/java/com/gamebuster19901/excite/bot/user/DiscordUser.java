@@ -52,16 +52,12 @@ public class DiscordUser {
 	
 	private static final Set<DesiredProfile> desiredProfiles = Collections.newSetFromMap(new ConcurrentHashMap<DesiredProfile, Boolean>());
 	
-	protected transient User user;
 	protected transient DatabaseConnection connection;
 	
 	private final long discordId;
 	
-	public DiscordUser(ResultSet results) {
-		if(user == null) {
-			throw new NullPointerException();
-		}
-		this.discordId = user.getIdLong();
+	public DiscordUser(ResultSet results) throws SQLException {
+		this.discordId = results.getLong(DISCORD_ID);
 		initConnection();
 	}
 	
@@ -70,7 +66,18 @@ public class DiscordUser {
 		initConnection();
 	}
 	
-	public static DiscordUser addDiscordUser(MessageContext context, long discordID, String name) throws SQLException {
+	
+	public static void addUser(User user) {
+		if(getDiscordUserIncludingUnknown(ConsoleContext.INSTANCE, user.getIdLong()) instanceof UnknownDiscordUser) {
+			try {
+				addDiscordUser(ConsoleContext.INSTANCE, user.getIdLong(), user.getAsTag());
+			} catch (SQLException e) {
+				throw new AssertionError("Unable to add new discord user " + user.getAsTag() + "(" + user.getIdLong() + ")", e);
+			}
+		}
+	}
+	
+	private static DiscordUser addDiscordUser(MessageContext context, long discordID, String name) throws SQLException {
 		PreparedStatement ps = context.getConnection().prepareStatement("INSERT INTO ? (?, ?) VALUES (?, ?);");
 		ps.setString(1, Table.DISCORD_USERS.toString());
 		ps.setString(2, DISCORD_ID);
@@ -102,16 +109,9 @@ public class DiscordUser {
 		if(discordId == -1) {
 			return null;
 		}
+		User user = Main.discordBot.jda.retrieveUserById(discordId).complete();
 		if(user == null) {
-			try {
-				user = Main.discordBot.jda.retrieveUserById(getId()).complete();
-			}
-			catch(Exception e) {
-				e.printStackTrace();
-			}
-			if(user == null) {
-				System.out.println("Could not find JDA user for " + discordId);
-			}
+			System.out.println("Could not find JDA user for " + discordId);
 		}
 		return user;
 	}
@@ -476,16 +476,6 @@ public class DiscordUser {
 	
 	public String getMySQLUsername() {
 		return "DiscordUser#" + discordId;
-	}
-	
-	public static void addUser(User user) {
-		if(getDiscordUserIncludingUnknown(ConsoleContext.INSTANCE, user.getIdLong()) instanceof UnknownDiscordUser) {
-			try {
-				addDiscordUser(ConsoleContext.INSTANCE, user.getIdLong(), user.getAsTag());
-			} catch (SQLException e) {
-				new AssertionError("Unable to add new discord user " + user.getAsTag() + "(" + user.getIdLong() + ")", e);
-			}
-		}
 	}
 	
 	public static final User getJDAUser(long id) {
