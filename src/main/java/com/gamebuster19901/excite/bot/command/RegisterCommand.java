@@ -29,21 +29,16 @@ public class RegisterCommand {
 			context.sendMessage("You are already trying to register a profile! Please wait until registration is complete or the registration code expires.");
 			return;
 		}
-		for(Player p : Player.getEncounteredPlayers(ConsoleContext.INSTANCE)) {
-			if((p.getPlayerID() + "").equals(player)) {
-				String securityCode = discordUser.requestRegistration(p);
-				if(p.isBanned()) {
-					context.sendMessage("You cannot register a banned profile.");
-					return;
-				}
-				sendInfo(context, discordUser, p, securityCode);
-				return;
-			}
-			if(p.getName().equalsIgnoreCase(player)) {
+		
+		try {
+			int pid = Integer.parseInt(player);
+			players.add(Player.getPlayerByID(ConsoleContext.INSTANCE, pid));
+		}
+		catch(NumberFormatException e) {
+			for(Player p : Player.getPlayersByName(ConsoleContext.INSTANCE, player)) {
 				players.add(p);
 			}
 		}
-	
 
 		switch(players.size()) {
 			case 0:
