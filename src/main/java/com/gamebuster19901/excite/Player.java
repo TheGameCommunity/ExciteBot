@@ -15,6 +15,7 @@ import com.gamebuster19901.excite.bot.database.Table;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
 
 import static com.gamebuster19901.excite.bot.database.Table.PLAYERS;
+import static com.gamebuster19901.excite.bot.database.Comparator.EQUALS;
 import static com.gamebuster19901.excite.bot.user.DiscordUser.DISCORD_ID;
 
 import net.dv8tion.jda.api.entities.User;
@@ -26,9 +27,6 @@ public class Player {
 	public static final String FRIEND_CODE = "friendCode";
 	public static final String NAME = "name";
 	public static final String REDACTED = "redacted";
-	
-	public static final String PLAYER_ID_EQUALS = PLAYER_ID + " =";
-	public static final String PLAYER_NAME_EQUALS = NAME + " =";
 	
 	protected static final String LEGACY = new String("legacy");
 	protected static final String VERIFIED = new String("verified");
@@ -191,7 +189,7 @@ public class Player {
 	
 	public String getName() {
 		try {
-			ResultSet result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, NAME, PLAYERS, idEqualsThis());
+			ResultSet result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, NAME, PLAYERS, PLAYER_ID, EQUALS, getPlayerID());
 			if(result.next()) {
 				return result.getString(NAME);
 			}
@@ -208,7 +206,7 @@ public class Player {
 		String oldName = getName();
 		if(oldName != null && !oldName.equals(name)) {
 			//Audit.addAudit(new NameChangeAudit(this, name));
-			Table.updateWhere(ConsoleContext.INSTANCE, PLAYERS, NAME, name, idEqualsThis());
+			Table.updateWhere(ConsoleContext.INSTANCE, PLAYERS, NAME, name, NAME, EQUALS, getName());
 		}
 	}
 	
@@ -218,7 +216,7 @@ public class Player {
 	
 	public String getFriendCode() {
 		try {
-			ResultSet result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, FRIEND_CODE, PLAYERS, idEqualsThis());
+			ResultSet result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, FRIEND_CODE, PLAYERS, PLAYER_ID, EQUALS, getPlayerID());
 			if(result.next()) {
 				return result.getString(FRIEND_CODE);
 			}
@@ -273,7 +271,7 @@ public class Player {
 	
 	public long getDiscord() {
 		try {
-			ResultSet result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, DISCORD_ID, PLAYERS, PLAYER_ID_EQUALS + idEqualsThis());
+			ResultSet result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, DISCORD_ID, PLAYERS, PLAYER_ID, EQUALS, getPlayerID());
 			if(result.next()) {
 				long ret = result.getLong(1);
 				if(ret != 0) {
@@ -294,7 +292,7 @@ public class Player {
 	public void setDiscord(long discordID) {
 		try {
 			if(getDiscord() != discordID) {
-				Table.updateWhere(ConsoleContext.INSTANCE, PLAYERS, DISCORD_ID, discordID + "", idEqualsThis());
+				Table.updateWhere(ConsoleContext.INSTANCE, PLAYERS, DISCORD_ID, discordID, DISCORD_ID, EQUALS, getPlayerID());
 			}
 		}
 		catch (SQLException e) {
@@ -328,13 +326,13 @@ public class Player {
 	
 	@SuppressWarnings("rawtypes")
 	public static boolean isPlayerKnown(MessageContext context, int pid) {
-		return Table.existsWhere(context, PLAYERS, PLAYER_ID_EQUALS + pid);
+		return Table.existsWhere(context, PLAYERS, PLAYER_ID, EQUALS, pid);
 	}
 	
 	@SuppressWarnings("rawtypes")
 	public static Player getPlayerByID(MessageContext context, int pid) {
 		try {
-			ResultSet rs = Table.selectAllFromWhere(context, PLAYERS, PLAYER_ID_EQUALS + pid);
+			ResultSet rs = Table.selectAllFromWhere(context, PLAYERS, PLAYER_ID, EQUALS, pid);
 			if(rs.next()) {
 				return new Player(rs);
 			}
@@ -348,7 +346,7 @@ public class Player {
 	public static Player[] getPlayersByName(MessageContext context, String name) {
 		HashSet<Player> players = new HashSet<Player>();
 		try {
-			ResultSet rs = Table.selectAllFromWhere(context, PLAYERS, PLAYER_NAME_EQUALS + name);
+			ResultSet rs = Table.selectAllFromWhere(context, PLAYERS, NAME, EQUALS, name);
 			while(rs.next()) {
 				players.add(new Player(rs));
 			}
@@ -370,9 +368,5 @@ public class Player {
 			throw new IOError(e);
 		}
 		return players.toArray(new Player[]{});
-	}
-
-	public String idEqualsThis() {
-		return PLAYER_ID_EQUALS + playerID;
 	}
 }

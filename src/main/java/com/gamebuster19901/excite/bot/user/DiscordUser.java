@@ -28,6 +28,7 @@ import com.gamebuster19901.excite.bot.database.Table;
 import com.gamebuster19901.excite.util.StacktraceUtil;
 import com.gamebuster19901.excite.util.TimeUtils;
 
+import static com.gamebuster19901.excite.bot.database.Comparator.EQUALS;
 import static com.gamebuster19901.excite.bot.database.Table.DISCORD_USERS;
 import static com.gamebuster19901.excite.bot.database.Table.PLAYERS;
 
@@ -41,9 +42,7 @@ import net.dv8tion.jda.api.exceptions.ErrorResponseException;
 public class DiscordUser {
 	
 	public static final String DISCORD_ID = "discordID";
-	public static final String DISCORD_ID_EQUALS = DISCORD_ID + " =";
 	public static final String DISCORD_NAME = "discord_name";
-	public static final String DISCORD_NAME_EQUALS = DISCORD_NAME + " =";
 	public static final String THRESHOLD = "threshold";
 	public static final String FREQUENCY = "frequency";
 	public static final String LAST_NOTIFICATION = "lastNotification";
@@ -183,7 +182,7 @@ public class DiscordUser {
 	@SuppressWarnings("rawtypes")
 	public Set<Player> getProfiles(MessageContext context) throws SQLException {
 		HashSet<Player> players = new HashSet<Player>();
-		ResultSet results = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, PLAYER_ID, PLAYERS, idEqualsThis());
+		ResultSet results = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, PLAYER_ID, PLAYERS, PLAYER_ID, EQUALS, getId());
 		while(results.next()) {
 			players.add(Player.getPlayerByID(context, results.getInt(1)));
 		}
@@ -199,7 +198,7 @@ public class DiscordUser {
 			if(isOperator()) {
 				return true;
 			}
-			ResultSet result = Table.selectAllFromWhere(ConsoleContext.INSTANCE, Table.ADMINS, idEqualsThis());
+			ResultSet result = Table.selectAllFromWhere(ConsoleContext.INSTANCE, Table.ADMINS, DISCORD_ID, EQUALS, getId());
 			return result.next();
 		}
 		catch(SQLException e) {
@@ -209,7 +208,7 @@ public class DiscordUser {
 	
 	public boolean isOperator() {
 		try {
-			ResultSet result = Table.selectAllFromWhere(ConsoleContext.INSTANCE, Table.OPERATORS, idEqualsThis());
+			ResultSet result = Table.selectAllFromWhere(ConsoleContext.INSTANCE, Table.OPERATORS, DISCORD_ID, EQUALS, getId());
 			return result.next();
 		}
 		catch(SQLException e) {
@@ -262,7 +261,7 @@ public class DiscordUser {
 	
 	public int getNotifyThreshold() {
 		try {
-			ResultSet result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, THRESHOLD, DISCORD_USERS, idEqualsThis());
+			ResultSet result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, THRESHOLD, DISCORD_USERS, DISCORD_ID, EQUALS, getId());
 			if(result.next()) {
 				return result.getInt(1);
 			}
@@ -277,7 +276,7 @@ public class DiscordUser {
 	public void setNotifyThreshold(int threshold) {
 		if(threshold > 0 || threshold == -1) {
 			try {
-				Table.updateWhere(ConsoleContext.INSTANCE, DISCORD_USERS, THRESHOLD, threshold + "", idEqualsThis());
+				Table.updateWhere(ConsoleContext.INSTANCE, DISCORD_USERS, THRESHOLD, threshold, DISCORD_ID, EQUALS, getId());
 			} catch (SQLException e) {
 				throw new IOError(e);
 			}
@@ -289,7 +288,7 @@ public class DiscordUser {
 	
 	public Duration getNotifyFrequency() {
 		try {
-			ResultSet result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, FREQUENCY, DISCORD_USERS, idEqualsThis());
+			ResultSet result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, FREQUENCY, DISCORD_USERS, DISCORD_ID, EQUALS, getId());
 			if(result.next()) {
 				return Duration.parse(result.getString(1));
 			}
@@ -305,7 +304,7 @@ public class DiscordUser {
 		Duration min = Duration.ofMinutes(5);
 		if(frequency.compareTo(min) > -1) {
 			try {
-				Table.updateWhere(ConsoleContext.INSTANCE, DISCORD_USERS, FREQUENCY, frequency.toString(), idEqualsThis());
+				Table.updateWhere(ConsoleContext.INSTANCE, DISCORD_USERS, FREQUENCY, frequency, DISCORD_ID, EQUALS, getId());
 			} catch (SQLException e) {
 				throw new IOError(e);
 			}
@@ -317,7 +316,7 @@ public class DiscordUser {
 	
 	public boolean isNotifyingContinuously() {
 		try {
-			ResultSet result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, NOTIFY_CONTINUOUSLY, DISCORD_USERS, idEqualsThis());
+			ResultSet result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, NOTIFY_CONTINUOUSLY, DISCORD_USERS, DISCORD_ID, EQUALS, getId());
 			if(result.next()) {
 				return result.getBoolean(1);
 			}
@@ -330,7 +329,7 @@ public class DiscordUser {
 	public void setNotifyContinuously(boolean continuous) {
 		String value = continuous ? "b'1'" : "b'0'";
 		try {
-			Table.updateWhere(ConsoleContext.INSTANCE, DISCORD_USERS, NOTIFY_CONTINUOUSLY, value, idEqualsThis());
+			Table.updateWhere(ConsoleContext.INSTANCE, DISCORD_USERS, NOTIFY_CONTINUOUSLY, value, DISCORD_ID, EQUALS, getId());
 			if(continuous) {
 				setDippedBelowThreshold(false);
 			}
@@ -341,7 +340,7 @@ public class DiscordUser {
 	
 	public Instant getLastNotification() {
 		try {
-			ResultSet result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, LAST_NOTIFICATION, DISCORD_USERS, idEqualsThis());
+			ResultSet result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, LAST_NOTIFICATION, DISCORD_USERS, DISCORD_ID, EQUALS, getId());
 			if(result.next()) {
 				return TimeUtils.parseInstant(result.getString(1));
 			}
@@ -357,7 +356,7 @@ public class DiscordUser {
 	
 	public void setLastNotification(Instant instant) {
 		try {
-			Table.updateWhere(ConsoleContext.INSTANCE, DISCORD_USERS, LAST_NOTIFICATION, instant.toString(), idEqualsThis());
+			Table.updateWhere(ConsoleContext.INSTANCE, DISCORD_USERS, LAST_NOTIFICATION, instant.toString(), DISCORD_ID, EQUALS, getId());
 		} catch (SQLException e) {
 			throw new IOError(e);
 		}
@@ -365,7 +364,7 @@ public class DiscordUser {
 	
 	public boolean dippedBelowThreshold() {
 		try {
-			ResultSet result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, BELOW_THRESHOLD, DISCORD_USERS, idEqualsThis());
+			ResultSet result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, BELOW_THRESHOLD, DISCORD_USERS, DISCORD_ID, EQUALS, getId());
 			if(result.next()) {
 				return result.getBoolean(1);
 			}
@@ -376,9 +375,8 @@ public class DiscordUser {
 	}
 	
 	public void setDippedBelowThreshold(boolean dippedBelow) {
-		String value = dippedBelow ? "b'1'" : "b'0'";
 		try {
-			Table.updateWhere(ConsoleContext.INSTANCE, DISCORD_USERS, BELOW_THRESHOLD, value, DISCORD_ID_EQUALS + discordId);
+			Table.updateWhere(ConsoleContext.INSTANCE, DISCORD_USERS, BELOW_THRESHOLD, dippedBelow, DISCORD_ID, EQUALS, getId());
 		} catch (SQLException e) {
 			throw new IOError(e);
 		}
@@ -501,7 +499,7 @@ public class DiscordUser {
 	@SuppressWarnings("rawtypes")
 	public static final DiscordUser getDiscordUser(MessageContext context, long id) {
 		try {
-			ResultSet results = Table.selectAllFromWhere(context, DISCORD_USERS, DISCORD_ID_EQUALS + id);
+			ResultSet results = Table.selectAllFromWhere(context, DISCORD_USERS, DISCORD_ID, EQUALS, id);
 			
 			if(results.next()) {
 				return new DiscordUser(results.getLong(DISCORD_ID));
@@ -548,7 +546,7 @@ public class DiscordUser {
 	
 	public static final DiscordUser getDiscordUser(MessageContext context, String discriminator) {
 		try {
-			ResultSet results = Table.selectAllFromWhere(context, DISCORD_USERS, DISCORD_NAME_EQUALS + discriminator);
+			ResultSet results = Table.selectAllFromWhere(context, DISCORD_USERS, DISCORD_NAME, EQUALS, discriminator);
 			if(results.next()) {
 				return new DiscordUser(results.getLong("discord_id"));
 			}
@@ -586,10 +584,6 @@ public class DiscordUser {
 		} catch (SQLException e) {
 			ConsoleUser.getConsoleUser().sendMessage(StacktraceUtil.getStackTrace(e));
 		}
-	}
-	
-	public String idEqualsThis() {
-		return DISCORD_ID_EQUALS + discordId;
 	}
 	
 	@SuppressWarnings("rawtypes")

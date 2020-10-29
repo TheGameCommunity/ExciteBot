@@ -6,10 +6,14 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
+import static com.gamebuster19901.excite.bot.database.Comparator.EQUALS;
+
 import com.gamebuster19901.excite.Main;
 import com.gamebuster19901.excite.bot.command.ConsoleContext;
 import com.gamebuster19901.excite.bot.command.MessageContext;
 import com.gamebuster19901.excite.bot.database.Table;
+
+import static com.gamebuster19901.excite.bot.database.Table.DISCORD_SERVERS;
 
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Role;
@@ -18,8 +22,6 @@ public class DiscordServer {
 	public static final String SERVER_ID = "server_id";
 	public static final String NAME = "name";
 	public static final String PREFIX = "prefix";
-	
-	public static final String SERVER_ID_EQUALS = SERVER_ID + " =";
 	
 	protected final long id;
 	
@@ -43,12 +45,11 @@ public class DiscordServer {
 	}
 	
 	public static DiscordServer addServer(MessageContext context, long guildId, String name) throws SQLException {
-		PreparedStatement ps = context.getConnection().prepareStatement("INSERT INTO ? (?, ?) VALUES (?, ?)");
-		ps.setString(1, Table.DISCORD_SERVERS.toString());
-		ps.setString(2, SERVER_ID);
-		ps.setString(3, NAME);
-		ps.setLong(4, guildId);
-		ps.setString(5, name);
+		PreparedStatement ps = context.getConnection().prepareStatement("INSERT INTO " + DISCORD_SERVERS + " (?, ?) VALUES (?, ?)");
+		ps.setString(1, SERVER_ID);
+		ps.setString(2, NAME);
+		ps.setLong(3, guildId);
+		ps.setString(4, name);
 		ps.execute();
 		return getServer(context, guildId);
 	}
@@ -71,7 +72,7 @@ public class DiscordServer {
 	
 	public String getName() {
 		try {
-			ResultSet result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, NAME, Table.DISCORD_SERVERS, idEqualsThis());
+			ResultSet result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, NAME, DISCORD_SERVERS, SERVER_ID, EQUALS, getId());
 			if(result.next()) {
 				return result.getString(1);
 			}
@@ -85,7 +86,7 @@ public class DiscordServer {
 	
 	public void setName(String name) {
 		try {
-			Table.updateWhere(ConsoleContext.INSTANCE, Table.DISCORD_SERVERS, NAME, name, idEqualsThis());
+			Table.updateWhere(ConsoleContext.INSTANCE, DISCORD_SERVERS, NAME, name, SERVER_ID, EQUALS, getId());
 		} catch (SQLException e) {
 			throw new IOError(e);
 		}
@@ -93,7 +94,7 @@ public class DiscordServer {
 	
 	public String getPrefix() {
 		try {
-			ResultSet result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, PREFIX, Table.DISCORD_SERVERS, idEqualsThis());
+			ResultSet result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, PREFIX, DISCORD_SERVERS, SERVER_ID, EQUALS, getId());
 			if(result.next()) {
 				return result.getString(1);
 			}
@@ -107,7 +108,7 @@ public class DiscordServer {
 	
 	public void setPrefix(String prefix) {
 		try {
-			Table.updateWhere(ConsoleContext.INSTANCE, Table.DISCORD_SERVERS, NAME, prefix, idEqualsThis());
+			Table.updateWhere(ConsoleContext.INSTANCE, DISCORD_SERVERS, NAME, prefix, SERVER_ID, EQUALS, getId());
 		} catch (SQLException e) {
 			throw new IOError(e);
 		}
@@ -130,14 +131,10 @@ public class DiscordServer {
 		return getName() + " (" + getId() + ")";
 	}
 	
-	public String idEqualsThis() {
-		return SERVER_ID_EQUALS + getId();
-	}
-	
 	@SuppressWarnings("rawtypes")
 	public static DiscordServer getServer(MessageContext context, long serverId) {
 		try {
-			ResultSet results = Table.selectAllFromWhere(context, Table.DISCORD_SERVERS, SERVER_ID_EQUALS + serverId);
+			ResultSet results = Table.selectAllFromWhere(context, DISCORD_SERVERS, SERVER_ID, EQUALS, serverId);
 			
 			if(results.next()) {
 				return new DiscordServer(results.getLong(SERVER_ID));
@@ -151,7 +148,7 @@ public class DiscordServer {
 	public static DiscordServer[] getKnownDiscordServers() {
 		try {
 			ArrayList<DiscordServer> servers = new ArrayList<DiscordServer>();
-			ResultSet results = Table.selectAllFrom(ConsoleContext.INSTANCE, Table.DISCORD_SERVERS);
+			ResultSet results = Table.selectAllFrom(ConsoleContext.INSTANCE, DISCORD_SERVERS);
 			while(results.next()) {
 				servers.add(new DiscordServer(results));
 			}

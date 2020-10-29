@@ -9,6 +9,7 @@ import com.gamebuster19901.excite.Main;
 import com.gamebuster19901.excite.bot.command.MessageContext;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
 import com.gamebuster19901.excite.util.StacktraceUtil;
+import com.gamebuster19901.excite.util.Vulnerable;
 
 public enum Table {
 	
@@ -25,21 +26,31 @@ public enum Table {
 		return this.name().toLowerCase();
 	}
 	
+	@Vulnerable
 	@SuppressWarnings("rawtypes")
-	public static ResultSet selectColumnsFrom(MessageContext context, String columns, Table table) throws SQLException {
-		PreparedStatement st = context.getConnection().prepareStatement("SELECT ? FROM ?");
-		st.setString(1, columns);
-		st.setString(2, table.toString());
+	public static ResultSet selectColumnsFrom(MessageContext context, @Vulnerable String columns, Table table) throws SQLException {
+		PreparedStatement st = context.getConnection().prepareStatement("SELECT " + columns + " FROM " + table);
 		return st.executeQuery();
 	}
 	
+	@Vulnerable
 	@SuppressWarnings("rawtypes")
-	public static ResultSet selectColumnsFromWhere(MessageContext context, String columns, Table table, String where) throws SQLException {
-		PreparedStatement st = context.getConnection().prepareStatement("SELECT ? FROM ? WHERE ?");
-		st.setString(1, columns);
-		st.setString(2, table.toString());
-		st.setString(3, where);
-		return st.executeQuery();
+	public static ResultSet selectColumnsFromWhere(MessageContext context, @Vulnerable String columns, Table table, @Vulnerable String where, Comparator comparator, Object comparee) throws SQLException {
+		PreparedStatement st;
+		if(comparee != null) {
+			st = context.getConnection().prepareStatement("SELECT " + columns + " FROM " + table + " WHERE " + where + comparator + " ?");
+			insertValue(st, 1, comparee);
+		}
+		else {
+			st = context.getConnection().prepareStatement("SELECT " + columns + " FROM " + table + " WHERE " + where + comparator);
+		}
+		
+		try {
+			return st.executeQuery();
+		}
+		catch(SQLException e) {
+			throw new SQLException(st.toString());
+		}
 	}
 	
 	@SuppressWarnings("rawtypes")
@@ -48,16 +59,22 @@ public enum Table {
 	}
 	
 	@SuppressWarnings("rawtypes")
-	public static ResultSet selectAllFromWhere(MessageContext context, Table table, String where) throws SQLException {
-		return selectColumnsFromWhere(context, "*", table, where);
+	public static ResultSet selectAllFromWhere(MessageContext context, Table table, String where, Comparator comparator, Object comparee) throws SQLException {
+		return selectColumnsFromWhere(context, "*", table, where, comparator, comparee);
 	}
 	
 	@SuppressWarnings("rawtypes")
-	public static boolean existsWhere(MessageContext context, Table table, String where) {
+	public static boolean existsWhere(MessageContext context, Table table, String where, Comparator comparator, Object comparee) {
 		try {
-			PreparedStatement st = context.getConnection().prepareStatement("SELECT EXISTS(SELECT 1 FROM ? WHERE ?);");
-			st.setString(1, table.toString());
-			st.setString(2, where);
+			PreparedStatement st;
+			if(comparee != null) {
+				st = context.getConnection().prepareStatement("SELECT EXISTS(SELECT 1 FROM " + table + " WHERE ? " + comparator + " ?");
+				insertValue(st, 2, comparee);
+			}
+			else {
+				st = context.getConnection().prepareStatement("SELECT EXISTS(SELECT 1 FROM " + table + " WHERE ? " + comparator);
+			}
+			st.setString(1, where);
 			ResultSet rs = st.executeQuery();
 			rs.next();
 			return rs.getBoolean(1);
@@ -66,12 +83,13 @@ public enum Table {
 		}
 	}
 	
-	public static void updateWhere(MessageContext context, Table table, String parameter, String value, String where) throws SQLException {
-		PreparedStatement st = context.getConnection().prepareStatement("UPDATE ? SET ? = ? WHERE ?");
-		st.setString(1, table.toString());
-		st.setString(2, parameter);
-		st.setString(3, value);
-		st.setString(4, where);
+	@Vulnerable
+	@SuppressWarnings("rawtypes")
+	public static void updateWhere(MessageContext context, Table table, @Vulnerable String parameter, Object value, String where, Comparator comparator, Object comparee) throws SQLException {
+		PreparedStatement st = context.getConnection().prepareStatement("UPDATE " + table + " SET " + parameter + " = ? WHERE ? " + comparator + " ?");
+		insertValue(st, 1, value);
+		st.setString(2, where);
+		insertValue(st, 3, comparee);
 		st.execute();
 	}
 	
@@ -180,5 +198,39 @@ public enum Table {
 	@SuppressWarnings("rawtypes")
 	public static void revokeOperatorDBPermissions(MessageContext demoter, String user) throws SQLException {
 		revokeAdminDBPermissions(demoter, user);
+	}
+	
+	@SuppressWarnings("rawtypes")
+	private static void insertValue(PreparedStatement st, int index, Object value) throws SQLException {
+		Class clazz = value.getClass();
+		if(clazz.isPrimitive() || value instanceof Number || value instanceof Boolean || value instanceof Character) {
+			if (clazz == long.class || clazz == Long.class) {
+				st.setLong(index, (long)value);
+			}
+			else if(clazz == int.class || clazz == Integer.class) {
+				st.setInt(index, (int)value);
+			}
+			else if (clazz == boolean.class || clazz == Boolean.class) {
+				st.setBoolean(index, (boolean)value);
+			}
+			else if (clazz == double.class || clazz == Double.class) {
+				st.setDouble(index, (double)value);
+			}
+			else if (clazz == float.class || clazz == Float.class) {
+				st.setFloat(index, (float)value);
+			}
+			else if (clazz == short.class || clazz == Short.class) {
+				st.setShort(index, (short)value);
+			}
+			else if (clazz == byte.class || clazz == Byte.class) {
+				st.setShort(index, (byte)value);
+			}
+			else if (clazz == char.class || clazz == Character.class) {
+				st.setString(index, value.toString());
+			}
+		}
+		else {
+			st.setString(index, value.toString());
+		}
 	}
 }

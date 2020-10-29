@@ -1,9 +1,9 @@
 CREATE DATABASE IF NOT EXISTS `excitebot` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_bin */ /*!80016 DEFAULT ENCRYPTION='N' */;
 
 CREATE TABLE IF NOT EXISTS `admins` (
-  `discord_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`discord_id`),
-  UNIQUE KEY `discord_id_UNIQUE` (`discord_id`)
+  `discordID` bigint unsigned NOT NULL,
+  PRIMARY KEY (`discordID`),
+  UNIQUE KEY `discord_id_UNIQUE` (`discordID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci;
 
 CREATE TABLE IF NOT EXISTS `discord_servers` (
@@ -15,21 +15,21 @@ CREATE TABLE IF NOT EXISTS `discord_servers` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci;
 
 CREATE TABLE IF NOT EXISTS `discord_users` (
-  `discord_id` bigint unsigned NOT NULL,
+  `discordID` bigint unsigned NOT NULL,
   `discord_name` char(37) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
   `threshold` int NOT NULL DEFAULT '-1',
   `frequency` varchar(45) COLLATE utf8mb4_bin NOT NULL DEFAULT 'PT30M',
   `lastNotification` varchar(45) COLLATE utf8mb4_bin DEFAULT NULL,
   `dippedBelowThreshold` bit(1) NOT NULL DEFAULT b'0',
   `notifyContinuously` bit(1) NOT NULL DEFAULT b'0',
-  PRIMARY KEY (`discord_id`),
-  UNIQUE KEY `discord_id_UNIQUE` (`discord_id`)
+  PRIMARY KEY (`discordID`),
+  UNIQUE KEY `discord_id_UNIQUE` (`discordID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
 
 CREATE TABLE IF NOT EXISTS `operators` (
-  `discord_id` bigint unsigned NOT NULL,
-  PRIMARY KEY (`discord_id`),
-  UNIQUE KEY `discord_id_UNIQUE` (`discord_id`)
+  `discordID` bigint unsigned NOT NULL,
+  PRIMARY KEY (`discordID`),
+  UNIQUE KEY `discord_id_UNIQUE` (`discordID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci;
 
 CREATE TABLE IF NOT EXISTS `players` (
