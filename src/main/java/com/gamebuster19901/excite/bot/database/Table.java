@@ -19,7 +19,7 @@ public enum Table {
 	OPERATORS,
 	PLAYERS;
 	
-	public static final String HOST = "&localhost";
+	public static final String HOST = "@'localhost'";
 	
 	@Override
 	public String toString() {
