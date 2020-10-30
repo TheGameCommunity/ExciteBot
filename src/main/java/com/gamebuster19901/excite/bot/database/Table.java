@@ -58,13 +58,15 @@ public enum Table {
 		return selectColumnsFrom(context, "*", table);
 	}
 	
+	@Vulnerable
 	@SuppressWarnings("rawtypes")
 	public static ResultSet selectAllFromWhere(MessageContext context, Table table, String where, Comparator comparator, Object comparee) throws SQLException {
 		return selectColumnsFromWhere(context, "*", table, where, comparator, comparee);
 	}
 	
+	@Vulnerable
 	@SuppressWarnings("rawtypes")
-	public static boolean existsWhere(MessageContext context, Table table, String where, Comparator comparator, Object comparee) {
+	public static boolean existsWhere(MessageContext context, Table table, @Vulnerable String where, Comparator comparator, Object comparee) {
 		try {
 			PreparedStatement st;
 			if(comparee != null) {
