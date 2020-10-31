@@ -104,9 +104,6 @@ public class MessageContext<E>{
 		if(isIngameEvent()) {
 			throw new UnsupportedOperationException();
 		}
-		else {
-			System.out.println(message);
-		}
 	}
 	
 	public String getMention() {
