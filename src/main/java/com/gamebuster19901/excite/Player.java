@@ -189,6 +189,9 @@ public class Player {
 	
 	public String getName() {
 		try {
+			if(isRedacted()) {
+				return "REDACTED_NAME";
+			}
 			ResultSet result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, NAME, PLAYERS, PLAYER_ID, EQUALS, getPlayerID());
 			if(result.next()) {
 				return result.getString(NAME);
@@ -250,6 +253,19 @@ public class Player {
 			}
 		}
 		return false;
+	}
+	
+	public boolean isRedacted() {
+		try {
+			ResultSet result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, REDACTED, PLAYERS, PLAYER_ID, EQUALS, getPlayerID());
+			if(result.next()) {
+				return result.getBoolean(REDACTED);
+			}
+			throw new AssertionError("Could not find player with pid " + playerID);
+		}
+		catch (SQLException e){
+			throw new IOError(e);
+		}
 	}
 
 	public boolean isBanned() {
