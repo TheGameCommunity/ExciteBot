@@ -10,6 +10,7 @@ import java.sql.SQLException;
 import java.util.List;
 
 import com.gamebuster19901.excite.Main;
+import com.gamebuster19901.excite.bot.command.ConsoleContext;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
 import com.gamebuster19901.excite.util.file.File;
 
@@ -35,14 +36,14 @@ public class DatabaseConnection {
 			PreparedStatement createUser = Main.CONSOLE.getConnection().prepareStatement("CREATE USER ?@localhost IDENTIFIED BY ?");
 			createUser.setString(1, username);
 			createUser.setString(2, username);
+			System.out.println(createUser);
 			createUser.execute();
 			
-			PreparedStatement grantUserRole = Main.CONSOLE.getConnection().prepareStatement("GRANT User TO ?@localhost;");
-			grantUserRole.setString(1, username);
-			grantUserRole.execute();
+			Table.grantUserDBPermissions(ConsoleContext.INSTANCE, username);
 			
 			PreparedStatement setDefaultRole = Main.CONSOLE.getConnection().prepareStatement("SET DEFAULT ROLE User TO ?@localhost;");
 			setDefaultRole.setString(1, username);
+			System.out.println(setDefaultRole);
 			setDefaultRole.execute();
 		}
 		File file = new File("./mysql.secret");

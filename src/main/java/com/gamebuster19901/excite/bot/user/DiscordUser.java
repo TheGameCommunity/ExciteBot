@@ -222,7 +222,6 @@ public class DiscordUser {
 			Table.addAdmin(promoter, this);
 		}
 		else {
-			if(isAdmin())
 			Table.removeAdmin(promoter, this);
 		}
 	}
@@ -548,7 +547,7 @@ public class DiscordUser {
 		try {
 			ResultSet results = Table.selectAllFromWhere(context, DISCORD_USERS, DISCORD_NAME, EQUALS, discriminator);
 			if(results.next()) {
-				return new DiscordUser(results.getLong("discord_id"));
+				return new DiscordUser(results.getLong(DISCORD_ID));
 			}
 			return null;
 		} catch (SQLException e) {
@@ -574,7 +573,41 @@ public class DiscordUser {
 	}
 	
 	public static final void messageAllOperators(String message) {
-		
+		for(DiscordUser operator : getAllOperators()) {
+			operator.sendMessage(message);
+		}
+	}
+	
+	public static DiscordUser[] getAllAdmins() {
+		try {
+			PreparedStatement st = ConsoleContext.INSTANCE.getConnection().prepareStatement("SELECT * FROM discord_users INNER JOIN admins ON(discord_users.discordID = admins.discordID);");
+			ResultSet results = st.executeQuery();
+			int columns = results.getMetaData().getColumnCount();
+			DiscordUser[] operators = new DiscordUser[columns];
+			for(int i = 0; i < columns; i++) {
+				results.next();
+				operators[i] = new DiscordUser(results);
+			}
+			return operators;
+		} catch (SQLException e) {
+			throw new AssertionError(e);
+		}
+	}
+	
+	public static DiscordUser[] getAllOperators() {
+		try {
+			PreparedStatement st = ConsoleContext.INSTANCE.getConnection().prepareStatement("SELECT * FROM discord_users INNER JOIN operators ON(discord_users.discordID = operators.discordID);");
+			ResultSet results = st.executeQuery();
+			int columns = results.getMetaData().getColumnCount();
+			DiscordUser[] operators = new DiscordUser[columns];
+			for(int i = 0; i < columns; i++) {
+				results.next();
+				operators[i] = new DiscordUser(results);
+			}
+			return operators;
+		} catch (SQLException e) {
+			throw new AssertionError(e);
+		}
 	}
 	
 	@Override

@@ -107,11 +107,7 @@ public class RankCommand {
 			context.sendMessage(user + " is already not an admin");
 		}
 		else {
-			if(discordUser.isOperator()) {
-				removeOperator(context, user);
-			}
 			discordUser.setAdmin(context, false);
-			context.sendMessage(discordUser.toDetailedString() + " is no longer a bot administrator for " + Main.discordBot.getSelfUser().getAsTag());
 		}
 		return 1;
 	}
@@ -123,7 +119,7 @@ public class RankCommand {
 			discordUser = DiscordUser.getDiscordUserIncludingUnknown(ConsoleContext.INSTANCE, Long.parseLong(user));
 		}
 		catch(NumberFormatException e) {
-			discordUser = DiscordUser.getDiscordUser(ConsoleContext.INSTANCE, user);
+			discordUser = DiscordUser.getDiscordUserIncludingUnknown(ConsoleContext.INSTANCE, user);
 		}
 		
 		if(discordUser instanceof UnknownDiscordUser) {
@@ -148,7 +144,7 @@ public class RankCommand {
 			discordUser = DiscordUser.getDiscordUserIncludingUnknown(ConsoleContext.INSTANCE, Long.parseLong(user));
 		}
 		catch(NumberFormatException e) {
-			discordUser = DiscordUser.getDiscordUser(ConsoleContext.INSTANCE, user);
+			discordUser = DiscordUser.getDiscordUserIncludingUnknown(ConsoleContext.INSTANCE, user);
 		}
 		
 		if(discordUser instanceof UnknownDiscordUser) {
@@ -161,7 +157,6 @@ public class RankCommand {
 		}
 		else {
 			discordUser.setOperator(context, false);
-			context.sendMessage(discordUser.toDetailedString() + " is no longer a bot operator for " + Main.discordBot.getSelfUser().getAsTag());
 		}
 		return 1;
 	}

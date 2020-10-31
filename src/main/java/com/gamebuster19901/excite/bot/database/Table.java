@@ -6,6 +6,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import com.gamebuster19901.excite.Main;
+import com.gamebuster19901.excite.bot.command.ConsoleContext;
 import com.gamebuster19901.excite.bot.command.MessageContext;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
 import com.gamebuster19901.excite.util.StacktraceUtil;
@@ -67,8 +68,8 @@ public enum Table {
 	@Vulnerable
 	@SuppressWarnings("rawtypes")
 	public static boolean existsWhere(MessageContext context, Table table, @Vulnerable String where, Comparator comparator, Object comparee) {
+		PreparedStatement st = null;
 		try {
-			PreparedStatement st;
 			if(comparee != null) {
 				st = context.getConnection().prepareStatement("SELECT EXISTS(SELECT 1 FROM " + table + " WHERE ? " + comparator + " ?");
 				insertValue(st, 2, comparee);
@@ -81,6 +82,9 @@ public enum Table {
 			rs.next();
 			return rs.getBoolean(1);
 		} catch (SQLException e) {
+			if(st != null) {
+				System.out.println(st);
+			}
 			throw new IOError(e);
 		}
 	}
@@ -95,24 +99,47 @@ public enum Table {
 		System.out.println(st);
 	}
 	
+	@Vulnerable
+	@SuppressWarnings("rawtypes")
+	public static void deleteWhere(MessageContext context, Table table, @Vulnerable String where, Comparator comparator, Object comparee) {
+		PreparedStatement st = null;
+		try {
+			st = context.getConnection().prepareStatement("DELETE FROM " + table + " WHERE " + where + comparator + " ?");
+			insertValue(st, 1, comparee);
+			st.execute();
+		} catch (SQLException e) {
+			if(st != null) {
+				System.out.println(st);
+			}
+			throw new IOError(e);
+		}
+	}
+	
 	@SuppressWarnings("rawtypes")
 	public static void addAdmin(MessageContext promoter, DiscordUser user) {
+		PreparedStatement st = null;
 		try {
-			PreparedStatement st = promoter.getConnection().prepareStatement("INSERT INTO `admins` (`discord_id`) VALUES ('?');");
+			st = promoter.getConnection().prepareStatement("INSERT INTO `admins` (" + DiscordUser.DISCORD_ID + ") VALUES (?);");
 			st.setLong(1, user.getId());
 			st.execute();
 			String botName = Main.discordBot.getSelfUser().getAsMention();
+			grantAdminDBPermissions(ConsoleContext.INSTANCE, user.getMySQLUsername());
 			user.sendMessage("You are now an administrator for " + botName);
 			promoter.sendMessage(user.toDetailedString() + " is now an administrator for " + botName);
 		} catch (SQLException e) {
 			promoter.sendMessage("Could not make " + user + " a bot administrator: ");
 			promoter.sendMessage(StacktraceUtil.getStackTrace(e));
+			if(st != null) {
+				System.out.println(st);
+			}
+			throw new IOError(e);
 		}
 	}
 	
 	@SuppressWarnings("rawtypes")
 	public static void removeAdmin(MessageContext demoter, DiscordUser user) {
 		try {
+			deleteWhere(demoter, Table.ADMINS, DiscordUser.DISCORD_ID, Comparator.EQUALS, user.getId());
 			revokeAdminDBPermissions(demoter, user.getMySQLUsername());
 			String botName = Main.discordBot.getSelfUser().getAsMention();
 			user.sendMessage("You are no longer an administrator for " + botName);
@@ -120,62 +147,87 @@ public enum Table {
 		} catch (SQLException e) {
 			demoter.sendMessage("could not revoke the administrator permissions of " + user);
 			demoter.sendMessage(StacktraceUtil.getStackTrace(e));
+			throw new IOError(e);
 		}
 	}
 	
 	@SuppressWarnings("rawtypes")
 	public static void addOperator(MessageContext promoter, DiscordUser user) {
+		PreparedStatement st = null;
 		try {
-			PreparedStatement st = promoter.getConnection().prepareStatement("INSERT INTO `operators` (`discord_id`) VALUES ('?');");
+			st = promoter.getConnection().prepareStatement("INSERT INTO operators ("+ DiscordUser.DISCORD_ID +") VALUES (?);");
 			st.setLong(1, user.getId());
 			st.execute();
 			String botName = Main.discordBot.getSelfUser().getAsMention();
+			grantOperatorDBPermissions(ConsoleContext.INSTANCE, user.getMySQLUsername());
 			user.sendMessage("You are now an operator for " + botName);
 			promoter.sendMessage(user.toDetailedString() + " is now an operator for " + botName);
 		} catch (SQLException e) {
 			promoter.sendMessage("Could not make " + user + " a bot operator: ");
 			promoter.sendMessage(StacktraceUtil.getStackTrace(e));
+			if(st != null) {
+				System.out.println(st);
+			}
+			throw new IOError(e);
 		}
 	}
 	
 	@SuppressWarnings("rawtypes")
 	public static void removeOperator(MessageContext demoter, DiscordUser user) {
 		try {
-			revokeAdminDBPermissions(demoter, user.getMySQLUsername());
+			deleteWhere(demoter, Table.OPERATORS, DiscordUser.DISCORD_ID, Comparator.EQUALS, user.getId());
+			revokeAdminDBPermissions(ConsoleContext.INSTANCE, user.getMySQLUsername());
 			String botName = Main.discordBot.getSelfUser().getAsMention();
 			user.sendMessage("You are no longer an operator for " + botName);
-			demoter.sendMessage(user.toDetailedString() + " is no longer a bot operator for " + botName);
+			demoter.getDiscordAuthor().sendMessage(user.toDetailedString() + " is no longer a bot operator for " + botName);
 		} catch (SQLException e) {
 			demoter.sendMessage("could not revoke the operator permissions of " + user);
 			demoter.sendMessage(StacktraceUtil.getStackTrace(e));
+			throw new IOError(e);
 		}
 	}
 	
 	@SuppressWarnings("rawtypes")
-	private static void clearDBPermissions(MessageContext demoter, String user) throws SQLException {
-		PreparedStatement st = demoter.getConnection().prepareStatement("REVOKE User, Admin, Operator FROM '?'" + HOST);
-		st.setString(0, user);
-		st.execute();
+	private static void clearDBPermissions(MessageContext demoter, String user) {
+		PreparedStatement st = null;
+		try {
+			st = demoter.getConnection().prepareStatement("REVOKE User, Admin, Operator FROM ?" + HOST);
+			st.setString(1, user);
+			st.execute();
+		} catch (SQLException e) {
+			if(st != null) {
+				System.out.println(st);
+			}
+			throw new IOError(e);
+		}
 	}
 	
 	@SuppressWarnings("rawtypes")
 	public static void grantUserDBPermissions(MessageContext promoter, String user) throws SQLException {
 		clearDBPermissions(promoter, user);
-		PreparedStatement st = promoter.getConnection().prepareStatement("GRANT 'User' TO '?'" + HOST);
-		PreparedStatement st2 = promoter.getConnection().prepareStatement("SET DEFAULT ROLE User TO '?'" + HOST);
-		st.setString(0, user);
-		st2.setString(0, user);
-		st.execute();
-		st2.execute();
+		PreparedStatement st = promoter.getConnection().prepareStatement("GRANT 'User' TO ?" + HOST);
+		PreparedStatement st2 = promoter.getConnection().prepareStatement("SET DEFAULT ROLE User TO ?" + HOST);
+		st.setString(1, user);
+		st2.setString(1, user);
+		try {
+			st.execute();
+		} catch (SQLException e) {
+			throw new AssertionError(st.toString(), e);
+		}
+		try {
+			st2.execute();
+		} catch (SQLException e) {
+			throw new AssertionError(st2.toString(), e);
+		}
 	}
 	
 	@SuppressWarnings("rawtypes")
 	public static void grantAdminDBPermissions(MessageContext promoter, String user) throws SQLException {
 		clearDBPermissions(promoter, user);
-		PreparedStatement st = promoter.getConnection().prepareStatement("GRANT 'Admin' TO '?'" + HOST);
-		PreparedStatement st2 = promoter.getConnection().prepareStatement("SET DEFAULT ROLE Admin TO '?'" + HOST);
-		st.setString(0, user);
-		st2.setString(0, user);
+		PreparedStatement st = promoter.getConnection().prepareStatement("GRANT 'Admin' TO ?" + HOST);
+		PreparedStatement st2 = promoter.getConnection().prepareStatement("SET DEFAULT ROLE Admin TO ?" + HOST);
+		st.setString(1, user);
+		st2.setString(1, user);
 		st.execute();
 		st2.execute();
 	}
@@ -189,12 +241,14 @@ public enum Table {
 	@SuppressWarnings("rawtypes")
 	public static void grantOperatorDBPermissions(MessageContext promoter, String user) throws SQLException {
 		clearDBPermissions(promoter, user);
-		PreparedStatement st = promoter.getConnection().prepareStatement("GRANT 'Operator' TO '?'" + HOST);
-		PreparedStatement st2 = promoter.getConnection().prepareStatement("SET DEFAULT ROLE Operator TO '?'" + HOST);
-		st.setString(0, user);
-		st2.setString(0, user);
+		PreparedStatement st = promoter.getConnection().prepareStatement("GRANT 'Operator' TO ?" + HOST);
+		PreparedStatement st2 = promoter.getConnection().prepareStatement("SET DEFAULT ROLE Operator TO ?" + HOST);
+		st.setString(1, user);
+		st2.setString(1, user);
 		st.execute();
 		st2.execute();
+		System.out.println(st);
+		System.out.println(st2);
 	}
 	
 	@SuppressWarnings("rawtypes")
