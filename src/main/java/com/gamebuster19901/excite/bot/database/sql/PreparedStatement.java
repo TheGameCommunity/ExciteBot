@@ -32,7 +32,7 @@ public class PreparedStatement implements java.sql.PreparedStatement {
 	
 	@Override
 	public String toString() {
-		return super.toString();
+		return parent.toString();
 	}
 	
 	@Override
