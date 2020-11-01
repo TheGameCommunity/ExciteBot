@@ -2,9 +2,6 @@ package com.gamebuster19901.excite.bot.user;
 
 import java.io.IOError;
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.Duration;
 import java.time.Instant;
@@ -23,8 +20,10 @@ import com.gamebuster19901.excite.bot.audit.ban.DiscordBan;
 import com.gamebuster19901.excite.bot.audit.ban.Pardon;
 import com.gamebuster19901.excite.bot.command.ConsoleContext;
 import com.gamebuster19901.excite.bot.command.MessageContext;
-import com.gamebuster19901.excite.bot.database.DatabaseConnection;
+import com.gamebuster19901.excite.bot.database.sql.DatabaseConnection;
 import com.gamebuster19901.excite.bot.database.Table;
+import com.gamebuster19901.excite.bot.database.sql.PreparedStatement;
+import com.gamebuster19901.excite.bot.database.sql.ResultSet;
 import com.gamebuster19901.excite.util.StacktraceUtil;
 import com.gamebuster19901.excite.util.TimeUtils;
 
@@ -32,7 +31,7 @@ import static com.gamebuster19901.excite.bot.database.Comparator.EQUALS;
 import static com.gamebuster19901.excite.bot.database.Table.DISCORD_USERS;
 import static com.gamebuster19901.excite.bot.database.Table.PLAYERS;
 
-import static com.gamebuster19901.excite.Player.PLAYER_ID;
+import static com.gamebuster19901.excite.bot.database.Column.*;
 
 import net.dv8tion.jda.api.entities.PrivateChannel;
 import net.dv8tion.jda.api.entities.User;
@@ -40,14 +39,6 @@ import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.exceptions.ErrorResponseException;
 
 public class DiscordUser {
-	
-	public static final String DISCORD_ID = "discordID";
-	public static final String DISCORD_NAME = "discord_name";
-	public static final String THRESHOLD = "threshold";
-	public static final String FREQUENCY = "frequency";
-	public static final String LAST_NOTIFICATION = "lastNotification";
-	public static final String BELOW_THRESHOLD = "dippedBelowThreshold";
-	public static final String NOTIFY_CONTINUOUSLY = "notifyContinuously";
 	
 	private static final Set<DesiredProfile> desiredProfiles = Collections.newSetFromMap(new ConcurrentHashMap<DesiredProfile, Boolean>());
 	
@@ -76,23 +67,20 @@ public class DiscordUser {
 		}
 	}
 	
+	@SuppressWarnings("rawtypes")
 	private static DiscordUser addDiscordUser(MessageContext context, long discordID, String name) throws SQLException {
 		PreparedStatement ps = context.getConnection().prepareStatement("INSERT INTO ? (?, ?) VALUES (?, ?);");
 		ps.setString(1, Table.DISCORD_USERS.toString());
-		ps.setString(2, DISCORD_ID);
-		ps.setString(3, DISCORD_NAME);
+		ps.setString(2, DISCORD_ID.toString());
+		ps.setString(3, DISCORD_NAME.toString());
 		ps.setLong(4, discordID);
 		ps.setString(5, name);
 		ps.execute();
 		return getDiscordUser(context, discordID);
 	}
-
-	public DatabaseConnection getDatabaseConnection() {
-		return connection;
-	}
 	
-	public Connection getConnection() {
-		return connection.getConnection();
+	public DatabaseConnection getConnection() {
+		return connection;
 	}
 	
 	protected void initConnection() {
@@ -501,7 +489,7 @@ public class DiscordUser {
 			ResultSet results = Table.selectAllFromWhere(context, DISCORD_USERS, DISCORD_ID, EQUALS, id);
 			
 			if(results.next()) {
-				return new DiscordUser(results.getLong(DISCORD_ID));
+				return new DiscordUser(results.getLong(DISCORD_ID.toString()));
 			}
 			return null;
 		}
@@ -520,6 +508,7 @@ public class DiscordUser {
 		return user;
 	}
 	
+	@SuppressWarnings("rawtypes")
 	public static final DiscordUser getDiscordUserIncludingUnknown(MessageContext context, String discriminator) {
 		DiscordUser user;
 		user = getDiscordUser(context, discriminator);
@@ -534,6 +523,7 @@ public class DiscordUser {
 		return user;
 	}
 	
+	@SuppressWarnings("rawtypes")
 	public static final DiscordUser getDiscordUserTreatingUnknownsAsNobody(MessageContext context, long id) {
 		DiscordUser user;
 		user = getDiscordUser(context, id);
@@ -543,11 +533,12 @@ public class DiscordUser {
 		return user;
 	}
 	
+	@SuppressWarnings("rawtypes")
 	public static final DiscordUser getDiscordUser(MessageContext context, String discriminator) {
 		try {
 			ResultSet results = Table.selectAllFromWhere(context, DISCORD_USERS, DISCORD_NAME, EQUALS, discriminator);
 			if(results.next()) {
-				return new DiscordUser(results.getLong(DISCORD_ID));
+				return new DiscordUser(results.getLong(DISCORD_ID.toString()));
 			}
 			return null;
 		} catch (SQLException e) {
@@ -613,7 +604,7 @@ public class DiscordUser {
 	@Override
 	public void finalize() {
 		try {
-			connection.getConnection().close();
+			connection.close();
 		} catch (SQLException e) {
 			ConsoleUser.getConsoleUser().sendMessage(StacktraceUtil.getStackTrace(e));
 		}

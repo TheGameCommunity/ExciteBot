@@ -2,8 +2,6 @@ package com.gamebuster19901.excite;
 
 import java.io.File;
 import java.io.IOError;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.logging.Logger;
@@ -12,21 +10,18 @@ import com.gamebuster19901.excite.bot.server.emote.Emote;
 import com.gamebuster19901.excite.bot.command.ConsoleContext;
 import com.gamebuster19901.excite.bot.command.MessageContext;
 import com.gamebuster19901.excite.bot.database.Table;
+import com.gamebuster19901.excite.bot.database.sql.PreparedStatement;
+import com.gamebuster19901.excite.bot.database.sql.ResultSet;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
 
 import static com.gamebuster19901.excite.bot.database.Table.PLAYERS;
 import static com.gamebuster19901.excite.bot.database.Comparator.EQUALS;
-import static com.gamebuster19901.excite.bot.user.DiscordUser.DISCORD_ID;
+import static com.gamebuster19901.excite.bot.database.Column.*;
 
 import net.dv8tion.jda.api.entities.User;
 
 public class Player {
 	private static final Logger LOGGER = Logger.getLogger(Player.class.getName());
-	
-	public static final String PLAYER_ID = "playerID";
-	public static final String FRIEND_CODE = "friendCode";
-	public static final String NAME = "name";
-	public static final String REDACTED = "redacted";
 	
 	protected static final String LEGACY = new String("legacy");
 	protected static final String VERIFIED = new String("verified");
@@ -58,14 +53,14 @@ public class Player {
 		this.playerID = playerID;
 	}
 
-	@SuppressWarnings("rawtypes")
+	@SuppressWarnings({ "rawtypes", "resource" })
 	public static Player addPlayer(MessageContext context, int playerID, String friendCode, String name) throws SQLException {
 		//INSERT INTO `excitebot`.`players` (`playerID`, `friendCode`, `name`) VALUES ('01234', '5678-9012-3456', 'Fake');
 		PreparedStatement ps = context.getConnection().prepareStatement("INSERT INTO ? (?, ?, ?) VALUES (?, ?, ?);");
 		ps.setString(1, Table.PLAYERS.toString());
 		ps.setString(2, PLAYER_ID);
 		ps.setString(3, FRIEND_CODE);
-		ps.setString(4, NAME);
+		ps.setString(4, PLAYER_NAME);
 		ps.setInt(5, playerID);
 		ps.setString(6, friendCode);
 		ps.setString(7, name);
@@ -192,9 +187,9 @@ public class Player {
 			if(isRedacted()) {
 				return "REDACTED_NAME";
 			}
-			ResultSet result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, NAME, PLAYERS, PLAYER_ID, EQUALS, getPlayerID());
+			ResultSet result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, PLAYER_NAME, PLAYERS, PLAYER_ID, EQUALS, getPlayerID());
 			if(result.next()) {
-				return result.getString(NAME);
+				return result.getString(PLAYER_NAME);
 			}
 			else {
 				throw new AssertionError("Could not find name of player with PID " + playerID);
@@ -209,7 +204,7 @@ public class Player {
 		String oldName = getName();
 		if(oldName != null && !oldName.equals(name)) {
 			//Audit.addAudit(new NameChangeAudit(this, name));
-			Table.updateWhere(ConsoleContext.INSTANCE, PLAYERS, NAME, name, NAME, EQUALS, getName());
+			Table.updateWhere(ConsoleContext.INSTANCE, PLAYERS, PLAYER_NAME, name, PLAYER_NAME, EQUALS, getName());
 		}
 	}
 	
@@ -244,6 +239,7 @@ public class Player {
 		return getDiscord() != -1;
 	}
 	
+	@SuppressWarnings("deprecation")
 	public boolean isBot() {
 		DiscordUser discordUser = DiscordUser.getDiscordUser(ConsoleContext.INSTANCE, getDiscord());
 		if(discordUser != null) {
@@ -285,6 +281,7 @@ public class Player {
 		return status;
 	}
 	
+	@SuppressWarnings("deprecation")
 	public long getDiscord() {
 		try {
 			ResultSet result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, DISCORD_ID, PLAYERS, PLAYER_ID, EQUALS, getPlayerID());
@@ -362,7 +359,7 @@ public class Player {
 	public static Player[] getPlayersByName(MessageContext context, String name) {
 		HashSet<Player> players = new HashSet<Player>();
 		try {
-			ResultSet rs = Table.selectAllFromWhere(context, PLAYERS, NAME, EQUALS, name);
+			ResultSet rs = Table.selectAllFromWhere(context, PLAYERS, PLAYER_NAME, EQUALS, name);
 			while(rs.next()) {
 				players.add(new Player(rs));
 			}

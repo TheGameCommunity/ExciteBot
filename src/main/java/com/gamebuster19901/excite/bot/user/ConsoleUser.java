@@ -9,7 +9,7 @@ import java.util.Set;
 import com.gamebuster19901.excite.Main;
 import com.gamebuster19901.excite.Player;
 import com.gamebuster19901.excite.bot.command.MessageContext;
-import com.gamebuster19901.excite.bot.database.DatabaseConnection;
+import com.gamebuster19901.excite.bot.database.sql.DatabaseConnection;
 
 import net.dv8tion.jda.api.entities.User;
 

@@ -1,16 +1,17 @@
 package com.gamebuster19901.excite.bot.database;
 
 import java.io.IOError;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import com.gamebuster19901.excite.Main;
 import com.gamebuster19901.excite.bot.command.ConsoleContext;
 import com.gamebuster19901.excite.bot.command.MessageContext;
+import com.gamebuster19901.excite.bot.database.sql.PreparedStatement;
+import com.gamebuster19901.excite.bot.database.sql.ResultSet;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
 import com.gamebuster19901.excite.util.StacktraceUtil;
-import com.gamebuster19901.excite.util.Vulnerable;
+
+import static com.gamebuster19901.excite.bot.database.Column.ALL_COLUMNS;
 
 public enum Table {
 	
@@ -27,16 +28,14 @@ public enum Table {
 		return this.name().toLowerCase();
 	}
 	
-	@Vulnerable
 	@SuppressWarnings("rawtypes")
-	public static ResultSet selectColumnsFrom(MessageContext context, @Vulnerable String columns, Table table) throws SQLException {
+	public static ResultSet selectColumnsFrom(MessageContext context, Column columns, Table table) throws SQLException {
 		PreparedStatement st = context.getConnection().prepareStatement("SELECT " + columns + " FROM " + table);
 		return st.executeQuery();
 	}
 	
-	@Vulnerable
 	@SuppressWarnings("rawtypes")
-	public static ResultSet selectColumnsFromWhere(MessageContext context, @Vulnerable String columns, Table table, @Vulnerable String where, Comparator comparator, Object comparee) throws SQLException {
+	public static ResultSet selectColumnsFromWhere(MessageContext context, Column columns, Table table, Column where, Comparator comparator, Object comparee) throws SQLException {
 		PreparedStatement st;
 		if(comparee != null) {
 			st = context.getConnection().prepareStatement("SELECT " + columns + " FROM " + table + " WHERE " + where + comparator + " ?");
@@ -56,18 +55,16 @@ public enum Table {
 	
 	@SuppressWarnings("rawtypes")
 	public static ResultSet selectAllFrom(MessageContext context, Table table) throws SQLException {
-		return selectColumnsFrom(context, "*", table);
+		return selectColumnsFrom(context, ALL_COLUMNS, table);
 	}
 	
-	@Vulnerable
 	@SuppressWarnings("rawtypes")
-	public static ResultSet selectAllFromWhere(MessageContext context, Table table, String where, Comparator comparator, Object comparee) throws SQLException {
-		return selectColumnsFromWhere(context, "*", table, where, comparator, comparee);
+	public static ResultSet selectAllFromWhere(MessageContext context, Table table, Column whereColumn, Comparator comparator, Object comparee) throws SQLException {
+		return selectColumnsFromWhere(context, ALL_COLUMNS, table, whereColumn, comparator, comparee);
 	}
 	
-	@Vulnerable
-	@SuppressWarnings("rawtypes")
-	public static boolean existsWhere(MessageContext context, Table table, @Vulnerable String where, Comparator comparator, Object comparee) {
+	@SuppressWarnings({ "rawtypes", "deprecation" })
+	public static boolean existsWhere(MessageContext context, Table table, Column whereColumn, Comparator comparator, Object comparee) {
 		PreparedStatement st = null;
 		try {
 			if(comparee != null) {
@@ -77,7 +74,7 @@ public enum Table {
 			else {
 				st = context.getConnection().prepareStatement("SELECT EXISTS(SELECT 1 FROM " + table + " WHERE ? " + comparator);
 			}
-			st.setString(1, where);
+			st.setString(1, whereColumn);
 			ResultSet rs = st.executeQuery();
 			rs.next();
 			return rs.getBoolean(1);
@@ -89,22 +86,20 @@ public enum Table {
 		}
 	}
 	
-	@Vulnerable
 	@SuppressWarnings("rawtypes")
-	public static void updateWhere(MessageContext context, Table table, @Vulnerable String parameter, Object value, @Vulnerable String where, Comparator comparator, Object comparee) throws SQLException {
-		PreparedStatement st = context.getConnection().prepareStatement("UPDATE " + table + " SET " + parameter + " = ? WHERE " + where + comparator + " ?");
+	public static void updateWhere(MessageContext context, Table table, Column parameter, Object value, Column whereColumn, Comparator comparator, Object comparee) throws SQLException {
+		PreparedStatement st = context.getConnection().prepareStatement("UPDATE " + table + " SET " + parameter + " = ? WHERE " + whereColumn + comparator + " ?");
 		insertValue(st, 1, value);
 		insertValue(st, 2, comparee);
 		st.execute();
 		System.out.println(st);
 	}
 	
-	@Vulnerable
 	@SuppressWarnings("rawtypes")
-	public static void deleteWhere(MessageContext context, Table table, @Vulnerable String where, Comparator comparator, Object comparee) {
+	public static void deleteWhere(MessageContext context, Table table, Column column, Comparator comparator, Object comparee) {
 		PreparedStatement st = null;
 		try {
-			st = context.getConnection().prepareStatement("DELETE FROM " + table + " WHERE " + where + comparator + " ?");
+			st = context.getConnection().prepareStatement("DELETE FROM " + table + " WHERE " + column + comparator + " ?");
 			insertValue(st, 1, comparee);
 			st.execute();
 		} catch (SQLException e) {
@@ -119,7 +114,7 @@ public enum Table {
 	public static void addAdmin(MessageContext promoter, DiscordUser user) {
 		PreparedStatement st = null;
 		try {
-			st = promoter.getConnection().prepareStatement("INSERT INTO `admins` (" + DiscordUser.DISCORD_ID + ") VALUES (?);");
+			st = promoter.getConnection().prepareStatement("INSERT INTO `admins` (" + Column.DISCORD_ID + ") VALUES (?);");
 			st.setLong(1, user.getId());
 			st.execute();
 			String botName = Main.discordBot.getSelfUser().getAsMention();
@@ -139,7 +134,7 @@ public enum Table {
 	@SuppressWarnings("rawtypes")
 	public static void removeAdmin(MessageContext demoter, DiscordUser user) {
 		try {
-			deleteWhere(demoter, Table.ADMINS, DiscordUser.DISCORD_ID, Comparator.EQUALS, user.getId());
+			deleteWhere(demoter, Table.ADMINS, Column.DISCORD_ID, Comparator.EQUALS, user.getId());
 			revokeAdminDBPermissions(demoter, user.getMySQLUsername());
 			String botName = Main.discordBot.getSelfUser().getAsMention();
 			user.sendMessage("You are no longer an administrator for " + botName);
@@ -155,7 +150,7 @@ public enum Table {
 	public static void addOperator(MessageContext promoter, DiscordUser user) {
 		PreparedStatement st = null;
 		try {
-			st = promoter.getConnection().prepareStatement("INSERT INTO operators ("+ DiscordUser.DISCORD_ID +") VALUES (?);");
+			st = promoter.getConnection().prepareStatement("INSERT INTO operators ("+ Column.DISCORD_ID +") VALUES (?);");
 			st.setLong(1, user.getId());
 			st.execute();
 			String botName = Main.discordBot.getSelfUser().getAsMention();
@@ -175,7 +170,7 @@ public enum Table {
 	@SuppressWarnings("rawtypes")
 	public static void removeOperator(MessageContext demoter, DiscordUser user) {
 		try {
-			deleteWhere(demoter, Table.OPERATORS, DiscordUser.DISCORD_ID, Comparator.EQUALS, user.getId());
+			deleteWhere(demoter, Table.OPERATORS, Column.DISCORD_ID, Comparator.EQUALS, user.getId());
 			revokeAdminDBPermissions(ConsoleContext.INSTANCE, user.getMySQLUsername());
 			String botName = Main.discordBot.getSelfUser().getAsMention();
 			user.sendMessage("You are no longer an operator for " + botName);
@@ -192,7 +187,7 @@ public enum Table {
 		PreparedStatement st = null;
 		try {
 			st = demoter.getConnection().prepareStatement("REVOKE User, Admin, Operator FROM ?" + HOST);
-			st.setString(1, user);
+			insertValue(st, 1, user);
 			st.execute();
 		} catch (SQLException e) {
 			if(st != null) {
@@ -207,8 +202,8 @@ public enum Table {
 		clearDBPermissions(promoter, user);
 		PreparedStatement st = promoter.getConnection().prepareStatement("GRANT 'User' TO ?" + HOST);
 		PreparedStatement st2 = promoter.getConnection().prepareStatement("SET DEFAULT ROLE User TO ?" + HOST);
-		st.setString(1, user);
-		st2.setString(1, user);
+		insertValue(st, 1, user);
+		insertValue(st2, 1, user);
 		try {
 			st.execute();
 		} catch (SQLException e) {
@@ -226,8 +221,8 @@ public enum Table {
 		clearDBPermissions(promoter, user);
 		PreparedStatement st = promoter.getConnection().prepareStatement("GRANT 'Admin' TO ?" + HOST);
 		PreparedStatement st2 = promoter.getConnection().prepareStatement("SET DEFAULT ROLE Admin TO ?" + HOST);
-		st.setString(1, user);
-		st2.setString(1, user);
+		insertValue(st, 1, user);
+		insertValue(st2, 1, user);
 		st.execute();
 		st2.execute();
 	}
@@ -243,8 +238,8 @@ public enum Table {
 		clearDBPermissions(promoter, user);
 		PreparedStatement st = promoter.getConnection().prepareStatement("GRANT 'Operator' TO ?" + HOST);
 		PreparedStatement st2 = promoter.getConnection().prepareStatement("SET DEFAULT ROLE Operator TO ?" + HOST);
-		st.setString(1, user);
-		st2.setString(1, user);
+		insertValue(st, 1, user);
+		insertValue(st2, 1, user);
 		st.execute();
 		st2.execute();
 		System.out.println(st);
@@ -256,7 +251,7 @@ public enum Table {
 		revokeAdminDBPermissions(demoter, user);
 	}
 	
-	@SuppressWarnings("rawtypes")
+	@SuppressWarnings({ "rawtypes", "deprecation" })
 	private static void insertValue(PreparedStatement st, int index, Object value) throws SQLException {
 		Class clazz = value.getClass();
 		if(clazz.isPrimitive() || value instanceof Number || value instanceof Boolean || value instanceof Character) {

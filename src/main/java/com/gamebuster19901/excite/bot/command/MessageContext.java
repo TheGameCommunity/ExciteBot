@@ -1,10 +1,8 @@
 package com.gamebuster19901.excite.bot.command;
 
-import java.sql.Connection;
-
 import com.gamebuster19901.excite.Main;
 import com.gamebuster19901.excite.Player;
-import com.gamebuster19901.excite.bot.database.DatabaseConnection;
+import com.gamebuster19901.excite.bot.database.sql.DatabaseConnection;
 import com.gamebuster19901.excite.bot.server.DiscordServer;
 import com.gamebuster19901.excite.bot.user.ConsoleUser;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
@@ -162,11 +160,7 @@ public class MessageContext<E>{
 		return null;
 	}
 	
-	public Connection getConnection() {
+	public DatabaseConnection getConnection() {
 		return getDiscordAuthor().getConnection();
-	}
-	
-	public DatabaseConnection getDatabaseConnection() {
-		return getDiscordAuthor().getDatabaseConnection();
 	}
 }
