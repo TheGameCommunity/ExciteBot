@@ -4,44 +4,49 @@ CREATE TABLE IF NOT EXISTS `admins` (
   `discordID` bigint unsigned NOT NULL,
   PRIMARY KEY (`discordID`),
   UNIQUE KEY `discord_id_UNIQUE` (`discordID`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
 
 CREATE TABLE IF NOT EXISTS `discord_servers` (
   `server_id` bigint unsigned NOT NULL,
-  `name` varchar(45) COLLATE utf8mb4_unicode_520_ci NOT NULL DEFAULT 'UNKNOWN_DISCORD_SERVER',
-  `prefix` char(7) COLLATE utf8mb4_unicode_520_ci NOT NULL DEFAULT '!',
+  `name` varchar(45) COLLATE utf8mb4_bin NOT NULL DEFAULT 'UNKNOWN_DISCORD_SERVER',
+  `prefix` char(7) COLLATE utf8mb4_bin NOT NULL DEFAULT '!',
   PRIMARY KEY (`server_id`),
   UNIQUE KEY `server_id_UNIQUE` (`server_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
+
 
 CREATE TABLE IF NOT EXISTS `discord_users` (
   `discordID` bigint unsigned NOT NULL,
   `discord_name` char(37) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
   `threshold` int NOT NULL DEFAULT '-1',
-  `frequency` varchar(45) COLLATE utf8mb4_bin NOT NULL DEFAULT 'PT30M',
-  `lastNotification` varchar(45) COLLATE utf8mb4_bin DEFAULT NULL,
+  `frequency` varchar(45) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT 'PT30M',
+  `lastNotification` varchar(45) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL,
   `dippedBelowThreshold` bit(1) NOT NULL DEFAULT b'0',
   `notifyContinuously` bit(1) NOT NULL DEFAULT b'0',
   PRIMARY KEY (`discordID`),
   UNIQUE KEY `discord_id_UNIQUE` (`discordID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
 
+
 CREATE TABLE IF NOT EXISTS `operators` (
   `discordID` bigint unsigned NOT NULL,
   PRIMARY KEY (`discordID`),
   UNIQUE KEY `discord_id_UNIQUE` (`discordID`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
+
 
 CREATE TABLE IF NOT EXISTS `players` (
   `playerID` int NOT NULL,
-  `friendCode` char(14) NOT NULL,
-  `name` varchar(8) NOT NULL,
-  `discordID` bigint unsigned DEFAULT NULL,
+  `friendCode` char(14) CHARACTER SET utf8 NOT NULL,
+  `name` varchar(8) CHARACTER SET utf8 NOT NULL,
   `redacted` bit(1) NOT NULL DEFAULT b'0',
+  `discordID` bigint unsigned DEFAULT NULL,
+  `lastOnline` varchar(45) CHARACTER SET utf8 NOT NULL DEFAULT '2020-11-01T02:00:00+5000',
+  `secondsPlayed` bigint NOT NULL DEFAULT '0',
   PRIMARY KEY (`playerID`),
   UNIQUE KEY `player_id_UNIQUE` (`playerID`),
   UNIQUE KEY `friendCode_UNIQUE` (`friendCode`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
 
 CREATE ROLE IF NOT EXISTS Operator;
 REVOKE ALL PRIVILEGES, GRANT OPTION FROM 'Operator';
