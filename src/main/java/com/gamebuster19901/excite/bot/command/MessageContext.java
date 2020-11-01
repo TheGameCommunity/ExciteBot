@@ -1,5 +1,7 @@
 package com.gamebuster19901.excite.bot.command;
 
+import java.sql.SQLException;
+
 import com.gamebuster19901.excite.Main;
 import com.gamebuster19901.excite.Player;
 import com.gamebuster19901.excite.bot.database.sql.DatabaseConnection;
@@ -160,7 +162,7 @@ public class MessageContext<E>{
 		return null;
 	}
 	
-	public DatabaseConnection getConnection() {
+	public DatabaseConnection getConnection() throws SQLException {
 		return getDiscordAuthor().getConnection();
 	}
 }

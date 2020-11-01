@@ -79,7 +79,11 @@ public class DiscordUser {
 		return getDiscordUser(context, discordID);
 	}
 	
-	public DatabaseConnection getConnection() {
+	public DatabaseConnection getConnection() throws SQLException {
+		if(!connection.isValid(5)) {
+			connection.close();
+			initConnection();
+		}
 		return connection;
 	}
 	
