@@ -116,6 +116,10 @@ public class DiscordServer {
 		}
 	}
 	
+	public boolean isLoaded() {
+		return Main.discordBot.jda.getGuildById(getId()) != null;
+	}
+	
 	@Override
 	public int hashCode() {
 		return Long.valueOf(getId()).hashCode();

@@ -7,7 +7,6 @@ import java.util.logging.Logger;
 
 import com.gamebuster19901.excite.bot.command.ConsoleContext;
 import com.gamebuster19901.excite.bot.server.DiscordServer;
-import com.gamebuster19901.excite.bot.server.UnloadedDiscordServer;
 
 public class Emote {
 	
@@ -38,7 +37,7 @@ public class Emote {
 		Emote emote = EMOTES.get(name);
 		if(emote != null && 
 				emote.discordServer != -1 
-				&& ! (DiscordServer.getServer(ConsoleContext.INSTANCE, emote.discordServer) instanceof UnloadedDiscordServer)) {
+				&& DiscordServer.getServer(ConsoleContext.INSTANCE, emote.discordServer).isLoaded()) {
 			return EMOTES.get(name);
 		}
 		

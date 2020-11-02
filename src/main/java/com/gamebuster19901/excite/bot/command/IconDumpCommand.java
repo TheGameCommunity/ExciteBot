@@ -3,7 +3,6 @@ package com.gamebuster19901.excite.bot.command;
 import java.util.List;
 
 import com.gamebuster19901.excite.bot.server.DiscordServer;
-import com.gamebuster19901.excite.bot.server.UnloadedDiscordServer;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.LongArgumentType;
 
@@ -26,7 +25,7 @@ public class IconDumpCommand {
 	public static int sendResponse(MessageContext context, long serverId) {
 		if(context.isOperator()) {
 			DiscordServer server = DiscordServer.getServer(ConsoleContext.INSTANCE, serverId);
-			if(server != null && !(server instanceof UnloadedDiscordServer)) {
+			if(server != null && server.isLoaded()) {
 				List<Emote> emotes = server.getGuild().getEmotes();
 				String ret = server.getName() + " has " + emotes.size() + " emotes:\n\n";
 				for(Emote emote : emotes) {
