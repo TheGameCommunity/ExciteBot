@@ -277,6 +277,10 @@ public class Player {
 		return hosting;
 	}
 	
+	public void setIsHosting(boolean hosting) {
+		this.hosting = hosting;
+	}
+	
 	public String getStatus() {
 		return status;
 	}

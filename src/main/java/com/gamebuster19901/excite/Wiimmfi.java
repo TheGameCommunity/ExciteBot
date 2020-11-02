@@ -97,7 +97,11 @@ public class Wiimmfi {
 				for(Element e : playerEntries) {
 					
 					String name = parseLine(e.html(), 10);
-					boolean hosting = Integer.parseInt(parseLine(e.html(), 4)) != 0;
+					boolean hosting = false;
+					String hostingString = parseLine(e.html(), 4);
+					if(!hostingString.equals("<tdclass=\"dbnull\">—")) {
+						hosting = Integer.parseInt(parseLine(e.html(), 4)) != 0;
+					}
 					String status = parseLine(e.html(), 7);
 					
 					hosting = !status.equals("o") && hosting;
@@ -112,6 +116,7 @@ public class Wiimmfi {
 					else {
 						player.setName(name);
 						player.setStatus(status);
+						player.setIsHosting(hosting);
 					}
 					onlinePlayers.add(player);
 				}
