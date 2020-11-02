@@ -101,6 +101,9 @@ public class MessageContext<E>{
 				}
 			}
 		}
+		else if (isConsoleMessage()) {
+			System.out.println(message);
+		}
 		if(isIngameEvent()) {
 			throw new UnsupportedOperationException();
 		}
