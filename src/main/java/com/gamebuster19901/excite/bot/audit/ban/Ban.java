@@ -1,175 +1,164 @@
 package com.gamebuster19901.excite.bot.audit.ban;
 
+import java.io.IOError;
+import java.sql.SQLException;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map.Entry;
-import java.util.Set;
 
-import org.apache.commons.csv.CSVRecord;
-
-import com.gamebuster19901.excite.Player;
 import com.gamebuster19901.excite.bot.audit.Audit;
+import com.gamebuster19901.excite.bot.audit.AuditType;
 import com.gamebuster19901.excite.bot.command.MessageContext;
-import com.gamebuster19901.excite.bot.common.preferences.LongPreference;
-import com.gamebuster19901.excite.bot.common.preferences.PermissionPreference;
+import com.gamebuster19901.excite.bot.database.Table;
+import com.gamebuster19901.excite.bot.database.sql.PreparedStatement;
+import com.gamebuster19901.excite.bot.database.sql.ResultSet;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
-import com.gamebuster19901.excite.bot.user.DurationPreference;
-import com.gamebuster19901.excite.bot.user.InstantPreference;
-import com.gamebuster19901.excite.util.DataMethod;
 import com.gamebuster19901.excite.util.TimeUtils;
 
-import static com.gamebuster19901.excite.util.Permission.ADMIN_ONLY;
+import static com.gamebuster19901.excite.bot.database.Column.*;
+import static com.gamebuster19901.excite.bot.database.Table.*;
+import static com.gamebuster19901.excite.bot.database.Comparator.*;
 
-public abstract class Ban extends Audit{
+public class Ban extends Audit{
+	
+	Audit parentData;
+	
+	protected Ban(ResultSet result) {
+		super(result);
+	}
 
 	protected static transient final int DB_VERSION = 1;
 	
-	protected DurationPreference banDuration;
-	protected InstantPreference banExpire;
-	protected LongPreference pardon = new LongPreference(-1l);
-	
-	{
-		secrecy = new PermissionPreference(ADMIN_ONLY);
+	@SuppressWarnings("rawtypes")
+	public static Ban addBan(MessageContext context, Banee banee) {
+		return addBan(context, banee, "");
 	}
 	
 	@SuppressWarnings("rawtypes")
-	public Ban(MessageContext context) {
-		this(context, "");
+	public static Ban addBan(MessageContext context, Banee banee, String reason) {
+		return addBan(context, banee, reason, TimeUtils.FOREVER);
 	}
 	
 	@SuppressWarnings("rawtypes")
-	public Ban(MessageContext context, String reason) {
-		this(context, reason, TimeUtils.FOREVER);
+	public static Ban addBan(MessageContext context, Banee banee, Duration banDuration) {
+		return addBan(context, banee, "", banDuration);
 	}
 	
 	@SuppressWarnings("rawtypes")
-	public Ban(MessageContext context, Duration banDuration) {
-		this(context, "", banDuration);
+	public static Ban addBan(MessageContext context, Banee banee, String reason, Duration banDuration) {
+		return addBan(context, banee, reason, banDuration, Instant.now().plus(banDuration));
 	}
 	
 	@SuppressWarnings("rawtypes")
-	public Ban(MessageContext context, String reason, Duration banDuration) {
-		this(context, reason, banDuration, Instant.now().plus(banDuration));
+	public static Ban addBan(MessageContext context, Banee banee, String reason, Duration banDuration, Instant banExpire) {
+		return addBan(context, banee, reason, banDuration, banExpire, -1l);
 	}
 	
 	@SuppressWarnings("rawtypes")
-	public Ban(MessageContext context, String reason, Duration banDuration, Instant banExpire) {
-		this(context, reason, banDuration, banExpire, -1);
-	}
-	
-	@SuppressWarnings("rawtypes")
-	public Ban(MessageContext context, String reason, Duration banDuration, Instant banExpire, long pardon) {
-		this(context, reason, Instant.now(), banDuration, banExpire, pardon);
-	}
-	
-	@SuppressWarnings("rawtypes")
-	public Ban(MessageContext context, String reason, Instant dateIssued, Duration banDuration, Instant banExpire, long pardon) {
-		super(context, reason, dateIssued);
-		this.banDuration = new DurationPreference(banDuration);
-		this.banExpire = new InstantPreference(banExpire);
-		this.pardon = new LongPreference(pardon);
-	}
-	
-	public Ban() {
-		super();
-	}
-	
-	@SuppressWarnings("rawtypes")
-	public void pardon(MessageContext context, Pardon pardon) {
-		if(!this.isPardoned()) {
-			Audit.addAudit(pardon);
-			this.pardon.setValue(pardon.getAuditId());
-			context.sendMessage("Pardoned " + getBannedUsername());
+	public static Ban addBan(MessageContext context, Banee banee, String reason, Duration banDuration, Instant banExpire, long pardon) {
+		Audit parent = Audit.addAudit(context, AuditType.BAN, reason);
+		PreparedStatement st;
+		try {
+			st = context.getConnection().prepareStatement("INSERT INTO " + AUDIT_BANS + " ( " + AUDIT_ID + ", ?, ?, ?, ?, ?) VALUES (?, ?, ?, ?, ?, ?)");
+			Table.insertValue(st, 1, AUDIT_BANS);
+			
+			Table.insertValue(st, 2, AUDIT_ID);
+			Table.insertValue(st, 3, BAN_DURATION);
+			Table.insertValue(st, 4, BAN_EXPIRE);
+			Table.insertValue(st, 5, BANNED_ID);
+			Table.insertValue(st, 6, BANNED_USERNAME);
+			Table.insertValue(st, 7, BAN_PARDON);
+			
+			Table.insertValue(st, 8, parent.getID());
+			Table.insertValue(st, 9, banDuration);
+			Table.insertValue(st, 10, banExpire);
+			Table.insertValue(st, 11, banee.getID());
+			Table.insertValue(st, 12, banee.getName());
+			Table.insertValue(st, 13, pardon);
+			
+			Ban ret = new Ban(st.executeQuery());
+			ret.parentData = parent;
+			return ret;
 		}
-		else {
-			context.sendMessage("Already pardoned!");
+		catch(SQLException e) {
+			throw new IOError(e);
 		}
 	}
 	
-	@DataMethod
 	public boolean isPardoned() {
-		return pardon.getValue() != -1;
+		try {
+			return results.getLong(BAN_PARDON) != 0;
+		} catch (SQLException e) {
+			throw new IOError(e);
+		}
 	}
 	
-	@DataMethod
 	public boolean isActive() {
-		return Instant.now().isBefore(banExpire.getValue()) && !isPardoned();
+		try {
+			return TimeUtils.parseInstant(results.getString(BAN_EXPIRE)).isAfter(Instant.now()) && !isPardoned();
+		} catch (SQLException e) {
+			throw new IOError(e);
+		}
 	}
 	
-	@DataMethod
-	public abstract String getBannedUsername();
+	@Deprecated
+	@SuppressWarnings("rawtypes")
+	public String getBannedUsername(MessageContext context) {
+		try {
+			return results.getString(BANNED_USERNAME);
+		} catch (SQLException e) {
+			throw new IOError(e);
+		}
+	}
 	
-	public boolean endsAfter(Ban ban) {
-		return banExpire.getValue().compareTo(ban.banExpire.getValue()) > 0;
+	public long getBannedID() {
+		try {
+			return results.getLong(BANNED_ID);
+		} catch (SQLException e) {
+			throw new IOError(e);
+		}
+	}
+	
+	public Table getTable() {
+		if(getBannedID() < 10000000000000000l) {
+			return PLAYERS;
+		}
+		return DISCORD_USERS;
 	}
 	
 	public Instant getBanExpireTime() {
-		return banExpire.getValue();
-	}
-	
-	@Override
-	protected Ban parseAudit(CSVRecord record) {
-		super.parseAudit(record);
-		
-		//0-7 is audit
-		int i = super.getRecordSize(); 
-		i++; //8 is ban version
-		banDuration = new DurationPreference(Duration.parse(record.get(i++)));
-		banExpire = new InstantPreference(Instant.parse(record.get(i++)));
-		pardon = new LongPreference(Long.parseLong(record.get(i++).substring((1))));
-		
-		return this;
-	}
-	
-	@Override
-	protected int getRecordSize() {
-		return super.getRecordSize() + 4;
-	}
-	
-	@Override
-	public List<Object> getParameters() {
-		List<Object> params = super.getParameters();
-		params.addAll(Arrays.asList(new Object[] {new Integer(DB_VERSION), banDuration, banExpire, "`" + pardon}));
-		return params;
-	}
-	
-	public static Ban[] getBansOfUser(DiscordUser user) {
-		HashSet<Ban> bans = new HashSet<Ban>();
-		Set<Player> profiles = user.getProfiles();
-		for(Entry<Long, Ban> verdict : getAuditsOfType(Ban.class).entrySet()) {
-			Ban ban = verdict.getValue();
-			if(ban instanceof DiscordBan) {
-				if(((DiscordBan)ban).getBannedDiscordId() == user.getId()) {
-					bans.add(ban);
-				}
-			}
-			else if (ban instanceof ProfileBan){
-				for(Player profile : profiles) {
-					if(((ProfileBan)ban).getBannedPlayerId() == profile.getPlayerID()) {
-						bans.add(ban);
-					}
-				}
-			}
+		try {
+			return Instant.parse(results.getString(BAN_EXPIRE));
+		} catch (SQLException e) {
+			throw new IOError(e);
 		}
-		return bans.toArray(new DiscordBan[]{});
 	}
 	
-	public static Ban[] getBansOfUser(long id) {
+	@SuppressWarnings("rawtypes")
+	public static Ban[] getBansOfUser(MessageContext context, DiscordUser user) {
+		try {
+			ResultSet results = Table.selectAllFromJoinedUsingWhere(context, AUDITS, AUDIT_BANS, AUDIT_ID, BANNED_ID, EQUALS, user.getID());
+			Ban[] bans = new Ban[results.getMetaData().getColumnCount()];
+			for(int i = 0; i < bans.length; i++) {
+				results.next();
+				bans[i] = new Ban(results);
+			}
+			return bans;
+		} catch (SQLException e) {
+			throw new IOError(e);
+		}
+	}
+	
+	@SuppressWarnings("rawtypes")
+	public static Ban[] getBansOfUser(MessageContext context, long id) {
 		if(id == -1 || id == -2) {
 			throw new AssertionError();
 		}
-		return getBansOfUser(DiscordUser.getDiscordUserIncludingUnknown(id));
+		return getBansOfUser(context, DiscordUser.getDiscordUserIncludingUnknown(context, id));
 	}
 	
-	public static Ban getBanById(long id) throws IllegalArgumentException {
-		Ban ban = getAuditsOfType(Ban.class).get(id);
-		if(ban == null) {
-			throw new IllegalArgumentException("No ban with id " + id + " exists ");
-		}
-		return ban;
+	@SuppressWarnings("rawtypes")
+	public static Ban getBanById(MessageContext context, long id) throws IllegalArgumentException {
+		return new Ban(Table.selectAllFromJoinedUsingWhere(context, AUDITS, AUDIT_BANS, AUDIT_ID, AUDIT_ID, EQUALS, id));
 	}
 	
 }

@@ -143,7 +143,7 @@ public class MessageContext<E>{
 			return ((PrivateMessageReceivedEvent)event).getAuthor().getIdLong();
 		}
 		if (event instanceof Player) {
-			return ((Player) event).getPlayerID();
+			return ((Player) event).getID();
 		}
 		throw new IllegalStateException(event.getClass().getCanonicalName());
 	}

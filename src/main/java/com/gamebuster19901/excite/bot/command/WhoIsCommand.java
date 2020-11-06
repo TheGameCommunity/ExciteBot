@@ -38,7 +38,7 @@ public class WhoIsCommand {
 					else if (p.getFriendCode().equals(lookingFor)) {
 						response = response + p.toFullString() + "\n";
 					}
-					else if (lookingFor.equals("" + p.getPlayerID())) {
+					else if (lookingFor.equals("" + p.getID())) {
 						response = response + p.toFullString() + "\n";
 					}
 					else if (lookingFor.equals("" + p.getDiscord())) {

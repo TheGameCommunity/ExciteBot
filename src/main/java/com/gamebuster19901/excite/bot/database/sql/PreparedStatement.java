@@ -21,6 +21,7 @@ import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.Calendar;
 import com.gamebuster19901.excite.bot.database.Column;
+import com.gamebuster19901.excite.bot.database.Table;
 
 public class PreparedStatement implements java.sql.PreparedStatement {
 
@@ -28,6 +29,16 @@ public class PreparedStatement implements java.sql.PreparedStatement {
 	
 	public PreparedStatement(java.sql.PreparedStatement parent) {
 		this.parent = parent;
+	}
+	
+	public void setValues(Object... values) throws SQLException {
+		setValues(1, values);
+	}
+	
+	public void setValues(int offset, Object... values) throws SQLException {
+		for(int i = offset; i < values.length + 1; i++) {
+			Table.insertValue(this, i, values[i - 1]);
+		}
 	}
 	
 	@Override

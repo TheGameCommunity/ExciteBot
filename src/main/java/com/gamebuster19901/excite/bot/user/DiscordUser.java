@@ -15,9 +15,8 @@ import javax.annotation.Nullable;
 
 import com.gamebuster19901.excite.Main;
 import com.gamebuster19901.excite.Player;
-import com.gamebuster19901.excite.bot.audit.Audit;
-import com.gamebuster19901.excite.bot.audit.ban.DiscordBan;
-import com.gamebuster19901.excite.bot.audit.ban.Pardon;
+import com.gamebuster19901.excite.bot.audit.ban.Ban;
+import com.gamebuster19901.excite.bot.audit.ban.Banee;
 import com.gamebuster19901.excite.bot.command.ConsoleContext;
 import com.gamebuster19901.excite.bot.command.MessageContext;
 import com.gamebuster19901.excite.bot.database.sql.DatabaseConnection;
@@ -38,7 +37,7 @@ import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.exceptions.ErrorResponseException;
 
-public class DiscordUser {
+public class DiscordUser implements Banee {
 	
 	private static final Set<DesiredProfile> desiredProfiles = Collections.newSetFromMap(new ConcurrentHashMap<DesiredProfile, Boolean>());
 	
@@ -69,13 +68,19 @@ public class DiscordUser {
 	
 	@SuppressWarnings("rawtypes")
 	private static DiscordUser addDiscordUser(MessageContext context, long discordID, String name) throws SQLException {
-		PreparedStatement ps = context.getConnection().prepareStatement("INSERT INTO ? (?, ?) VALUES (?, ?);");
-		ps.setString(1, Table.DISCORD_USERS.toString());
-		ps.setString(2, DISCORD_ID.toString());
-		ps.setString(3, DISCORD_NAME.toString());
-		ps.setLong(4, discordID);
-		ps.setString(5, name);
-		ps.execute();
+		PreparedStatement ps = null;
+		try {
+			ps = context.getConnection().prepareStatement("INSERT INTO " + DISCORD_USERS + " (" + DISCORD_ID + ", "+ DISCORD_NAME + ") VALUES (?, ?);");
+			
+			Table.insertValue(ps, 1, discordID);
+			Table.insertValue(ps, 2, name);
+			
+			ps.execute();
+		}
+		catch(Exception e) {
+			ConsoleUser.getConsoleUser().sendMessage(ps.toString());
+			throw new IOError(e);
+		}
 		return getDiscordUser(context, discordID);
 	}
 	
@@ -107,74 +112,22 @@ public class DiscordUser {
 		return user;
 	}
 	
-	public long getId() {
+	@Override
+	public long getID() {
 		return discordId;
 	}
 	
 	@SuppressWarnings("rawtypes")
-	public DiscordBan ban(MessageContext context, Duration duration, String reason) {
-		DiscordBan discordBan = new DiscordBan(context, reason, duration, this);
-		discordBan = Audit.addAudit(discordBan); //future proofing, just in case we ever return a different audit in the future
+	public Ban ban(MessageContext context, Duration duration, String reason) {
+		Ban discordBan = Ban.addBan(context, this, reason, duration);
 		sendMessage(context, toString() + " " + reason);
 		return discordBan;
-	}
-	
-	public DiscordBan getLongestActiveBan() {
-		DiscordBan longest = null;
-		for(DiscordBan ban : DiscordBan.getBansOfUser(this)) {
-			if(ban.isActive()) {
-				if(ban.endsAfter(longest)) {
-					longest = ban;
-				}
-			}
-		}
-		return longest;
-	}
-	
-	@SuppressWarnings("rawtypes")
-	public void pardon(MessageContext context, Pardon pardon) {
-		DiscordBan discordBan = DiscordBan.getBanById(pardon.getBanId());
-		if(pardon.getBanId() == discordBan.getAuditId()) {
-			if(checkPardon(context, pardon)) {
-				Audit.addAudit(new Pardon(context, discordBan));
-				context.sendMessage("Pardoned " + this);
-			}
-		}
-		else {
-			context.sendMessage(this.toString() + " is not discord banned. Provide a ban ID if you wish to pardon a ban which has expired.");
-		}
-	}
-	
-	@SuppressWarnings("rawtypes")
-	public void pardon(MessageContext context) {
-		DiscordBan discordBan = getLongestActiveBan();
-		if(getLongestActiveBan() != null) {
-			Pardon pardon = new Pardon(context, discordBan);
-			if(checkPardon(context, pardon)) {
-				discordBan.pardon(context, pardon);
-			}
-			else {
-				throw new AssertionError("This should not be possible...");
-			}
-		}
-		else {
-			context.sendMessage(this.toString() + " is not discord banned. Provide a ban ID if you wish to pardon a ban which has expired.");
-		}
-	}
-	
-	@SuppressWarnings("rawtypes")
-	public void pardon(MessageContext context, long banId) {
-		Pardon pardon = new Pardon(context, banId);
-		DiscordBan discordBan = DiscordBan.getBanById(banId);
-		if(checkPardon(context, pardon)) {
-			discordBan.pardon(context, pardon);
-		}
 	}
 	
 	@SuppressWarnings("rawtypes")
 	public Set<Player> getProfiles(MessageContext context) throws SQLException {
 		HashSet<Player> players = new HashSet<Player>();
-		ResultSet results = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, PLAYER_ID, PLAYERS, PLAYER_ID, EQUALS, getId());
+		ResultSet results = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, PLAYER_ID, PLAYERS, PLAYER_ID, EQUALS, getID());
 		while(results.next()) {
 			players.add(Player.getPlayerByID(context, results.getInt(1)));
 		}
@@ -190,7 +143,7 @@ public class DiscordUser {
 			if(isOperator()) {
 				return true;
 			}
-			ResultSet result = Table.selectAllFromWhere(ConsoleContext.INSTANCE, Table.ADMINS, DISCORD_ID, EQUALS, getId());
+			ResultSet result = Table.selectAllFromWhere(ConsoleContext.INSTANCE, Table.ADMINS, DISCORD_ID, EQUALS, getID());
 			return result.next();
 		}
 		catch(SQLException e) {
@@ -200,7 +153,7 @@ public class DiscordUser {
 	
 	public boolean isOperator() {
 		try {
-			ResultSet result = Table.selectAllFromWhere(ConsoleContext.INSTANCE, Table.OPERATORS, DISCORD_ID, EQUALS, getId());
+			ResultSet result = Table.selectAllFromWhere(ConsoleContext.INSTANCE, Table.OPERATORS, DISCORD_ID, EQUALS, getID());
 			return result.next();
 		}
 		catch(SQLException e) {
@@ -228,14 +181,6 @@ public class DiscordUser {
 		}
 	}
 	
-	public Instant getBanExpireTime() {
-		return getLongestActiveBan().getBanExpireTime();
-	}
-	
-	public String getBanReason() {
-		return getLongestActiveBan().getDescription();
-	}
-	
 	public int getUnpardonedBanCount() {
 		return 0;
 		//return preferences.getUnpardonedBanCount();
@@ -246,13 +191,13 @@ public class DiscordUser {
 		//return preferences.getTotalBanCount();
 	}
 	
-	public String getDiscordName() {
+	public String getName() {
 		return getJDAUser().getAsTag();
 	}
 	
 	public int getNotifyThreshold() {
 		try {
-			ResultSet result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, THRESHOLD, DISCORD_USERS, DISCORD_ID, EQUALS, getId());
+			ResultSet result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, THRESHOLD, DISCORD_USERS, DISCORD_ID, EQUALS, getID());
 			if(result.next()) {
 				return result.getInt(1);
 			}
@@ -267,7 +212,7 @@ public class DiscordUser {
 	public void setNotifyThreshold(int threshold) {
 		if(threshold > 0 || threshold == -1) {
 			try {
-				Table.updateWhere(ConsoleContext.INSTANCE, DISCORD_USERS, THRESHOLD, threshold, DISCORD_ID, EQUALS, getId());
+				Table.updateWhere(ConsoleContext.INSTANCE, DISCORD_USERS, THRESHOLD, threshold, DISCORD_ID, EQUALS, getID());
 			} catch (SQLException e) {
 				throw new IOError(e);
 			}
@@ -279,7 +224,7 @@ public class DiscordUser {
 	
 	public Duration getNotifyFrequency() {
 		try {
-			ResultSet result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, FREQUENCY, DISCORD_USERS, DISCORD_ID, EQUALS, getId());
+			ResultSet result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, FREQUENCY, DISCORD_USERS, DISCORD_ID, EQUALS, getID());
 			if(result.next()) {
 				return Duration.parse(result.getString(1));
 			}
@@ -295,7 +240,7 @@ public class DiscordUser {
 		Duration min = Duration.ofMinutes(5);
 		if(frequency.compareTo(min) > -1) {
 			try {
-				Table.updateWhere(ConsoleContext.INSTANCE, DISCORD_USERS, FREQUENCY, frequency, DISCORD_ID, EQUALS, getId());
+				Table.updateWhere(ConsoleContext.INSTANCE, DISCORD_USERS, FREQUENCY, frequency, DISCORD_ID, EQUALS, getID());
 			} catch (SQLException e) {
 				throw new IOError(e);
 			}
@@ -307,7 +252,7 @@ public class DiscordUser {
 	
 	public boolean isNotifyingContinuously() {
 		try {
-			ResultSet result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, NOTIFY_CONTINUOUSLY, DISCORD_USERS, DISCORD_ID, EQUALS, getId());
+			ResultSet result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, NOTIFY_CONTINUOUSLY, DISCORD_USERS, DISCORD_ID, EQUALS, getID());
 			if(result.next()) {
 				return result.getBoolean(1);
 			}
@@ -320,7 +265,7 @@ public class DiscordUser {
 	public void setNotifyContinuously(boolean continuous) {
 		String value = continuous ? "b'1'" : "b'0'";
 		try {
-			Table.updateWhere(ConsoleContext.INSTANCE, DISCORD_USERS, NOTIFY_CONTINUOUSLY, value, DISCORD_ID, EQUALS, getId());
+			Table.updateWhere(ConsoleContext.INSTANCE, DISCORD_USERS, NOTIFY_CONTINUOUSLY, value, DISCORD_ID, EQUALS, getID());
 			if(continuous) {
 				setDippedBelowThreshold(false);
 			}
@@ -331,7 +276,7 @@ public class DiscordUser {
 	
 	public Instant getLastNotification() {
 		try {
-			ResultSet result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, LAST_NOTIFICATION, DISCORD_USERS, DISCORD_ID, EQUALS, getId());
+			ResultSet result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, LAST_NOTIFICATION, DISCORD_USERS, DISCORD_ID, EQUALS, getID());
 			if(result.next()) {
 				return TimeUtils.parseInstant(result.getString(1));
 			}
@@ -347,7 +292,7 @@ public class DiscordUser {
 	
 	public void setLastNotification(Instant instant) {
 		try {
-			Table.updateWhere(ConsoleContext.INSTANCE, DISCORD_USERS, LAST_NOTIFICATION, instant.toString(), DISCORD_ID, EQUALS, getId());
+			Table.updateWhere(ConsoleContext.INSTANCE, DISCORD_USERS, LAST_NOTIFICATION, instant.toString(), DISCORD_ID, EQUALS, getID());
 		} catch (SQLException e) {
 			throw new IOError(e);
 		}
@@ -355,7 +300,7 @@ public class DiscordUser {
 	
 	public boolean dippedBelowThreshold() {
 		try {
-			ResultSet result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, BELOW_THRESHOLD, DISCORD_USERS, DISCORD_ID, EQUALS, getId());
+			ResultSet result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, BELOW_THRESHOLD, DISCORD_USERS, DISCORD_ID, EQUALS, getID());
 			if(result.next()) {
 				return result.getBoolean(1);
 			}
@@ -367,7 +312,7 @@ public class DiscordUser {
 	
 	public void setDippedBelowThreshold(boolean dippedBelow) {
 		try {
-			Table.updateWhere(ConsoleContext.INSTANCE, DISCORD_USERS, BELOW_THRESHOLD, dippedBelow, DISCORD_ID, EQUALS, getId());
+			Table.updateWhere(ConsoleContext.INSTANCE, DISCORD_USERS, BELOW_THRESHOLD, dippedBelow, DISCORD_ID, EQUALS, getID());
 		} catch (SQLException e) {
 			throw new IOError(e);
 		}
@@ -612,24 +557,6 @@ public class DiscordUser {
 		} catch (SQLException e) {
 			ConsoleUser.getConsoleUser().sendMessage(StacktraceUtil.getStackTrace(e));
 		}
-	}
-	
-	@SuppressWarnings("rawtypes")
-	private boolean checkPardon(MessageContext context, Pardon pardon) {
-		long banId = pardon.getBanId();
-		DiscordBan discordBan = DiscordBan.getBanById(banId);
-		if(discordBan.getBannedDiscordId() == this.getId()) {
-			if(!discordBan.isPardoned()) {
-				 return true;
-			}
-			else {
-				context.sendMessage(discordBan.getBannedUsername() + " has already had ban " + banId + " pardoned!");
-			}
-		}
-		else {
-			context.sendMessage("Ban " + banId + " does not belong to " + this + ", it belongs to " + DiscordUser.getDiscordUserTreatingUnknownsAsNobody(context, discordBan.getBannedDiscordId()));
-		}
-		return false;
 	}
 
 	public static void attemptRegister() {

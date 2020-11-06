@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.logging.Logger;
 
 import com.gamebuster19901.excite.bot.server.emote.Emote;
+import com.gamebuster19901.excite.bot.audit.ban.Banee;
 import com.gamebuster19901.excite.bot.command.ConsoleContext;
 import com.gamebuster19901.excite.bot.command.MessageContext;
 import com.gamebuster19901.excite.bot.database.Table;
@@ -20,7 +21,7 @@ import static com.gamebuster19901.excite.bot.database.Column.*;
 
 import net.dv8tion.jda.api.entities.User;
 
-public class Player {
+public class Player implements Banee {
 	private static final Logger LOGGER = Logger.getLogger(Player.class.getName());
 	
 	protected static final String LEGACY = new String("legacy");
@@ -182,12 +183,13 @@ public class Player {
 		return String.format(prefix + " " + name + " - FC❲" + friendCode +  "❳ - PID❲"  + playerID + "❳" + suffix);
 	}
 	
+	@Override
 	public String getName() {
 		try {
 			if(isRedacted()) {
 				return "REDACTED_NAME";
 			}
-			ResultSet result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, PLAYER_NAME, PLAYERS, PLAYER_ID, EQUALS, getPlayerID());
+			ResultSet result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, PLAYER_NAME, PLAYERS, PLAYER_ID, EQUALS, getID());
 			if(result.next()) {
 				return result.getString(PLAYER_NAME);
 			}
@@ -214,7 +216,7 @@ public class Player {
 	
 	public String getFriendCode() {
 		try {
-			ResultSet result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, FRIEND_CODE, PLAYERS, PLAYER_ID, EQUALS, getPlayerID());
+			ResultSet result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, FRIEND_CODE, PLAYERS, PLAYER_ID, EQUALS, getID());
 			if(result.next()) {
 				return result.getString(FRIEND_CODE);
 			}
@@ -227,7 +229,8 @@ public class Player {
 		}
 	}
 	
-	public int getPlayerID() {
+	@Override
+	public long getID() {
 		return playerID;
 	}
 	
@@ -253,7 +256,7 @@ public class Player {
 	
 	public boolean isRedacted() {
 		try {
-			ResultSet result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, REDACTED, PLAYERS, PLAYER_ID, EQUALS, getPlayerID());
+			ResultSet result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, REDACTED, PLAYERS, PLAYER_ID, EQUALS, getID());
 			if(result.next()) {
 				return result.getBoolean(REDACTED);
 			}
@@ -288,7 +291,7 @@ public class Player {
 	@SuppressWarnings("deprecation")
 	public long getDiscord() {
 		try {
-			ResultSet result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, DISCORD_ID, PLAYERS, PLAYER_ID, EQUALS, getPlayerID());
+			ResultSet result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, DISCORD_ID, PLAYERS, PLAYER_ID, EQUALS, getID());
 			if(result.next()) {
 				long ret = result.getLong(1);
 				if(ret != 0) {
@@ -309,7 +312,7 @@ public class Player {
 	public void setDiscord(long discordID) {
 		try {
 			if(getDiscord() != discordID) {
-				Table.updateWhere(ConsoleContext.INSTANCE, PLAYERS, DISCORD_ID, discordID, PLAYER_ID, EQUALS, getPlayerID());
+				Table.updateWhere(ConsoleContext.INSTANCE, PLAYERS, DISCORD_ID, discordID, PLAYER_ID, EQUALS, getID());
 			}
 		}
 		catch (SQLException e) {
@@ -331,14 +334,14 @@ public class Player {
 	@Override
 	public boolean equals(Object o) {
 		if(o instanceof Player) {
-			return ((Player) o).getPlayerID() == getPlayerID();
+			return ((Player) o).getID() == getID();
 		}
 		return false;
 	}
 	
 	@Override
 	public int hashCode() {
-		return getPlayerID();
+		return (int) getID();
 	}
 	
 	@SuppressWarnings("rawtypes")

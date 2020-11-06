@@ -16,6 +16,13 @@ import static com.gamebuster19901.excite.bot.database.Column.ALL_COLUMNS;
 public enum Table {
 	
 	ADMINS,
+	AUDIT_BANS,
+	AUDIT_COMMANDS,
+	AUDIT_NAME_CHANGES,
+	AUDIT_PARDONS,
+	AUDIT_PROFILE_DISCOVERIES,
+	AUDIT_RANK_CHANGES,
+	AUDITS,
 	DISCORD_SERVERS,
 	DISCORD_USERS,
 	OPERATORS,
@@ -61,6 +68,16 @@ public enum Table {
 	@SuppressWarnings("rawtypes")
 	public static ResultSet selectAllFromWhere(MessageContext context, Table table, Column whereColumn, Comparator comparator, Object comparee) throws SQLException {
 		return selectColumnsFromWhere(context, ALL_COLUMNS, table, whereColumn, comparator, comparee);
+	}
+	
+	@SuppressWarnings("rawtypes")
+	public static ResultSet selectAllFromJoinedUsingWhere(MessageContext context, Table mainTable, Table otherTable, Column usingColumn, Column whereColumn, Comparator comparator, Object comparee) {
+		try {
+			PreparedStatement st = context.getConnection().prepareStatement("SELECT * FROM " + mainTable + " JOIN " + otherTable + " USING (" + usingColumn + ") WHERE " + whereColumn + comparator + " ?");
+			return st.executeQuery();
+		} catch (SQLException e) {
+			throw new IOError(e);
+		}
 	}
 	
 	@SuppressWarnings({ "rawtypes", "deprecation" })
@@ -114,8 +131,7 @@ public enum Table {
 	public static void addAdmin(MessageContext promoter, DiscordUser user) {
 		PreparedStatement st = null;
 		try {
-			st = promoter.getConnection().prepareStatement("INSERT INTO `admins` (" + Column.DISCORD_ID + ") VALUES (?);");
-			st.setLong(1, user.getId());
+			st = Insertion.insertInto(ADMINS).setColumns(Column.DISCORD_ID).to(user.getID()).prepare(promoter);
 			st.execute();
 			String botName = Main.discordBot.getSelfUser().getAsMention();
 			grantAdminDBPermissions(ConsoleContext.INSTANCE, user.getMySQLUsername());
@@ -134,7 +150,7 @@ public enum Table {
 	@SuppressWarnings("rawtypes")
 	public static void removeAdmin(MessageContext demoter, DiscordUser user) {
 		try {
-			deleteWhere(demoter, Table.ADMINS, Column.DISCORD_ID, Comparator.EQUALS, user.getId());
+			deleteWhere(demoter, Table.ADMINS, Column.DISCORD_ID, Comparator.EQUALS, user.getID());
 			revokeAdminDBPermissions(demoter, user.getMySQLUsername());
 			String botName = Main.discordBot.getSelfUser().getAsMention();
 			user.sendMessage("You are no longer an administrator for " + botName);
@@ -150,8 +166,7 @@ public enum Table {
 	public static void addOperator(MessageContext promoter, DiscordUser user) {
 		PreparedStatement st = null;
 		try {
-			st = promoter.getConnection().prepareStatement("INSERT INTO operators ("+ Column.DISCORD_ID +") VALUES (?);");
-			st.setLong(1, user.getId());
+			st = Insertion.insertInto(OPERATORS).setColumns(Column.DISCORD_ID).to(user.getID()).prepare(promoter);
 			st.execute();
 			String botName = Main.discordBot.getSelfUser().getAsMention();
 			grantOperatorDBPermissions(ConsoleContext.INSTANCE, user.getMySQLUsername());
@@ -170,7 +185,7 @@ public enum Table {
 	@SuppressWarnings("rawtypes")
 	public static void removeOperator(MessageContext demoter, DiscordUser user) {
 		try {
-			deleteWhere(demoter, Table.OPERATORS, Column.DISCORD_ID, Comparator.EQUALS, user.getId());
+			deleteWhere(demoter, Table.OPERATORS, Column.DISCORD_ID, Comparator.EQUALS, user.getID());
 			revokeAdminDBPermissions(ConsoleContext.INSTANCE, user.getMySQLUsername());
 			String botName = Main.discordBot.getSelfUser().getAsMention();
 			user.sendMessage("You are no longer an operator for " + botName);
@@ -252,7 +267,7 @@ public enum Table {
 	}
 	
 	@SuppressWarnings({ "rawtypes", "deprecation" })
-	private static void insertValue(PreparedStatement st, int index, Object value) throws SQLException {
+	public static void insertValue(PreparedStatement st, int index, Object value) throws SQLException {
 		Class clazz = value.getClass();
 		if(clazz.isPrimitive() || value instanceof Number || value instanceof Boolean || value instanceof Character) {
 			if (clazz == long.class || clazz == Long.class) {

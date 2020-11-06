@@ -20,6 +20,6 @@ public class UnloadedDiscordUser extends DiscordUser{
 	
 	@Override
 	public String toString() {
-		return "UNLOADED_DISCORD_USER#???? " + "(" + getId() + ")"; 
+		return "UNLOADED_DISCORD_USER#???? " + "(" + getID() + ")"; 
 	}
 }

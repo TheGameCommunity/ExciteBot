@@ -1,6 +1,5 @@
 package com.gamebuster19901.excite.bot.command;
 
-import com.gamebuster19901.excite.Main;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
 import com.gamebuster19901.excite.bot.user.UnknownDiscordUser;
 import com.mojang.brigadier.CommandDispatcher;
@@ -83,7 +82,6 @@ public class RankCommand {
 		}
 		else {
 			discordUser.setAdmin(context, true);
-			context.sendMessage(discordUser.toDetailedString() + " is now a bot administrator for " + Main.discordBot.getSelfUser().getAsTag());
 		}
 		return 1;
 	}
@@ -132,7 +130,6 @@ public class RankCommand {
 		}
 		else {
 			discordUser.setOperator(context, true);
-			context.sendMessage(discordUser.toDetailedString() + " is now a bot operator for " + Main.discordBot.getSelfUser().getAsTag());
 		}
 		return 1;
 	}

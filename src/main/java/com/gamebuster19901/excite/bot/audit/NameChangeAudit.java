@@ -23,7 +23,7 @@ public class NameChangeAudit extends Audit {
 		super(getContext(player), getMessage(getContext(player), newName));
 		this.oldName = new StringPreference(player.getName());
 		this.newName = new StringPreference(newName);
-		this.pid = new IntegerPreference(player.getPlayerID());
+		this.pid = new IntegerPreference(player.getID());
 		this.fc = new StringPreference(player.getFriendCode());
 	}
 	
@@ -61,7 +61,7 @@ public class NameChangeAudit extends Audit {
 	}
 	
 	private static String getMessage(MessageContext context, String newName) {
-		return context.getPlayerAuthor().getName() + "(" + context.getPlayerAuthor().getPlayerID() + ") changed their name to " + newName; 
+		return context.getPlayerAuthor().getName() + "(" + context.getPlayerAuthor().getID() + ") changed their name to " + newName; 
 	}
 	
 }

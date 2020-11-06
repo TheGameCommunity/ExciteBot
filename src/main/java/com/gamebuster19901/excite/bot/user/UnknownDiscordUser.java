@@ -18,12 +18,12 @@ public class UnknownDiscordUser extends UnloadedDiscordUser {
 	@Override
 	public String toString() {
 		if(hasID()) {
-			return this.name + "#" + discriminator + " (" + getId() + ")";
+			return this.name + "#" + discriminator + " (" + getID() + ")";
 		}
 		return this.name + "#" + discriminator;
 	}
 	
 	public boolean hasID() {
-		return this.getId() != -1;
+		return this.getID() != -1;
 	}
 }

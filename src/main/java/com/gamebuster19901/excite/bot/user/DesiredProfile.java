@@ -45,7 +45,7 @@ public class DesiredProfile {
 	}
 	
 	public void register() {
-		desiredProfile.setDiscord(requester.getId());
+		desiredProfile.setDiscord(requester.getID());
 		requester.sendMessage(desiredProfile.toFullString() + " successfully registered!");
 	}
 	
