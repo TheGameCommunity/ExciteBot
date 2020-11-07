@@ -8,6 +8,7 @@ import java.time.Instant;
 import com.gamebuster19901.excite.bot.audit.Audit;
 import com.gamebuster19901.excite.bot.audit.AuditType;
 import com.gamebuster19901.excite.bot.command.MessageContext;
+import com.gamebuster19901.excite.bot.database.Insertion;
 import com.gamebuster19901.excite.bot.database.Table;
 import com.gamebuster19901.excite.bot.database.sql.PreparedStatement;
 import com.gamebuster19901.excite.bot.database.sql.ResultSet;
@@ -53,27 +54,15 @@ public class Ban extends Audit{
 		return addBan(context, banee, reason, banDuration, banExpire, -1l);
 	}
 	
-	@SuppressWarnings("rawtypes")
+	@SuppressWarnings({ "rawtypes", "deprecation" })
 	public static Ban addBan(MessageContext context, Banee banee, String reason, Duration banDuration, Instant banExpire, long pardon) {
 		Audit parent = Audit.addAudit(context, AuditType.BAN, reason);
 		PreparedStatement st;
 		try {
-			st = context.getConnection().prepareStatement("INSERT INTO " + AUDIT_BANS + " ( " + AUDIT_ID + ", ?, ?, ?, ?, ?) VALUES (?, ?, ?, ?, ?, ?)");
-			Table.insertValue(st, 1, AUDIT_BANS);
-			
-			Table.insertValue(st, 2, AUDIT_ID);
-			Table.insertValue(st, 3, BAN_DURATION);
-			Table.insertValue(st, 4, BAN_EXPIRE);
-			Table.insertValue(st, 5, BANNED_ID);
-			Table.insertValue(st, 6, BANNED_USERNAME);
-			Table.insertValue(st, 7, BAN_PARDON);
-			
-			Table.insertValue(st, 8, parent.getID());
-			Table.insertValue(st, 9, banDuration);
-			Table.insertValue(st, 10, banExpire);
-			Table.insertValue(st, 11, banee.getID());
-			Table.insertValue(st, 12, banee.getName());
-			Table.insertValue(st, 13, pardon);
+			st = Insertion.insertInto(AUDIT_BANS)
+			.setColumns(AUDIT_ID, BAN_DURATION, BAN_EXPIRE, BANNED_ID, BANNED_USERNAME, BAN_PARDON)
+			.to(parent.getID(), banDuration, banExpire, banee.getID(), banee.getName(), pardon)
+			.prepare(context);
 			
 			Ban ret = new Ban(st.executeQuery());
 			ret.parentData = parent;

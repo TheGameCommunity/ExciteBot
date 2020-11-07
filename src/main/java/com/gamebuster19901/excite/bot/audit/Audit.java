@@ -7,6 +7,7 @@ import java.sql.SQLException;
 import java.time.Instant;
 import com.gamebuster19901.excite.Main;
 import com.gamebuster19901.excite.bot.command.MessageContext;
+import com.gamebuster19901.excite.bot.database.Insertion;
 import com.gamebuster19901.excite.bot.database.Table;
 import com.gamebuster19901.excite.bot.database.sql.PreparedStatement;
 import com.gamebuster19901.excite.bot.database.sql.ResultSet;
@@ -42,19 +43,11 @@ public class Audit implements Identified{
 	
 	@SuppressWarnings("rawtypes")
 	protected static Audit addAudit(MessageContext context, AuditType type, String description, Instant dateIssued) {
+		PreparedStatement ps;
 		try {
-			PreparedStatement ps = context.getConnection().prepareStatement("INSERT ? (?, ?, ?, ?, ?) VALUES (?, ?, ?, ?, ?)");
-			Table.insertValue(ps, 1, AUDITS);
-			Table.insertValue(ps, 2, AUDIT_TYPE);
-			Table.insertValue(ps, 3, ISSUER_ID);
-			Table.insertValue(ps, 4, ISSUER_NAME);
-			Table.insertValue(ps, 5, DESCRIPTION);
-			Table.insertValue(ps, 6, DATE_ISSUED);
-			Table.insertValue(ps, 7, type);
-			Table.insertValue(ps, 8, context.getDiscordAuthor().getID());
-			Table.insertValue(ps, 9, context.getDiscordAuthor().getName());
-			Table.insertValue(ps, 10, description);
-			Table.insertValue(ps, 11, Instant.now());
+			ps = Insertion.insertInto(AUDITS).setColumns(AUDIT_TYPE, ISSUER_ID, ISSUER_NAME, DESCRIPTION, DATE_ISSUED)
+				.to(type, context.getDiscordAuthor().getID(), context.getDiscordAuthor().getName(), description, Instant.now())
+				.prepare(context);
 			return new Audit(ps.executeQuery());
 		} catch (SQLException e) {
 			throw new IOError(e);
