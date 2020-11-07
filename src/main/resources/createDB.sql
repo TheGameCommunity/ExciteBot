@@ -6,10 +6,12 @@ CREATE TABLE IF NOT EXISTS `admins` (
   UNIQUE KEY `discord_id_UNIQUE` (`discordID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
 
-CREATE TABLE IF NOT EXISTS `auditBan` (
+CREATE TABLE IF NOT EXISTS `audit_bans` (
   `auditID` bigint NOT NULL,
-  `duration` varchar(45) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
-  `expireTime` varchar(45) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
+  `duration` varchar(45) COLLATE utf8mb4_bin NOT NULL,
+  `expireTime` varchar(45) COLLATE utf8mb4_bin NOT NULL,
+  `bannedID` bigint unsigned NOT NULL,
+  `bannedUsername` varchar(45) COLLATE utf8mb4_bin NOT NULL,
   `pardon` bigint DEFAULT NULL,
   PRIMARY KEY (`auditID`),
   UNIQUE KEY `auditID_UNIQUE` (`auditID`)
