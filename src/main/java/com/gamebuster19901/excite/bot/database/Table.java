@@ -74,6 +74,8 @@ public enum Table {
 	public static ResultSet selectAllFromJoinedUsingWhere(MessageContext context, Table mainTable, Table otherTable, Column usingColumn, Column whereColumn, Comparator comparator, Object comparee) {
 		try {
 			PreparedStatement st = context.getConnection().prepareStatement("SELECT * FROM " + mainTable + " JOIN " + otherTable + " USING (" + usingColumn + ") WHERE " + whereColumn + comparator + " ?");
+			Table.insertValue(st, 1, comparee);
+			context.sendMessage(st.toString());
 			return st.executeQuery();
 		} catch (SQLException e) {
 			throw new IOError(e);

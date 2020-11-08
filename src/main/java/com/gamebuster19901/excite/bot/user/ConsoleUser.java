@@ -18,7 +18,7 @@ public class ConsoleUser extends UnloadedDiscordUser {
 	private final String name = "CONSOLE";
 	
 	public ConsoleUser() {
-		super(-1);
+		super(1);
 	}
 	
 	@Override
@@ -28,6 +28,11 @@ public class ConsoleUser extends UnloadedDiscordUser {
 		} catch (IOException | SQLException e) {
 			throw new IOError(e);
 		}
+	}
+	
+	@Override
+	public String getName() {
+		return toDetailedString();
 	}
 	
 	@Override
@@ -86,9 +91,6 @@ public class ConsoleUser extends UnloadedDiscordUser {
 	public boolean requestingRegistration() {
 		throw new AssertionError();
 	}
-	
-	@SuppressWarnings("rawtypes")
-	public void sentCommand(MessageContext context) {}
 	
 	@Override
 	public void sendMessage(String message) {

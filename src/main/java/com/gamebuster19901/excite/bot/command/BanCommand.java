@@ -3,8 +3,10 @@ package com.gamebuster19901.excite.bot.command;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 
+import com.gamebuster19901.excite.Main;
 import com.gamebuster19901.excite.Player;
 import com.gamebuster19901.excite.UnknownPlayer;
+import com.gamebuster19901.excite.bot.audit.ban.Ban;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
 import com.gamebuster19901.excite.bot.user.UnknownDiscordUser;
 import com.gamebuster19901.excite.util.TimeUtils;
@@ -136,7 +138,7 @@ public class BanCommand {
 		}
 		else {
 			if(context.isAdmin()) {
-				context.sendMessage("Could not find that excitebot's profile");
+				context.sendMessage("Could not find that excitebots profile");
 			}
 		}
 		return 0;
@@ -160,7 +162,7 @@ public class BanCommand {
 				return 0;
 			}
 			Duration duration = ChronoUnit.FOREVER.getDuration();
-//			user.ban(context, duration, parseReason(duration, reason));
+			user.ban(context, duration, parseReason(duration, reason));
 		}
 		else {
 			context.sendMessage("You do not have permission to execute this command");
@@ -180,7 +182,7 @@ public class BanCommand {
 				return 0;
 			}
 			Duration duration = ChronoUnit.FOREVER.getDuration();
-//			profile[0].ban(context, duration, parseReason(duration, reason));
+			profile[0].ban(context, duration, parseReason(duration, reason));
 		}
 		else {
 			context.sendMessage("You do not have permission to execute this command");
@@ -191,10 +193,10 @@ public class BanCommand {
 	@SuppressWarnings("rawtypes")
 	private static int banDiscordUser(MessageContext context, DiscordUser user, Duration duration, String reason) {
 		if(context.isAdmin()) {
-//			DiscordBan ban = user.ban(new MessageContext(), duration, parseReason(duration, reason));
-//			String message = "Banned discord user" + user + ": \n\n" + ban;
+			Ban ban = user.ban(context, duration, parseReason(duration, reason));
+			String message = "Banned discord user" + user + ": \n\n" + ban;
 			if(context.isConsoleMessage()) {
-//				context.sendMessage(message);
+				context.sendMessage(message);
 			}
 			else {
 				PrivateChannel privateChannel;
@@ -204,7 +206,7 @@ public class BanCommand {
 				else {
 					privateChannel = context.getDiscordAuthor().getJDAUser().openPrivateChannel().complete();
 				}
-//				privateChannel.sendMessage(message);
+				privateChannel.sendMessage(message);
 			}
 		}
 		else {
@@ -216,10 +218,10 @@ public class BanCommand {
 	@SuppressWarnings("rawtypes")
 	private static int banProfile(MessageContext context, Player profile, Duration duration, String reason) {
 		if(context.isAdmin()) {
-//			ProfileBan ban = profile.ban(new MessageContext(), duration, reason);
-//			String message = "Banned profile " + profile.getPrettyDiscord() + ": \n\n" + ban;
+			Ban ban = profile.ban(new MessageContext(), duration, reason);
+			String message = "Banned profile " + profile.getPrettyDiscord() + ": \n\n" + ban;
 			if(context.isConsoleMessage()) {
-//				context.sendMessage(message);
+				context.sendMessage(message);
 			}
 			else {
 				PrivateChannel privateChannel;
@@ -229,7 +231,7 @@ public class BanCommand {
 				else {
 					privateChannel = context.getDiscordAuthor().getJDAUser().openPrivateChannel().complete();
 				}
-//				privateChannel.sendMessage(message);
+				privateChannel.sendMessage(message);
 			}
 		}
 		else {
@@ -241,17 +243,17 @@ public class BanCommand {
 	private static String parseReason(Duration duration, String reason) {
 		if(ChronoUnit.FOREVER.getDuration().equals(duration)) {
 			if(reason != null) {
-				return "You have been banned from using Excite bot indefinetly due to " + reason;
+				return "You have been banned from using " + Main.discordBot.getSelfUser().getAsTag() + " indefinetly due to " + reason;
 			}
 			else {
-				return "You have been banned from using Excite bot indefinetly";
+				return "You have been banned from using " + Main.discordBot.getSelfUser().getAsTag() + " indefinetly";
 			}
 		}
 		if(reason != null) {
-			return "You have been banned from using Excite Bot for " + TimeUtils.readableDuration(duration) + " due to " + reason;
+			return "You have been banned from using " + Main.discordBot.getSelfUser().getAsTag() + " for " + TimeUtils.readableDuration(duration) + " due to " + reason;
 		}
 		else {
-			return "You have been banned from using Excite Bot for " + TimeUtils.readableDuration(duration);
+			return "You have been banned from using " + Main.discordBot.getSelfUser().getAsTag() + " for " + TimeUtils.readableDuration(duration);
 		}
 	}
 }

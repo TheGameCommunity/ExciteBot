@@ -8,6 +8,7 @@ import java.time.Instant;
 import com.gamebuster19901.excite.Main;
 import com.gamebuster19901.excite.bot.command.MessageContext;
 import com.gamebuster19901.excite.bot.database.Insertion;
+import com.gamebuster19901.excite.bot.database.Row;
 import com.gamebuster19901.excite.bot.database.Table;
 import com.gamebuster19901.excite.bot.database.sql.PreparedStatement;
 import com.gamebuster19901.excite.bot.database.sql.ResultSet;
@@ -23,17 +24,12 @@ public class Audit implements Identified{
 	
 	private final long auditID;
 	private final AuditType type;
-	protected ResultSet results;
+	protected Row row;
 	
-	protected Audit(ResultSet result) {
-		try {
-			this.auditID = result.getLong(AUDIT_ID);
-			this.type = getAuditType();
-			this.results = result;
-		}
-		catch(SQLException e) {
-			throw new IOError(e);
-		}
+	protected Audit(Row result, AuditType type) {
+		this.auditID = result.getLong(AUDIT_ID);
+		this.type = type;
+		this.row = result;
 	}
 	
 	@SuppressWarnings("rawtypes")
@@ -47,8 +43,13 @@ public class Audit implements Identified{
 		try {
 			ps = Insertion.insertInto(AUDITS).setColumns(AUDIT_TYPE, ISSUER_ID, ISSUER_NAME, DESCRIPTION, DATE_ISSUED)
 				.to(type, context.getDiscordAuthor().getID(), context.getDiscordAuthor().getName(), description, Instant.now())
-				.prepare(context);
-			return new Audit(ps.executeQuery());
+				.prepare(context, true);
+			ps.execute();
+			ResultSet results = ps.getGeneratedKeys();
+			results.next();
+			long auditID = results.getLong(GENERATED_KEY);
+			Row row = new Row(Table.selectAllFromWhere(context, AUDITS, AUDIT_ID, EQUALS, auditID));
+			return new Audit(row, type);
 		} catch (SQLException e) {
 			throw new IOError(e);
 		}
@@ -74,37 +75,19 @@ public class Audit implements Identified{
 	}
 	
 	public long getIssuerID() {
-		try {
-			return results.getLong(ISSUER_ID);
-		} catch (SQLException e) {
-			throw new IOError(e);
-		}
+		return row.getLong(ISSUER_ID);
 	}
 	
 	public String getIssuerUsername() {
-		try {
-			return results.getString(ISSUER_NAME);
-		} catch (SQLException e) {
-			throw new IOError(e);
-		}
+		return row.getString(ISSUER_NAME);
 	}
 	
 	public String getDescription() {
-		try {
-			return results.getString(DESCRIPTION);
-		}
-		catch(SQLException e) {
-			throw new IOError(e);
-		}
+		return row.getString(DESCRIPTION);
 	}
 	
 	public Instant getDateIssued() {
-		try {
-			return TimeUtils.parseInstant(results.getString(DATE_ISSUED));
-		}
-		catch(SQLException e) {
-			throw new IOError(e);
-		}
+		return TimeUtils.parseInstant(row.getString(DATE_ISSUED));
 	}
 	
 	@SuppressWarnings("rawtypes")

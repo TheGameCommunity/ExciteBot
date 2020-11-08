@@ -10,10 +10,11 @@ public enum Column {
 
 	//MULTIPLE TABLES:
 	ALL_COLUMNS("*", Table.values()),
+	GENERATED_KEY("GENERATED_KEY", Table.values()), //Used for getting generated key
 	DISCORD_ID("DiscordID", ADMINS, DISCORD_USERS, OPERATORS, PLAYERS),
 	
 	//AUDITS
-	AUDIT_ID("audit_id", AUDITS, AUDIT_BANS, AUDIT_COMMANDS, AUDIT_NAME_CHANGES, AUDIT_PARDONS, AUDIT_PROFILE_DISCOVERIES, AUDIT_RANK_CHANGES),
+	AUDIT_ID("auditID", AUDITS, AUDIT_BANS, AUDIT_COMMANDS, AUDIT_NAME_CHANGES, AUDIT_PARDONS, AUDIT_PROFILE_DISCOVERIES, AUDIT_RANK_CHANGES),
 	AUDIT_TYPE("type", AUDITS),
 	ISSUER_ID("issuer", AUDITS),
 	ISSUER_NAME("issuerName", AUDITS),
@@ -22,7 +23,7 @@ public enum Column {
 	
 	//BANS
 	BAN_DURATION("duration", AUDIT_BANS),
-	BAN_EXPIRE("expreTime", AUDIT_BANS),
+	BAN_EXPIRE("expireTime", AUDIT_BANS),
 	BANNED_ID("bannedID", AUDIT_BANS),
 	@Deprecated BANNED_USERNAME("bannedUsername", AUDIT_BANS),
 	BAN_PARDON("pardon", AUDIT_BANS),
@@ -70,5 +71,14 @@ public enum Column {
 	
 	public boolean isInTable(Table table) {
 		return validTables.contains(table);
+	}
+	
+	public static Column getColumn(String dbName) {
+		for(Column column : values()) {
+			if(column.name.equals(dbName)) {
+				return column;
+			}
+		}
+		throw new IllegalArgumentException("No column with db name " + dbName);
 	}
 }

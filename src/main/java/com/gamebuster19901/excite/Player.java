@@ -3,10 +3,12 @@ package com.gamebuster19901.excite;
 import java.io.File;
 import java.io.IOError;
 import java.sql.SQLException;
+import java.time.Duration;
 import java.util.HashSet;
 import java.util.logging.Logger;
 
 import com.gamebuster19901.excite.bot.server.emote.Emote;
+import com.gamebuster19901.excite.bot.audit.ban.Ban;
 import com.gamebuster19901.excite.bot.audit.ban.Banee;
 import com.gamebuster19901.excite.bot.command.ConsoleContext;
 import com.gamebuster19901.excite.bot.command.MessageContext;
@@ -14,6 +16,7 @@ import com.gamebuster19901.excite.bot.database.Table;
 import com.gamebuster19901.excite.bot.database.sql.PreparedStatement;
 import com.gamebuster19901.excite.bot.database.sql.ResultSet;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
+import com.gamebuster19901.excite.bot.user.UnknownDiscordUser;
 
 import static com.gamebuster19901.excite.bot.database.Table.PLAYERS;
 import static com.gamebuster19901.excite.bot.database.Comparator.EQUALS;
@@ -268,8 +271,12 @@ public class Player implements Banee {
 	}
 
 	public boolean isBanned() {
+		for(Ban ban : Ban.getBansOf(ConsoleContext.INSTANCE, this)) {
+			if(ban.isActive()) {
+				return true;
+			}
+		}
 		return false;
-		//return ProfileBan.isProfileBanned(this);
 	}
 	
 	public boolean isOnline() {
@@ -320,16 +327,15 @@ public class Player implements Banee {
 		}
 	}
 	
-/*	@SuppressWarnings("rawtypes")
-	public ProfileBan ban(MessageContext context, Duration duration, String reason) {
-		ProfileBan profileBan = new ProfileBan(context, reason, duration, this);
-		profileBan = Audit.addAudit(profileBan); //future proofing in case we ever need to return a different audit
-		DiscordUser discord = DiscordUser.getDiscordUserIncludingUnknown(getDiscord());
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	public Ban ban(MessageContext context, Duration duration, String reason) {
+		Ban ban = Ban.addBan(context, this, reason, duration);
+		DiscordUser discord = DiscordUser.getDiscordUserIncludingUnknown(context, getDiscord());
 		if(!(discord instanceof UnknownDiscordUser)) {
 			discord.sendMessage(context, toString() + " " + reason);
 		}
-		return profileBan;
-	}*/
+		return ban;
+	}
 	
 	@Override
 	public boolean equals(Object o) {

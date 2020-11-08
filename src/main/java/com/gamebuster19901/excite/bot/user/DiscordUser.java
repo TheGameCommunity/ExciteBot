@@ -117,10 +117,11 @@ public class DiscordUser implements Banee {
 		return discordId;
 	}
 	
-	@SuppressWarnings("rawtypes")
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public Ban ban(MessageContext context, Duration duration, String reason) {
 		Ban discordBan = Ban.addBan(context, this, reason, duration);
-		sendMessage(context, toString() + " " + reason);
+		sendMessage(context, this.toDetailedString() + " has been banned for " + TimeUtils.readableDuration(duration) + " with the reason: \n\n\"" + reason + "\"");
+		sendMessage(new MessageContext(this), this.getJDAUser().getAsMention() + " " + reason);
 		return discordBan;
 	}
 	
@@ -135,7 +136,12 @@ public class DiscordUser implements Banee {
 	}
 
 	public boolean isBanned() {
-		return false; //TODO: Implement
+		for(Ban ban : Ban.getBansOf(ConsoleContext.INSTANCE, this)) {
+			if(ban.isActive()) {
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	public boolean isAdmin() {

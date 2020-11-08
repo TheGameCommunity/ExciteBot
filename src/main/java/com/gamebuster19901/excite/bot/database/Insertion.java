@@ -1,6 +1,7 @@
 package com.gamebuster19901.excite.bot.database;
 
 import java.sql.SQLException;
+import java.sql.Statement;
 
 import com.gamebuster19901.excite.bot.command.MessageContext;
 import com.gamebuster19901.excite.bot.database.sql.DatabaseConnection;
@@ -34,21 +35,41 @@ public class Insertion {
 		this.statementString = "INSERT INTO " + table + " (" + columnString + ") VALUES(" + parameterString + ");";
 	}
 	
-	public PreparedStatement prepare(DatabaseConnection connection) throws SQLException {
-		PreparedStatement ps = connection.prepareStatement(statementString);
+	public PreparedStatement prepare(DatabaseConnection connection, boolean returnGeneratedKeys) throws SQLException {
+		PreparedStatement ps;
+		if(!returnGeneratedKeys) {
+			ps = connection.prepareStatement(statementString);
+		}
+		else {
+			ps = connection.prepareStatement(statementString, Statement.RETURN_GENERATED_KEYS);
+		}
+		
 		if(values != null && values.length > 0) {
 			ps.setValues(values);
 		}
 		return ps;
 	}
 	
+	public PreparedStatement prepare(DiscordUser user, boolean returnGeneratedKeys) throws SQLException {
+		return prepare(user.getConnection(), returnGeneratedKeys);
+	}
+	
+	@SuppressWarnings("rawtypes")
+	public PreparedStatement prepare(MessageContext context, boolean returnGeneratedKeys) throws SQLException {
+		return prepare(context.getConnection(), returnGeneratedKeys);
+	}
+	
+	public PreparedStatement prepare(DatabaseConnection connection) throws SQLException {
+		return prepare(connection, false);
+	}
+	
 	public PreparedStatement prepare(DiscordUser user) throws SQLException {
-		return prepare(user.getConnection());
+		return prepare(user.getConnection(), false);
 	}
 	
 	@SuppressWarnings("rawtypes")
 	public PreparedStatement prepare(MessageContext context) throws SQLException {
-		return prepare(context.getConnection());
+		return prepare(context.getConnection(), false);
 	}
 	
 	public Insertion to(Object... values) {
