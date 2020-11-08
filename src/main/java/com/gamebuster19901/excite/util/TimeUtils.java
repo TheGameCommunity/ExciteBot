@@ -14,8 +14,7 @@ import java.util.Locale;
 public final class TimeUtils {
 	public static final DateTimeFormatter DB_DATE_FORMATTER = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM).withLocale(Locale.US).withZone(ZoneId.of("UTC"));
 	public static final Duration FOREVER = ChronoUnit.FOREVER.getDuration();
-	public static final Instant PLAYER_EPOCH = Instant.parse("2020-11-01T02:00:00+5000"); //The second 2:00 am that occurs due do daylight savings
-	
+	public static final Instant PLAYER_EPOCH = Instant.parse("2020-11-01T07:00:00Z"); //The second 2:00 am EST that occurs due do daylight savings
 	public static String readableDuration(Duration duration) {
 		String time = "";
 		
