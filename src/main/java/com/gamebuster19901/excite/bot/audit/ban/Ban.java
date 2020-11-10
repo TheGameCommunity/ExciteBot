@@ -66,7 +66,7 @@ public class Ban extends Audit{
 			
 			st.execute();
 			
-			Ban ret = getBanById(context, parent.getID());
+			Ban ret = getBanByAuditId(context, parent.getID());
 			ret.parentData = parent;
 			return ret;
 		}
@@ -127,7 +127,7 @@ public class Ban extends Audit{
 	}
 	
 	@SuppressWarnings("rawtypes")
-	public static Ban getBanById(MessageContext context, long id) throws IllegalArgumentException {
+	public static Ban getBanByAuditId(MessageContext context, long id) throws IllegalArgumentException {
 		try {
 			return new Ban(new Row(Table.selectAllFromJoinedUsingWhere(context, AUDITS, AUDIT_BANS, AUDIT_ID, new Comparison(AUDIT_ID, EQUALS, id))));
 		} catch (SQLException e) {
