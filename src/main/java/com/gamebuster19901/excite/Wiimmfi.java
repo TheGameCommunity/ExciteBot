@@ -185,10 +185,6 @@ public class Wiimmfi {
 		return error;
 	}
 	
-	public static Player[] getKnownPlayers() {
-		return Player.getEncounteredPlayers(ConsoleContext.INSTANCE);
-	}
-	
 	private static String parseLine(String s, int line) {
 		String[] lines = s.split("\n");
 		return lines[line].replace("<td>", "").replaceAll("</td>", "").replaceAll(" ", "");
