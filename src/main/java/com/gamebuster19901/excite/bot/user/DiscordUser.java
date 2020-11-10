@@ -360,11 +360,6 @@ public class DiscordUser implements Banee {
 	}
 	
 	@SuppressWarnings("rawtypes")
-	public void sentCommand(MessageContext context) {
-		
-	}
-	
-	@SuppressWarnings("rawtypes")
 	public void sentCommand(MessageContext context, int amount) {
 		
 	}
