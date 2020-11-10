@@ -3,6 +3,7 @@ package com.gamebuster19901.excite.bot.command;
 import org.apache.commons.lang3.StringUtils;
 
 import com.gamebuster19901.excite.Main;
+import com.gamebuster19901.excite.bot.audit.CommandAudit;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
 import com.gamebuster19901.excite.util.StacktraceUtil;
 
@@ -43,7 +44,7 @@ public class Commands {
 	public void handleCommand(String command) {
 		MessageContext context = new MessageContext(Main.CONSOLE);
 		try {
-			//Audit.addAudit(new CommandAudit(context, command));
+			CommandAudit.addCommandAudit(context, command);
 			this.dispatcher.execute(command, context);
 		}
 		catch (CommandSyntaxException e) {
@@ -69,9 +70,8 @@ public class Commands {
 				message = StringUtils.replaceOnce(message, prefix, "");
 				DiscordUser sender = DiscordUser.getDiscordUser(ConsoleContext.INSTANCE, e.getAuthor().getIdLong());
 				if(!sender.isBanned()) {
-					sender.sentCommand(context);
 					if(!sender.isBanned()) {
-						//Audit.addAudit(new CommandAudit(context, e.getMessage().getContentRaw()));
+						CommandAudit.addCommandAudit(context, message);
 						this.dispatcher.execute(message, context);
 					}
 				}
@@ -99,13 +99,13 @@ public class Commands {
 	
 	public void handleCommand(PrivateMessageReceivedEvent e) {
 		MessageContext<PrivateMessageReceivedEvent> context = new MessageContext<PrivateMessageReceivedEvent>(e);
+		String message = e.getMessage().getContentRaw();
 		try {
 			DiscordUser sender = DiscordUser.getDiscordUser(ConsoleContext.INSTANCE, e.getAuthor().getIdLong());
 			if(!sender.isBanned()) {
-				sender.sentCommand(context);
 				if(!sender.isBanned()) {
-					//Audit.addAudit(new CommandAudit(context, e.getMessage().getContentRaw()));
-					this.dispatcher.execute(e.getMessage().getContentRaw(), context);
+					CommandAudit.addCommandAudit(context, message);
+					this.dispatcher.execute(message, context);
 				}
 			}
 		}

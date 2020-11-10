@@ -1,98 +1,80 @@
 package com.gamebuster19901.excite.bot.audit;
 
+import com.gamebuster19901.excite.bot.command.ConsoleContext;
 import com.gamebuster19901.excite.bot.command.MessageContext;
-import com.gamebuster19901.excite.bot.common.preferences.BooleanPreference;
-import com.gamebuster19901.excite.bot.common.preferences.LongPreference;
-import com.gamebuster19901.excite.bot.common.preferences.PermissionPreference;
-import com.gamebuster19901.excite.bot.common.preferences.StringPreference;
+import com.gamebuster19901.excite.bot.database.Comparison;
+import com.gamebuster19901.excite.bot.database.Insertion;
+import com.gamebuster19901.excite.bot.database.Row;
+import com.gamebuster19901.excite.bot.database.Table;
+import com.gamebuster19901.excite.bot.database.sql.PreparedStatement;
 
-import static com.gamebuster19901.excite.util.Permission.ADMIN_ONLY;
+import static com.gamebuster19901.excite.bot.database.Column.*;
+import static com.gamebuster19901.excite.bot.database.Table.*;
 
-import java.util.Arrays;
-import java.util.List;
+import java.io.IOError;
+import java.sql.SQLException;
 
-import org.apache.commons.csv.CSVRecord;
+import static com.gamebuster19901.excite.bot.database.Comparator.*;
 
 public class CommandAudit extends Audit {
 
-	private static transient final int DB_VERSION = 1;
+	Audit parentData;
 	
-	StringPreference command;
-	StringPreference serverName;
-	LongPreference serverId;
-	StringPreference channelName;
-	LongPreference channelId;
-	BooleanPreference isGuildMessage;
-	BooleanPreference isPrivateMessage;
-	BooleanPreference isConsoleMessage;
-	BooleanPreference isAdmin;
-	BooleanPreference isOperator;
-	
-	{
-		secrecy = new PermissionPreference(ADMIN_ONLY);
+	protected CommandAudit(Row row) {
+		super(row, AuditType.COMMAND_AUDIT);
 	}
 	
 	@SuppressWarnings("rawtypes")
-	public CommandAudit(MessageContext context, String command) {
-		super(context, command);
+	public static CommandAudit addCommandAudit(MessageContext context, String command) {
+		Audit parent = Audit.addAudit(ConsoleContext.INSTANCE, context, AuditType.COMMAND_AUDIT, command);
 		
-		if(context.getServer() != null) {
-			this.serverName = new StringPreference(context.getServer().getName());
-			this.serverId = new LongPreference(context.getServer().getId());
+		PreparedStatement st;
+		try {
+			
+			String serverName = null;
+			long serverID = 0;
+			String channelName = null;
+			long channelID = 0;
+			boolean isGuildMessage = context.isGuildMessage();
+			boolean isPrivateMessage = context.isPrivateMessage();
+			boolean isConsoleMessage = context.isConsoleMessage();
+			boolean isAdmin = context.isAdmin();
+			boolean isOperator = context.isOperator();
+			
+			if(isPrivateMessage || isConsoleMessage) {
+				channelName = context.getDiscordAuthor().getName();
+				channelID = context.getSenderId();
+			}
+			else {
+				serverName = context.getServer().getName();
+				serverID = context.getServer().getId();
+				channelName = context.getChannel().getName();
+				channelID = context.getChannel().getIdLong();
+			}
+			
+			st = Insertion.insertInto(AUDIT_COMMANDS)
+			.setColumns(AUDIT_ID, SERVER_NAME, SERVER_ID, CHANNEL_NAME, CHANNEL_ID, IS_GUILD_MESSAGE, IS_PRIVATE_MESSAGE, IS_CONSOLE_MESSAGE, IS_ADMIN, IS_OPERATOR)
+			.to(parent.getID(), serverName, serverID, channelName, channelID, isGuildMessage, isPrivateMessage, isConsoleMessage, isAdmin, isOperator)
+			.prepare(ConsoleContext.INSTANCE, true);
+			
+			st.execute();
+			
+			CommandAudit ret = getCommandAuditByID(ConsoleContext.INSTANCE, parent.getID());
+			ret.parentData = parent;
+			return ret;
 		}
-		else {
-			this.serverName = new StringPreference("N/A");
-			this.serverId = new LongPreference(-1l);
+		catch(SQLException e) {
+			throw new IOError(e);
 		}
-		
-		if(context.getChannel() != null) {
-			this.channelName = new StringPreference(context.getChannel().getName());
-			this.channelId = new LongPreference(context.getChannel().getIdLong());
-		}
-		else {
-			this.channelName = new StringPreference("CONSOLE");
-			this.channelId = new LongPreference(-1l);
-		}
-		
-		this.isGuildMessage= new BooleanPreference(context.isGuildMessage());
-		this.isPrivateMessage= new BooleanPreference(context.isPrivateMessage());
-		this.isConsoleMessage= new BooleanPreference(context.isConsoleMessage());
-		this.isAdmin= new BooleanPreference(context.isAdmin());
-		this.isOperator= new BooleanPreference(context.isOperator());
 	}
 	
-	public CommandAudit() {
-		super();
+	@SuppressWarnings("rawtypes")
+	public static CommandAudit getCommandAuditByID(MessageContext context, long auditID) {
+		try {
+			return new CommandAudit(new Row(Table.selectAllFromJoinedUsingWhere(context, AUDITS, AUDIT_COMMANDS, AUDIT_ID, new Comparison(AUDIT_ID, EQUALS, auditID))));
+		} catch (SQLException e) {
+			throw new IOError(e);
+		}
 	}
 	
-	@Override
-	public Audit parseAudit(CSVRecord record) {
-		super.parseAudit(record);
-		//0-7 is audit
-		int i = super.getRecordSize();
-		i++; //8 is commandAudit version
-		serverName = new StringPreference(record.get(i++));
-		serverId = new LongPreference(Long.parseLong(record.get(i++).substring(1)));
-		channelName = new StringPreference(record.get(i++));
-		channelId = new LongPreference(Long.parseLong(record.get(i++).substring(1)));
-		isGuildMessage = new BooleanPreference(Boolean.parseBoolean(record.get(i++)));
-		isPrivateMessage = new BooleanPreference(Boolean.parseBoolean(record.get(i++)));
-		isConsoleMessage = new BooleanPreference(Boolean.parseBoolean(record.get(i++)));
-		isAdmin = new BooleanPreference(Boolean.parseBoolean(record.get(i++)));
-		isOperator = new BooleanPreference(Boolean.parseBoolean(record.get(i++)));
-		
-		return this;
-	}
-	
-	@Override
-	public int getRecordSize() {
-		return super.getRecordSize() + 10;
-	}
-	
-	@Override
-	public List<Object> getParameters() {
-		List<Object> params = super.getParameters();
-		params.addAll(Arrays.asList(new Object[] {new Integer(DB_VERSION), serverName, "`" + serverId, channelName, "`" + channelId, isGuildMessage, isPrivateMessage, isConsoleMessage, isAdmin, isOperator}));
-		return params;
-	}
 }
