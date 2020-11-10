@@ -53,7 +53,7 @@ public enum Table {
 			return st.executeQuery();
 		}
 		catch(SQLException e) {
-			throw new SQLException(st.toString());
+			throw new SQLException(e);
 		}
 	}
 	
