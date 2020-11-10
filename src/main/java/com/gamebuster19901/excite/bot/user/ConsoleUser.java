@@ -42,33 +42,12 @@ public class ConsoleUser extends UnloadedDiscordUser {
 		throw new AssertionError();
 	}
 	
-/*	@Override
-	@SuppressWarnings("rawtypes")
-	public DiscordBan ban(MessageContext context, Duration duration, String reason) {
-		throw new AssertionError();
-	}*/
-	
 	@Override
 	@SuppressWarnings("rawtypes")
 	public Set<Player> getProfiles(MessageContext context) {
 		throw new AssertionError();
 	}
-/*	
-	@Override
-	public boolean isBanned() {
-		return false;
-	}
-	
-	@Override
-	public int getUnpardonedBanCount() {
-		throw new AssertionError();
-	}
-	
-	@Override
-	public int getTotalBanCount() {
-		throw new AssertionError();
-	}
-*/	
+
 	@Override
 	public void setNotifyThreshold(int threshold) {
 		throw new AssertionError();
