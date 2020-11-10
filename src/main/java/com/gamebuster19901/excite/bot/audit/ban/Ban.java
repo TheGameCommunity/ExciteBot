@@ -58,6 +58,9 @@ public class Ban extends Audit{
 	public static Ban addBan(MessageContext context, Banee banee, String reason, Duration banDuration, Instant banExpire, long pardon) {
 		Audit parent = Audit.addAudit(context, AuditType.BAN, reason);
 		PreparedStatement st;
+		
+		context.sendMessage(banee.getClass().getCanonicalName());
+		
 		try {
 			st = Insertion.insertInto(AUDIT_BANS)
 			.setColumns(AUDIT_ID, BAN_DURATION, BAN_EXPIRE, BANNED_ID, BANNED_USERNAME, BAN_PARDON)

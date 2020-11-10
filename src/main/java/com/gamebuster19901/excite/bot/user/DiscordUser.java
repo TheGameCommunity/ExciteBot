@@ -121,7 +121,7 @@ public class DiscordUser implements Banee {
 	public Ban ban(MessageContext context, Duration duration, String reason) {
 		Ban discordBan = Ban.addBan(context, this, reason, duration);
 		sendMessage(context, this.toDetailedString() + " has been banned for " + TimeUtils.readableDuration(duration) + " with the reason: \n\n\"" + reason + "\"");
-		sendMessage(new MessageContext(this), this.getJDAUser().getAsMention() + " " + reason);
+		sendMessage(new MessageContext(this), this.getName() + " " + reason);
 		return discordBan;
 	}
 	

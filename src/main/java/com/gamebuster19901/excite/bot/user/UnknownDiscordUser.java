@@ -16,6 +16,11 @@ public class UnknownDiscordUser extends UnloadedDiscordUser {
 	}
 	
 	@Override
+	public String getName() {
+		return name;
+	}
+	
+	@Override
 	public String toString() {
 		if(hasID()) {
 			return this.name + "#" + discriminator + " (" + getID() + ")";
