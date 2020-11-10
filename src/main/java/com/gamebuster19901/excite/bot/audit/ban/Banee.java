@@ -9,7 +9,7 @@ public interface Banee extends Identified {
 	
 	public default Ban getLongestActiveBan(MessageContext context) {
 		Ban longest = null;
-		for(Ban ban : Ban.getBansOfUser(context, this.getID())) {
+		for(Ban ban : Ban.getBansOfID(context, this.getID())) {
 			if(ban.isActive()) {
 				if(ban.getBanExpireTime().isAfter(longest.getBanExpireTime())) {
 					longest = ban;
