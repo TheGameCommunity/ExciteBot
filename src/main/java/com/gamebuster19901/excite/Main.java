@@ -18,6 +18,7 @@ import com.gamebuster19901.excite.bot.command.ConsoleContext;
 import com.gamebuster19901.excite.bot.database.sql.DatabaseConnection;
 import com.gamebuster19901.excite.bot.user.ConsoleUser;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
+import com.gamebuster19901.excite.bot.user.UnknownDiscordUser;
 import com.gamebuster19901.excite.util.StacktraceUtil;
 import com.gamebuster19901.excite.util.ThreadService;
 
@@ -29,7 +30,7 @@ import net.dv8tion.jda.api.exceptions.ErrorResponseException;
 public class Main {
 	
 	private static final Logger LOGGER = Logger.getLogger(Main.class.getName());
-	public static String botOwner;
+	public static long botOwner = -1;
 	
 	public static DatabaseConnection database;
 	public static Wiimmfi wiimmfi;
@@ -48,7 +49,7 @@ public class Main {
 		
 		for(int i = 0; i < args.length; i++) {
 			if(args[i].equals("-owner")) {
-				botOwner = args[++i];
+				botOwner = Long.parseLong(args[++i]);
 			}
 		}
 		
@@ -71,14 +72,11 @@ public class Main {
 			}
 		}
 	
-//		Audit.init(); //Audit.class must be initialized before ConsoleUser can be created
 		CONSOLE = new ConsoleUser();
 		
 		Throwable prevError = null;
 		Instant nextWiimmfiPing = Instant.now();
 		Instant nextDiscordPing = Instant.now();
-		Instant updateCooldowns = Instant.now();
-		Instant updateWarningCooldowns = Instant.now();
 		startConsole();
 		
 		try {
