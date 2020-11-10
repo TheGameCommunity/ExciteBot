@@ -128,13 +128,18 @@ public class DiscordUser implements Banee {
 	}
 	
 	@SuppressWarnings("rawtypes")
-	public Set<Player> getProfiles(MessageContext context) throws SQLException {
-		HashSet<Player> players = new HashSet<Player>();
-		ResultSet results = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, PLAYER_ID, PLAYERS, new Comparison(PLAYER_ID, EQUALS, getID()));
-		while(results.next()) {
-			players.add(Player.getPlayerByID(context, results.getInt(1)));
+	public Set<Player> getProfiles(MessageContext context) {
+		try {
+			HashSet<Player> players = new HashSet<Player>();
+			ResultSet results = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, PLAYER_ID, PLAYERS, new Comparison(DISCORD_ID, EQUALS, getID()));
+			while(results.next()) {
+				players.add(Player.getPlayerByID(context, results.getInt(1)));
+			}
+			return players;
 		}
-		return players;
+		catch(SQLException e) {
+			throw new IOError(e);
+		}
 	}
 
 	public boolean isBanned() {
@@ -515,11 +520,26 @@ public class DiscordUser implements Banee {
 		}
 	}
 	
+	@Deprecated
 	@SuppressWarnings("rawtypes")
 	public static final DiscordUser[] getDiscordUsersWithUsername(MessageContext context, String username) {
 		try {
 			ArrayList<DiscordUser> users = new ArrayList<DiscordUser>();
 			ResultSet results = Table.selectAllFromWhere(context, DISCORD_USERS, new Comparison(DISCORD_NAME, LIKE, Table.makeSafe(username) + "_____"));
+			while(results.next()) {
+				users.add(new DiscordUser(results));
+			}
+			return users.toArray(new DiscordUser[]{});
+		}
+		catch(SQLException e) {
+			throw new IOError(e);
+		}
+	}
+	
+	public static final DiscordUser[] getDiscordUsersWithUsernameOrID(MessageContext context, String usernameOrID) {
+		try {
+			ArrayList<DiscordUser> users = new ArrayList<DiscordUser>();
+			ResultSet results = Table.selectAllFromWhere(context, DISCORD_USERS, new Comparison(DISCORD_NAME, LIKE, Table.makeSafe(usernameOrID) + "_____").or(new Comparison(DISCORD_ID, EQUALS, usernameOrID)));
 			while(results.next()) {
 				users.add(new DiscordUser(results));
 			}
