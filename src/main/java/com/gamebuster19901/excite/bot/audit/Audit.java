@@ -39,17 +39,28 @@ public class Audit implements Identified{
 	}
 	
 	@SuppressWarnings("rawtypes")
+	protected static Audit addAudit(MessageContext executor, MessageContext context, AuditType type, String description) {
+		return addAudit(executor, context, type, description, Instant.now());
+	}
+	
+	@SuppressWarnings("rawtypes")
 	protected static Audit addAudit(MessageContext context, AuditType type, String description, Instant dateIssued) {
+		return addAudit(context, context, type, description, dateIssued);
+	}
+	
+	@Deprecated
+	@SuppressWarnings("rawtypes")
+	protected static Audit addAudit(MessageContext executor, MessageContext context, AuditType type, String description, Instant dateIssued) {
 		PreparedStatement ps;
 		try {
 			ps = Insertion.insertInto(AUDITS).setColumns(AUDIT_TYPE, ISSUER_ID, ISSUER_NAME, DESCRIPTION, DATE_ISSUED)
 				.to(type, context.getDiscordAuthor().getID(), context.getDiscordAuthor().getName(), description, Instant.now())
-				.prepare(context, true);
+				.prepare(executor, true);
 			ps.execute();
 			ResultSet results = ps.getGeneratedKeys();
 			results.next();
 			long auditID = results.getLong(GENERATED_KEY);
-			Row row = new Row(Table.selectAllFromWhere(context, AUDITS, new Comparison(AUDIT_ID, EQUALS, auditID)));
+			Row row = new Row(Table.selectAllFromWhere(executor, AUDITS, new Comparison(AUDIT_ID, EQUALS, auditID)));
 			return new Audit(row, type);
 		} catch (SQLException e) {
 			throw new IOError(e);

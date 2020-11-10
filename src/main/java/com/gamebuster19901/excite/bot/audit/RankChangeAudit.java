@@ -1,60 +1,60 @@
 package com.gamebuster19901.excite.bot.audit;
 
-import java.util.Arrays;
-import java.util.List;
-
-import org.apache.commons.csv.CSVRecord;
+import java.io.IOError;
+import java.sql.SQLException;
 
 import com.gamebuster19901.excite.Main;
+import com.gamebuster19901.excite.bot.command.ConsoleContext;
 import com.gamebuster19901.excite.bot.command.MessageContext;
-import com.gamebuster19901.excite.bot.common.preferences.LongPreference;
-import com.gamebuster19901.excite.bot.common.preferences.PermissionPreference;
-import com.gamebuster19901.excite.bot.common.preferences.StringPreference;
+import com.gamebuster19901.excite.bot.database.Comparison;
+import com.gamebuster19901.excite.bot.database.Insertion;
+import com.gamebuster19901.excite.bot.database.Row;
+import com.gamebuster19901.excite.bot.database.Table;
+import com.gamebuster19901.excite.bot.database.sql.PreparedStatement;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
-import static com.gamebuster19901.excite.util.Permission.ADMIN_ONLY;
+
+import static com.gamebuster19901.excite.bot.database.Column.*;
+import static com.gamebuster19901.excite.bot.database.Table.*;
+import static com.gamebuster19901.excite.bot.database.Comparator.*;
 
 public class RankChangeAudit extends Audit {
-
-	private static final int DB_VERSION = 1;
 	
-	StringPreference promotee;
-	LongPreference promoteeDiscordId;
+	Audit parentData;
+	
+	protected RankChangeAudit(Row row) {
+		super(row, AuditType.RANK_CHANGE_AUDIT);
+	}
+	
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	public static RankChangeAudit addRankChange(MessageContext context, DiscordUser promotee, String rank, boolean added) {
+		Audit parent = Audit.addAudit(ConsoleContext.INSTANCE, context, AuditType.RANK_CHANGE_AUDIT, getMessage(context, new MessageContext(promotee), rank, added));
+		
+		PreparedStatement st;
+		try {
+			st = Insertion.insertInto(AUDIT_RANK_CHANGES)
+			.setColumns(AUDIT_ID, PROMOTEE, PROMOTEE_ID)
+			.to(parent.getID(), promotee, promotee.getID())
+			.prepare(ConsoleContext.INSTANCE, true);
+			
+			st.execute();
+			
+			RankChangeAudit ret = getRankChangeAuditByID(ConsoleContext.INSTANCE, parent.getID());
+			ret.parentData = parent;
+			return ret;
+		}
+		catch(SQLException e) {
+			throw new IOError(e);
+		}
+	}
 	
 	@SuppressWarnings("rawtypes")
-	public RankChangeAudit(MessageContext promoter, MessageContext<DiscordUser> promotee, String rank, boolean added) {
-		super(promoter, getMessage(promoter, promotee, rank, added));
-		if(promoter.isAdmin()) {
-			this.secrecy = new PermissionPreference(ADMIN_ONLY);
+	public static RankChangeAudit getRankChangeAuditByID(MessageContext context, long auditID) {
+		try {
+			return new RankChangeAudit(new Row(Table.selectAllFromJoinedUsingWhere(context, AUDITS, AUDIT_RANK_CHANGES, AUDIT_ID, new Comparison(AUDIT_ID, EQUALS, auditID))));
 		}
-	}
-	
-	protected RankChangeAudit() {
-		super();
-	}
-	
-	@Override
-	public Audit parseAudit(CSVRecord record) {
-		super.parseAudit(record);
-		//0-6 is audit
-		//7 is RankChanceAudit version
-		int i = super.getRecordSize();
-		if(Integer.parseInt(record.get(i++)) == 0) { //8 is RankChangeAuditVersion;
-			throw new IllegalArgumentException("Update RankChangeAudit!");
+		catch(SQLException e) {
+			throw new IOError(e);
 		}
-		this.promotee = new StringPreference(record.get(i++));
-		this.promoteeDiscordId = new LongPreference(record.get(i++));
-		return this;
-	}
-	
-	protected int getRecordSize() {
-		return super.getRecordSize() + 3;
-	}
-	
-	@Override
-	public List<Object> getParameters() {
-		List<Object> params = super.getParameters();
-		params.addAll(Arrays.asList(new Object[] {new Integer(DB_VERSION), promotee, promoteeDiscordId}));
-		return params;
 	}
 	
 	@SuppressWarnings("rawtypes")

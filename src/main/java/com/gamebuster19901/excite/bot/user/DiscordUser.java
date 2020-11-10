@@ -15,6 +15,7 @@ import javax.annotation.Nullable;
 
 import com.gamebuster19901.excite.Main;
 import com.gamebuster19901.excite.Player;
+import com.gamebuster19901.excite.bot.audit.RankChangeAudit;
 import com.gamebuster19901.excite.bot.audit.ban.Ban;
 import com.gamebuster19901.excite.bot.audit.ban.Banee;
 import com.gamebuster19901.excite.bot.command.ConsoleContext;
@@ -182,6 +183,7 @@ public class DiscordUser implements Banee {
 		else {
 			Table.removeAdmin(promoter, this);
 		}
+		RankChangeAudit.addRankChange(promoter, this, "admin", admin);
 	}
 	
 	@SuppressWarnings("rawtypes")
@@ -192,6 +194,7 @@ public class DiscordUser implements Banee {
 		else {
 			Table.removeOperator(promoter, this);
 		}
+		RankChangeAudit.addRankChange(promoter, this, "operator", operator);
 	}
 	
 	public int getUnpardonedBanCount() {

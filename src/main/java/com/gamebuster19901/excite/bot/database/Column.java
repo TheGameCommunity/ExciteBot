@@ -34,6 +34,9 @@ public enum Column {
 	OLD_PLAYER_NAME("oldName", AUDIT_NAME_CHANGES),
 	NEW_PLAYER_NAME("newName", AUDIT_NAME_CHANGES),
 	
+	//RANK CHANGES
+	PROMOTEE("promotee", AUDIT_RANK_CHANGES),
+	PROMOTEE_ID("promoteeDiscordID", AUDIT_RANK_CHANGES),
 	
 	//ADMINS
 	
