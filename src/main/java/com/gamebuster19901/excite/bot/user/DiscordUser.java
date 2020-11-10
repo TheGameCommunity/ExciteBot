@@ -194,16 +194,6 @@ public class DiscordUser implements Banee {
 		RankChangeAudit.addRankChange(promoter, this, "operator", operator);
 	}
 	
-	public int getUnpardonedBanCount() {
-		return 0;
-		//return preferences.getUnpardonedBanCount();
-	}
-	
-	public int getTotalBanCount() {
-		return 0;
-		//return preferences.getTotalBanCount();
-	}
-	
 	public String getName() {
 		return getJDAUser().getAsTag();
 	}
