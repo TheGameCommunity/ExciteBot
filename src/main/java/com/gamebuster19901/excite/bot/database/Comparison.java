@@ -61,6 +61,11 @@ public class Comparison {
 		return this;
 	}
 	
+	public Comparison openBeginning() {
+		string = "(" + string;
+		return this;
+	}
+	
 	public Comparison open(Comparison comparison) {
 		string = string + " ( " + comparison;
 		sequence.add(comparison);
@@ -79,7 +84,9 @@ public class Comparison {
 	public Comparison insertValues(PreparedStatement ps, int startIndex) throws SQLException {
 		int i = startIndex;
 		for(Comparison c : sequence) {
-			Table.insertValue(ps, i++, this.getValue(startIndex));
+			if(this.getValue(i) != null) {
+				Table.insertValue(ps, i, this.getValue(i++));
+			}
 		}
 		return this;
 	}
