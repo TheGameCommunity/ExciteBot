@@ -20,7 +20,7 @@ import com.gamebuster19901.excite.bot.user.DiscordUser;
 import com.gamebuster19901.excite.bot.user.UnknownDiscordUser;
 
 import static com.gamebuster19901.excite.bot.database.Table.PLAYERS;
-import static com.gamebuster19901.excite.bot.database.Comparator.EQUALS;
+import static com.gamebuster19901.excite.bot.database.Comparator.*;
 import static com.gamebuster19901.excite.bot.database.Column.*;
 
 import net.dv8tion.jda.api.entities.User;
@@ -369,11 +369,52 @@ public class Player implements Banee {
 		return UnknownPlayer.INSTANCE;
 	}
 	
+	@Deprecated
 	@SuppressWarnings("rawtypes")
 	public static Player[] getPlayersByName(MessageContext context, String name) {
 		HashSet<Player> players = new HashSet<Player>();
 		try {
 			ResultSet rs = Table.selectAllFromWhere(context, PLAYERS, new Comparison(PLAYER_NAME, EQUALS, name));
+			while(rs.next()) {
+				players.add(new Player(rs));
+			}
+		} catch (SQLException e) {
+			throw new IOError(e);
+		}
+		return players.toArray(new Player[]{});
+	}
+	
+	public static Player[] getPlayersByAnyIdentifier(MessageContext context, String identifier) {
+		HashSet<Player> players = new HashSet<Player>();
+		try {
+			ResultSet rs = Table.selectAllFromWhere(context, PLAYERS, 
+				new Comparison(PLAYER_NAME, EQUALS, identifier)
+				.or(
+				new Comparison(PLAYER_ID, EQUALS, identifier))
+				.or(
+				new Comparison(FRIEND_CODE, EQUALS, identifier)		
+				));
+			while(rs.next()) {
+				players.add(new Player(rs));
+			}
+		} catch (SQLException e) {
+			throw new IOError(e);
+		}
+		return players.toArray(new Player[]{});
+	}
+	
+	public static Player[] getUnclaimedPlayersByAnyIdentifier(MessageContext context, String identifier) {
+		HashSet<Player> players = new HashSet<Player>();
+		try {
+			ResultSet rs = Table.selectAllFromWhere(context, PLAYERS, 
+				new Comparison(PLAYER_NAME, EQUALS, identifier)
+				.openBeginning().or(
+				new Comparison(PLAYER_ID, EQUALS, identifier))
+				.or(
+				new Comparison(FRIEND_CODE, EQUALS, identifier))
+				.close().and(
+				new Comparison(DISCORD_ID, IS_NULL))
+				);
 			while(rs.next()) {
 				players.add(new Player(rs));
 			}
