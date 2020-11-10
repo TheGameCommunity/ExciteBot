@@ -32,7 +32,6 @@ public class Commands {
 		HelpCommand.register(dispatcher);
 //		BanlistCommand.register(dispatcher);
 		RestartCommand.register(dispatcher);
-//		BanInfoCommand.register(dispatcher);
 		PlayersCommand.register(dispatcher);
 		IconDumpCommand.register(dispatcher);
 //		VideoCommand.register(dispatcher);
