@@ -42,15 +42,12 @@ public enum Table {
 	}
 	
 	@SuppressWarnings("rawtypes")
-	public static ResultSet selectColumnsFromWhere(MessageContext context, Column columns, Table table, Column where, Comparator comparator, Object comparee) throws SQLException {
+	public static ResultSet selectColumnsFromWhere(MessageContext context, Column columns, Table table, Comparison comparison) throws SQLException {
 		PreparedStatement st;
-		if(comparee != null) {
-			st = context.getConnection().prepareStatement("SELECT " + columns + " FROM " + table + " WHERE " + where + comparator + " ?");
-			insertValue(st, 1, comparee);
-		}
-		else {
-			st = context.getConnection().prepareStatement("SELECT " + columns + " FROM " + table + " WHERE " + where + comparator);
-		}
+		st = context.getConnection().prepareStatement("SELECT " + columns + " FROM " + table + " WHERE " + comparison);
+		System.out.println(st);
+		comparison.insertValues(st);
+		System.out.println(st);
 		
 		try {
 			return st.executeQuery();
@@ -66,15 +63,15 @@ public enum Table {
 	}
 	
 	@SuppressWarnings("rawtypes")
-	public static ResultSet selectAllFromWhere(MessageContext context, Table table, Column whereColumn, Comparator comparator, Object comparee) throws SQLException {
-		return selectColumnsFromWhere(context, ALL_COLUMNS, table, whereColumn, comparator, comparee);
+	public static ResultSet selectAllFromWhere(MessageContext context, Table table, Comparison comparison) throws SQLException {
+		return selectColumnsFromWhere(context, ALL_COLUMNS, table, comparison);
 	}
 	
 	@SuppressWarnings("rawtypes")
-	public static ResultSet selectAllFromJoinedUsingWhere(MessageContext context, Table mainTable, Table otherTable, Column usingColumn, Column whereColumn, Comparator comparator, Object comparee) {
+	public static ResultSet selectAllFromJoinedUsingWhere(MessageContext context, Table mainTable, Table otherTable, Column usingColumn, Comparison comparison) {
 		try {
-			PreparedStatement st = context.getConnection().prepareStatement("SELECT * FROM " + mainTable + " JOIN " + otherTable + " USING (" + usingColumn + ") WHERE " + whereColumn + comparator + " ?");
-			Table.insertValue(st, 1, comparee);
+			PreparedStatement st = context.getConnection().prepareStatement("SELECT * FROM " + mainTable + " JOIN " + otherTable + " USING (" + usingColumn + ") WHERE " + comparison);
+			comparison.insertValues(st);
 			context.sendMessage(st.toString());
 			return st.executeQuery();
 		} catch (SQLException e) {
@@ -83,17 +80,11 @@ public enum Table {
 	}
 	
 	@SuppressWarnings({ "rawtypes", "deprecation" })
-	public static boolean existsWhere(MessageContext context, Table table, Column whereColumn, Comparator comparator, Object comparee) {
+	public static boolean existsWhere(MessageContext context, Table table, Comparison comparison) {
 		PreparedStatement st = null;
 		try {
-			if(comparee != null) {
-				st = context.getConnection().prepareStatement("SELECT EXISTS(SELECT 1 FROM " + table + " WHERE ? " + comparator + " ?");
-				insertValue(st, 2, comparee);
-			}
-			else {
-				st = context.getConnection().prepareStatement("SELECT EXISTS(SELECT 1 FROM " + table + " WHERE ? " + comparator);
-			}
-			st.setString(1, whereColumn);
+			st = context.getConnection().prepareStatement("SELECT EXISTS(SELECT 1 FROM " + table + " WHERE " + comparison);
+			comparison.insertValues(st);
 			ResultSet rs = st.executeQuery();
 			rs.next();
 			return rs.getBoolean(1);
@@ -106,20 +97,20 @@ public enum Table {
 	}
 	
 	@SuppressWarnings("rawtypes")
-	public static void updateWhere(MessageContext context, Table table, Column parameter, Object value, Column whereColumn, Comparator comparator, Object comparee) throws SQLException {
-		PreparedStatement st = context.getConnection().prepareStatement("UPDATE " + table + " SET " + parameter + " = ? WHERE " + whereColumn + comparator + " ?");
+	public static void updateWhere(MessageContext context, Table table, Column parameter, Object value, Comparison comparison) throws SQLException {
+		PreparedStatement st = context.getConnection().prepareStatement("UPDATE " + table + " SET " + parameter + " = ? WHERE " + comparison);
 		insertValue(st, 1, value);
-		insertValue(st, 2, comparee);
+		comparison.insertValues(st, 2);
 		st.execute();
 		System.out.println(st);
 	}
 	
 	@SuppressWarnings("rawtypes")
-	public static void deleteWhere(MessageContext context, Table table, Column column, Comparator comparator, Object comparee) {
+	public static void deleteWhere(MessageContext context, Table table, Comparison comparison) {
 		PreparedStatement st = null;
 		try {
-			st = context.getConnection().prepareStatement("DELETE FROM " + table + " WHERE " + column + comparator + " ?");
-			insertValue(st, 1, comparee);
+			st = context.getConnection().prepareStatement("DELETE FROM " + table + " WHERE " + comparison);
+			comparison.insertValues(st);
 			st.execute();
 		} catch (SQLException e) {
 			if(st != null) {
@@ -152,7 +143,7 @@ public enum Table {
 	@SuppressWarnings("rawtypes")
 	public static void removeAdmin(MessageContext demoter, DiscordUser user) {
 		try {
-			deleteWhere(demoter, Table.ADMINS, Column.DISCORD_ID, Comparator.EQUALS, user.getID());
+			deleteWhere(demoter, Table.ADMINS, new Comparison(Column.DISCORD_ID, Comparator.EQUALS, user.getID()));
 			revokeAdminDBPermissions(demoter, user.getMySQLUsername());
 			String botName = Main.discordBot.getSelfUser().getAsMention();
 			user.sendMessage("You are no longer an administrator for " + botName);
@@ -187,7 +178,7 @@ public enum Table {
 	@SuppressWarnings("rawtypes")
 	public static void removeOperator(MessageContext demoter, DiscordUser user) {
 		try {
-			deleteWhere(demoter, Table.OPERATORS, Column.DISCORD_ID, Comparator.EQUALS, user.getID());
+			deleteWhere(demoter, Table.OPERATORS, new Comparison(Column.DISCORD_ID, Comparator.EQUALS, user.getID()));
 			revokeAdminDBPermissions(ConsoleContext.INSTANCE, user.getMySQLUsername());
 			String botName = Main.discordBot.getSelfUser().getAsMention();
 			user.sendMessage("You are no longer an operator for " + botName);
@@ -271,6 +262,9 @@ public enum Table {
 	@SuppressWarnings({ "rawtypes", "deprecation" })
 	public static void insertValue(PreparedStatement st, int index, Object value) throws SQLException {
 		Class clazz = value.getClass();
+		if(clazz == Comparison.class) {
+			insertValue(st, index, ((Comparison) value).getValue(index));
+		}
 		if(clazz.isPrimitive() || value instanceof Number || value instanceof Boolean || value instanceof Character) {
 			if (clazz == long.class || clazz == Long.class) {
 				st.setLong(index, (long)value);
@@ -300,5 +294,9 @@ public enum Table {
 		else {
 			st.setString(index, value.toString());
 		}
+	}
+	
+	public static String makeSafe(String string) {
+		return string.replace("%", "\\%").replace("_", "\\_").replace("\\", "\\\\");
 	}
 }

@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import com.gamebuster19901.excite.bot.audit.Audit;
 import com.gamebuster19901.excite.bot.audit.AuditType;
 import com.gamebuster19901.excite.bot.command.MessageContext;
+import com.gamebuster19901.excite.bot.database.Comparison;
 import com.gamebuster19901.excite.bot.database.Insertion;
 import com.gamebuster19901.excite.bot.database.Row;
 import com.gamebuster19901.excite.bot.database.Table;
@@ -111,7 +112,7 @@ public class Ban extends Audit{
 			throw new AssertionError();
 		}
 		try {
-			ResultSet results = Table.selectAllFromJoinedUsingWhere(context, AUDITS, AUDIT_BANS, AUDIT_ID, BANNED_ID, EQUALS, id);
+			ResultSet results = Table.selectAllFromJoinedUsingWhere(context, AUDITS, AUDIT_BANS, AUDIT_ID, new Comparison(BANNED_ID, EQUALS, id));
 			ArrayList<Ban> bans = new ArrayList<Ban>();
 			while(results.next()) {
 				bans.add(new Ban(new Row(results, false)));
@@ -130,7 +131,7 @@ public class Ban extends Audit{
 	@SuppressWarnings("rawtypes")
 	public static Ban getBanById(MessageContext context, long id) throws IllegalArgumentException {
 		try {
-			return new Ban(new Row(Table.selectAllFromJoinedUsingWhere(context, AUDITS, AUDIT_BANS, AUDIT_ID, AUDIT_ID, EQUALS, id)));
+			return new Ban(new Row(Table.selectAllFromJoinedUsingWhere(context, AUDITS, AUDIT_BANS, AUDIT_ID, new Comparison(AUDIT_ID, EQUALS, id))));
 		} catch (SQLException e) {
 			throw new IOError(e);
 		}

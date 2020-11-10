@@ -9,6 +9,7 @@ import static com.gamebuster19901.excite.bot.database.Comparator.EQUALS;
 import com.gamebuster19901.excite.Main;
 import com.gamebuster19901.excite.bot.command.ConsoleContext;
 import com.gamebuster19901.excite.bot.command.MessageContext;
+import com.gamebuster19901.excite.bot.database.Comparison;
 import com.gamebuster19901.excite.bot.database.Table;
 import com.gamebuster19901.excite.bot.database.sql.PreparedStatement;
 import com.gamebuster19901.excite.bot.database.sql.ResultSet;
@@ -45,11 +46,9 @@ public class DiscordServer {
 	
 	@SuppressWarnings({ "rawtypes", "resource" })
 	public static DiscordServer addServer(MessageContext context, long guildId, String name) throws SQLException {
-		PreparedStatement ps = context.getConnection().prepareStatement("INSERT INTO " + DISCORD_SERVERS + " (?, ?) VALUES (?, ?)");
-		ps.setString(1, SERVER_ID);
-		ps.setString(2, SERVER_NAME);
-		ps.setLong(3, guildId);
-		ps.setString(4, name);
+		PreparedStatement ps = context.getConnection().prepareStatement("INSERT INTO " + DISCORD_SERVERS + " (" + SERVER_ID + ", " + SERVER_NAME + ") VALUES (?, ?)");
+		ps.setLong(1, guildId);
+		ps.setString(2, name);
 		ps.execute();
 		return getServer(context, guildId);
 	}
@@ -73,7 +72,7 @@ public class DiscordServer {
 	@SuppressWarnings("deprecation")
 	public String getName() {
 		try {
-			ResultSet result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, SERVER_NAME, DISCORD_SERVERS, SERVER_ID, EQUALS, getId());
+			ResultSet result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, SERVER_NAME, DISCORD_SERVERS, new Comparison(SERVER_ID, EQUALS, getId()));
 			if(result.next()) {
 				return result.getString(1);
 			}
@@ -87,7 +86,7 @@ public class DiscordServer {
 	
 	public void setName(String name) {
 		try {
-			Table.updateWhere(ConsoleContext.INSTANCE, DISCORD_SERVERS, SERVER_NAME, name, SERVER_ID, EQUALS, getId());
+			Table.updateWhere(ConsoleContext.INSTANCE, DISCORD_SERVERS, SERVER_NAME, name, new Comparison(SERVER_ID, EQUALS, getId()));
 		} catch (SQLException e) {
 			throw new IOError(e);
 		}
@@ -96,7 +95,7 @@ public class DiscordServer {
 	@SuppressWarnings("deprecation")
 	public String getPrefix() {
 		try {
-			ResultSet result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, SERVER_PREFIX, DISCORD_SERVERS, SERVER_ID, EQUALS, getId());
+			ResultSet result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, SERVER_PREFIX, DISCORD_SERVERS, new Comparison(SERVER_ID, EQUALS, getId()));
 			if(result.next()) {
 				return result.getString(1);
 			}
@@ -110,7 +109,7 @@ public class DiscordServer {
 	
 	public void setPrefix(String prefix) {
 		try {
-			Table.updateWhere(ConsoleContext.INSTANCE, DISCORD_SERVERS, SERVER_NAME, prefix, SERVER_ID, EQUALS, getId());
+			Table.updateWhere(ConsoleContext.INSTANCE, DISCORD_SERVERS, SERVER_NAME, prefix, new Comparison(SERVER_ID, EQUALS, getId()));
 		} catch (SQLException e) {
 			throw new IOError(e);
 		}
@@ -140,7 +139,7 @@ public class DiscordServer {
 	@SuppressWarnings("rawtypes")
 	public static DiscordServer getServer(MessageContext context, long serverId) {
 		try {
-			ResultSet results = Table.selectAllFromWhere(context, DISCORD_SERVERS, SERVER_ID, EQUALS, serverId);
+			ResultSet results = Table.selectAllFromWhere(context, DISCORD_SERVERS, new Comparison(SERVER_ID, EQUALS, serverId));
 			
 			if(results.next()) {
 				return new DiscordServer(results.getLong(SERVER_ID));

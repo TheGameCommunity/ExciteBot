@@ -69,7 +69,7 @@ public class BanCommand {
 	
 	@SuppressWarnings("rawtypes")
 	private static DiscordUser getDiscordUser(MessageContext context, String username, String discriminator) {
-		DiscordUser user = DiscordUser.getDiscordUser(context, username + "#" + discriminator);
+		DiscordUser user = DiscordUser.getDiscordUser(context, username, discriminator);
 		if(user == null) {
 			user = new UnknownDiscordUser(username, discriminator);
 		}

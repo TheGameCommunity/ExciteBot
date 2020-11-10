@@ -20,6 +20,7 @@ import com.gamebuster19901.excite.bot.audit.ban.Banee;
 import com.gamebuster19901.excite.bot.command.ConsoleContext;
 import com.gamebuster19901.excite.bot.command.MessageContext;
 import com.gamebuster19901.excite.bot.database.sql.DatabaseConnection;
+import com.gamebuster19901.excite.bot.database.Comparison;
 import com.gamebuster19901.excite.bot.database.Table;
 import com.gamebuster19901.excite.bot.database.sql.PreparedStatement;
 import com.gamebuster19901.excite.bot.database.sql.ResultSet;
@@ -27,6 +28,7 @@ import com.gamebuster19901.excite.util.StacktraceUtil;
 import com.gamebuster19901.excite.util.TimeUtils;
 
 import static com.gamebuster19901.excite.bot.database.Comparator.EQUALS;
+import static com.gamebuster19901.excite.bot.database.Comparator.LIKE;
 import static com.gamebuster19901.excite.bot.database.Table.DISCORD_USERS;
 import static com.gamebuster19901.excite.bot.database.Table.PLAYERS;
 
@@ -128,7 +130,7 @@ public class DiscordUser implements Banee {
 	@SuppressWarnings("rawtypes")
 	public Set<Player> getProfiles(MessageContext context) throws SQLException {
 		HashSet<Player> players = new HashSet<Player>();
-		ResultSet results = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, PLAYER_ID, PLAYERS, PLAYER_ID, EQUALS, getID());
+		ResultSet results = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, PLAYER_ID, PLAYERS, new Comparison(PLAYER_ID, EQUALS, getID()));
 		while(results.next()) {
 			players.add(Player.getPlayerByID(context, results.getInt(1)));
 		}
@@ -149,7 +151,7 @@ public class DiscordUser implements Banee {
 			if(isOperator()) {
 				return true;
 			}
-			ResultSet result = Table.selectAllFromWhere(ConsoleContext.INSTANCE, Table.ADMINS, DISCORD_ID, EQUALS, getID());
+			ResultSet result = Table.selectAllFromWhere(ConsoleContext.INSTANCE, Table.ADMINS, new Comparison(DISCORD_ID, EQUALS, getID()));
 			return result.next();
 		}
 		catch(SQLException e) {
@@ -159,7 +161,7 @@ public class DiscordUser implements Banee {
 	
 	public boolean isOperator() {
 		try {
-			ResultSet result = Table.selectAllFromWhere(ConsoleContext.INSTANCE, Table.OPERATORS, DISCORD_ID, EQUALS, getID());
+			ResultSet result = Table.selectAllFromWhere(ConsoleContext.INSTANCE, Table.OPERATORS, new Comparison(DISCORD_ID, EQUALS, getID()));
 			return result.next();
 		}
 		catch(SQLException e) {
@@ -203,7 +205,7 @@ public class DiscordUser implements Banee {
 	
 	public int getNotifyThreshold() {
 		try {
-			ResultSet result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, THRESHOLD, DISCORD_USERS, DISCORD_ID, EQUALS, getID());
+			ResultSet result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, THRESHOLD, DISCORD_USERS, new Comparison(DISCORD_ID, EQUALS, getID()));
 			if(result.next()) {
 				return result.getInt(1);
 			}
@@ -218,7 +220,7 @@ public class DiscordUser implements Banee {
 	public void setNotifyThreshold(int threshold) {
 		if(threshold > 0 || threshold == -1) {
 			try {
-				Table.updateWhere(ConsoleContext.INSTANCE, DISCORD_USERS, THRESHOLD, threshold, DISCORD_ID, EQUALS, getID());
+				Table.updateWhere(ConsoleContext.INSTANCE, DISCORD_USERS, THRESHOLD, threshold, new Comparison(DISCORD_ID, EQUALS, getID()));
 			} catch (SQLException e) {
 				throw new IOError(e);
 			}
@@ -230,7 +232,7 @@ public class DiscordUser implements Banee {
 	
 	public Duration getNotifyFrequency() {
 		try {
-			ResultSet result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, FREQUENCY, DISCORD_USERS, DISCORD_ID, EQUALS, getID());
+			ResultSet result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, FREQUENCY, DISCORD_USERS, new Comparison(DISCORD_ID, EQUALS, getID()));
 			if(result.next()) {
 				return Duration.parse(result.getString(1));
 			}
@@ -246,7 +248,7 @@ public class DiscordUser implements Banee {
 		Duration min = Duration.ofMinutes(5);
 		if(frequency.compareTo(min) > -1) {
 			try {
-				Table.updateWhere(ConsoleContext.INSTANCE, DISCORD_USERS, FREQUENCY, frequency, DISCORD_ID, EQUALS, getID());
+				Table.updateWhere(ConsoleContext.INSTANCE, DISCORD_USERS, FREQUENCY, frequency, new Comparison(DISCORD_ID, EQUALS, getID()));
 			} catch (SQLException e) {
 				throw new IOError(e);
 			}
@@ -258,7 +260,7 @@ public class DiscordUser implements Banee {
 	
 	public boolean isNotifyingContinuously() {
 		try {
-			ResultSet result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, NOTIFY_CONTINUOUSLY, DISCORD_USERS, DISCORD_ID, EQUALS, getID());
+			ResultSet result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, NOTIFY_CONTINUOUSLY, DISCORD_USERS, new Comparison(DISCORD_ID, EQUALS, getID()));
 			if(result.next()) {
 				return result.getBoolean(1);
 			}
@@ -271,7 +273,7 @@ public class DiscordUser implements Banee {
 	public void setNotifyContinuously(boolean continuous) {
 		String value = continuous ? "b'1'" : "b'0'";
 		try {
-			Table.updateWhere(ConsoleContext.INSTANCE, DISCORD_USERS, NOTIFY_CONTINUOUSLY, value, DISCORD_ID, EQUALS, getID());
+			Table.updateWhere(ConsoleContext.INSTANCE, DISCORD_USERS, NOTIFY_CONTINUOUSLY, value, new Comparison(DISCORD_ID, EQUALS, getID()));
 			if(continuous) {
 				setDippedBelowThreshold(false);
 			}
@@ -282,7 +284,7 @@ public class DiscordUser implements Banee {
 	
 	public Instant getLastNotification() {
 		try {
-			ResultSet result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, LAST_NOTIFICATION, DISCORD_USERS, DISCORD_ID, EQUALS, getID());
+			ResultSet result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, LAST_NOTIFICATION, DISCORD_USERS, new Comparison(DISCORD_ID, EQUALS, getID()));
 			if(result.next()) {
 				return TimeUtils.parseInstant(result.getString(1));
 			}
@@ -298,7 +300,7 @@ public class DiscordUser implements Banee {
 	
 	public void setLastNotification(Instant instant) {
 		try {
-			Table.updateWhere(ConsoleContext.INSTANCE, DISCORD_USERS, LAST_NOTIFICATION, instant.toString(), DISCORD_ID, EQUALS, getID());
+			Table.updateWhere(ConsoleContext.INSTANCE, DISCORD_USERS, LAST_NOTIFICATION, instant.toString(), new Comparison(DISCORD_ID, EQUALS, getID()));
 		} catch (SQLException e) {
 			throw new IOError(e);
 		}
@@ -306,7 +308,7 @@ public class DiscordUser implements Banee {
 	
 	public boolean dippedBelowThreshold() {
 		try {
-			ResultSet result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, BELOW_THRESHOLD, DISCORD_USERS, DISCORD_ID, EQUALS, getID());
+			ResultSet result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, BELOW_THRESHOLD, DISCORD_USERS, new Comparison(DISCORD_ID, EQUALS, getID()));
 			if(result.next()) {
 				return result.getBoolean(1);
 			}
@@ -318,7 +320,7 @@ public class DiscordUser implements Banee {
 	
 	public void setDippedBelowThreshold(boolean dippedBelow) {
 		try {
-			Table.updateWhere(ConsoleContext.INSTANCE, DISCORD_USERS, BELOW_THRESHOLD, dippedBelow, DISCORD_ID, EQUALS, getID());
+			Table.updateWhere(ConsoleContext.INSTANCE, DISCORD_USERS, BELOW_THRESHOLD, dippedBelow, new Comparison(DISCORD_ID, EQUALS, getID()));
 		} catch (SQLException e) {
 			throw new IOError(e);
 		}
@@ -441,7 +443,7 @@ public class DiscordUser implements Banee {
 	@SuppressWarnings("rawtypes")
 	public static final DiscordUser getDiscordUser(MessageContext context, long id) {
 		try {
-			ResultSet results = Table.selectAllFromWhere(context, DISCORD_USERS, DISCORD_ID, EQUALS, id);
+			ResultSet results = Table.selectAllFromWhere(context, DISCORD_USERS, new Comparison(DISCORD_ID, EQUALS, id));
 			
 			if(results.next()) {
 				return new DiscordUser(results.getLong(DISCORD_ID.toString()));
@@ -488,12 +490,11 @@ public class DiscordUser implements Banee {
 		return user;
 	}
 	
-	@SuppressWarnings("rawtypes")
-	public static final DiscordUser getDiscordUser(MessageContext context, String discriminator) {
+	public static final DiscordUser getDiscordUser(MessageContext context, String username) {
 		try {
-			ResultSet results = Table.selectAllFromWhere(context, DISCORD_USERS, DISCORD_NAME, EQUALS, discriminator);
+			ResultSet results = Table.selectAllFromWhere(context, DISCORD_USERS, new Comparison(DISCORD_NAME, EQUALS, username));
 			if(results.next()) {
-				return new DiscordUser(results.getLong(DISCORD_ID.toString()));
+				return new DiscordUser(results.getLong(DISCORD_ID));
 			}
 			return null;
 		} catch (SQLException e) {
@@ -501,15 +502,30 @@ public class DiscordUser implements Banee {
 		}
 	}
 	
-	public static final DiscordUser[] getKnownUsers() {
+	@SuppressWarnings("rawtypes")
+	public static final DiscordUser getDiscordUser(MessageContext context, String username, String discriminator) {
+		try {
+			ResultSet results = Table.selectAllFromWhere(context, DISCORD_USERS, new Comparison(DISCORD_NAME, EQUALS, username + "#" + discriminator));
+			if(results.next()) {
+				return new DiscordUser(results.getLong(DISCORD_ID));
+			}
+			return null;
+		} catch (SQLException e) {
+			throw new IOError(e);
+		}
+	}
+	
+	@SuppressWarnings("rawtypes")
+	public static final DiscordUser[] getDiscordUsersWithUsername(MessageContext context, String username) {
 		try {
 			ArrayList<DiscordUser> users = new ArrayList<DiscordUser>();
-			ResultSet results = Table.selectAllFrom(ConsoleContext.INSTANCE, DISCORD_USERS);
+			ResultSet results = Table.selectAllFromWhere(context, DISCORD_USERS, new Comparison(DISCORD_NAME, LIKE, Table.makeSafe(username) + "____"));
 			while(results.next()) {
 				users.add(new DiscordUser(results));
 			}
 			return users.toArray(new DiscordUser[]{});
-		} catch (SQLException e) {
+		}
+		catch(SQLException e) {
 			throw new IOError(e);
 		}
 	}
