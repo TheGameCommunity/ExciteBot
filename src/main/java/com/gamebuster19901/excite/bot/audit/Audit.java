@@ -7,6 +7,7 @@ import java.sql.SQLException;
 import java.time.Instant;
 import com.gamebuster19901.excite.Main;
 import com.gamebuster19901.excite.bot.command.MessageContext;
+import com.gamebuster19901.excite.bot.database.Comparison;
 import com.gamebuster19901.excite.bot.database.Insertion;
 import com.gamebuster19901.excite.bot.database.Row;
 import com.gamebuster19901.excite.bot.database.Table;
@@ -48,7 +49,7 @@ public class Audit implements Identified{
 			ResultSet results = ps.getGeneratedKeys();
 			results.next();
 			long auditID = results.getLong(GENERATED_KEY);
-			Row row = new Row(Table.selectAllFromWhere(context, AUDITS, AUDIT_ID, EQUALS, auditID));
+			Row row = new Row(Table.selectAllFromWhere(context, AUDITS, new Comparison(AUDIT_ID, EQUALS, auditID)));
 			return new Audit(row, type);
 		} catch (SQLException e) {
 			throw new IOError(e);
@@ -93,7 +94,7 @@ public class Audit implements Identified{
 	@SuppressWarnings("rawtypes")
 	public static Audit getAuditById(MessageContext context, long id) {
 		try {
-			return createAudit(Table.selectAllFromWhere(context, AUDITS, AUDIT_ID, EQUALS, id));
+			return createAudit(Table.selectAllFromWhere(context, AUDITS, new Comparison(AUDIT_ID, EQUALS, id)));
 		} catch (SQLException e) {
 			throw new IOError(e);
 		}
