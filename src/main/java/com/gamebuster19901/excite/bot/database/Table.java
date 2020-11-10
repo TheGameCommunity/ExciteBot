@@ -261,38 +261,43 @@ public enum Table {
 	
 	@SuppressWarnings({ "rawtypes", "deprecation" })
 	public static void insertValue(PreparedStatement st, int index, Object value) throws SQLException {
-		Class clazz = value.getClass();
-		if(clazz == Comparison.class) {
-			insertValue(st, index, ((Comparison) value).getValue(index));
-		}
-		if(clazz.isPrimitive() || value instanceof Number || value instanceof Boolean || value instanceof Character) {
-			if (clazz == long.class || clazz == Long.class) {
-				st.setLong(index, (long)value);
-			}
-			else if(clazz == int.class || clazz == Integer.class) {
-				st.setInt(index, (int)value);
-			}
-			else if (clazz == boolean.class || clazz == Boolean.class) {
-				st.setBoolean(index, (boolean)value);
-			}
-			else if (clazz == double.class || clazz == Double.class) {
-				st.setDouble(index, (double)value);
-			}
-			else if (clazz == float.class || clazz == Float.class) {
-				st.setFloat(index, (float)value);
-			}
-			else if (clazz == short.class || clazz == Short.class) {
-				st.setShort(index, (short)value);
-			}
-			else if (clazz == byte.class || clazz == Byte.class) {
-				st.setShort(index, (byte)value);
-			}
-			else if (clazz == char.class || clazz == Character.class) {
-				st.setString(index, value.toString());
-			}
+		if(value == null) {
+			st.setObject(index, null);
 		}
 		else {
-			st.setString(index, value.toString());
+			Class clazz = value.getClass();
+			if(clazz == Comparison.class) {
+				insertValue(st, index, ((Comparison) value).getValue(index));
+			}
+			if(clazz.isPrimitive() || value instanceof Number || value instanceof Boolean || value instanceof Character) {
+				if (clazz == long.class || clazz == Long.class) {
+					st.setLong(index, (long)value);
+				}
+				else if(clazz == int.class || clazz == Integer.class) {
+					st.setInt(index, (int)value);
+				}
+				else if (clazz == boolean.class || clazz == Boolean.class) {
+					st.setBoolean(index, (boolean)value);
+				}
+				else if (clazz == double.class || clazz == Double.class) {
+					st.setDouble(index, (double)value);
+				}
+				else if (clazz == float.class || clazz == Float.class) {
+					st.setFloat(index, (float)value);
+				}
+				else if (clazz == short.class || clazz == Short.class) {
+					st.setShort(index, (short)value);
+				}
+				else if (clazz == byte.class || clazz == Byte.class) {
+					st.setShort(index, (byte)value);
+				}
+				else if (clazz == char.class || clazz == Character.class) {
+					st.setString(index, value.toString());
+				}
+			}
+			else {
+				st.setString(index, value.toString());
+			}
 		}
 	}
 	
