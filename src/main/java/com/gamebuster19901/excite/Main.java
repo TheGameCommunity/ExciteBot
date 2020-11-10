@@ -125,11 +125,14 @@ public class Main {
 			t.printStackTrace();
 			if(discordBot != null) {
 				discordBot.jda.getPresence().setPresence(OnlineStatus.DO_NOT_DISTURB, Activity.of(ActivityType.DEFAULT, "Bot Crashed"));
-				if(botOwner != null) {
+				if(botOwner != -1) {
 					try {
-						DiscordUser user = DiscordUser.getDiscordUser(ConsoleContext.INSTANCE, botOwner);
-						if(user != null) {
+						DiscordUser user = DiscordUser.getDiscordUserIncludingUnknown(ConsoleContext.INSTANCE, botOwner);
+						if(!(user instanceof UnknownDiscordUser)) {
 							user.sendMessage(StacktraceUtil.getStackTrace(t));
+						}
+						else {
+							CONSOLE.sendMessage(StacktraceUtil.getStackTrace(t));
 						}
 					}
 					catch(Throwable t2) {
