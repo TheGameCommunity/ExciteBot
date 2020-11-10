@@ -28,8 +28,6 @@ public class Ban extends Audit{
 	protected Ban(Row row) {
 		super(row, AuditType.BAN);
 	}
-
-	protected static transient final int DB_VERSION = 1;
 	
 	@SuppressWarnings("rawtypes")
 	public static Ban addBan(MessageContext context, Banee banee) {
