@@ -519,7 +519,7 @@ public class DiscordUser implements Banee {
 	public static final DiscordUser[] getDiscordUsersWithUsername(MessageContext context, String username) {
 		try {
 			ArrayList<DiscordUser> users = new ArrayList<DiscordUser>();
-			ResultSet results = Table.selectAllFromWhere(context, DISCORD_USERS, new Comparison(DISCORD_NAME, LIKE, Table.makeSafe(username) + "____"));
+			ResultSet results = Table.selectAllFromWhere(context, DISCORD_USERS, new Comparison(DISCORD_NAME, LIKE, Table.makeSafe(username) + "_____"));
 			while(results.next()) {
 				users.add(new DiscordUser(results));
 			}
