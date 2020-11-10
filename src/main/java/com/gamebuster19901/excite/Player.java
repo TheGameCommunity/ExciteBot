@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.logging.Logger;
 
 import com.gamebuster19901.excite.bot.server.emote.Emote;
+import com.gamebuster19901.excite.bot.audit.NameChangeAudit;
 import com.gamebuster19901.excite.bot.audit.ban.Ban;
 import com.gamebuster19901.excite.bot.audit.ban.Banee;
 import com.gamebuster19901.excite.bot.command.ConsoleContext;
@@ -209,7 +210,7 @@ public class Player implements Banee {
 	public void setName(String name) throws SQLException {
 		String oldName = getName();
 		if(oldName != null && !oldName.equals(name)) {
-			//Audit.addAudit(new NameChangeAudit(this, name));
+			NameChangeAudit.addNameChange(new MessageContext(this), this, name);
 			Table.updateWhere(ConsoleContext.INSTANCE, PLAYERS, PLAYER_NAME, name, new Comparison(PLAYER_NAME, EQUALS, getName()));
 		}
 	}

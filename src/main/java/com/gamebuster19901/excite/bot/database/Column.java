@@ -12,6 +12,8 @@ public enum Column {
 	ALL_COLUMNS("*", Table.values()),
 	GENERATED_KEY("GENERATED_KEY", Table.values()), //Used for getting generated key
 	DISCORD_ID("DiscordID", ADMINS, DISCORD_USERS, OPERATORS, PLAYERS),
+	PLAYER_ID("playerID", PLAYERS, AUDIT_NAME_CHANGES),
+	FRIEND_CODE("friendCode", PLAYERS, AUDIT_NAME_CHANGES),
 	
 	//AUDITS
 	AUDIT_ID("auditID", AUDITS, AUDIT_BANS, AUDIT_COMMANDS, AUDIT_NAME_CHANGES, AUDIT_PARDONS, AUDIT_PROFILE_DISCOVERIES, AUDIT_RANK_CHANGES),
@@ -27,6 +29,11 @@ public enum Column {
 	BANNED_ID("bannedID", AUDIT_BANS),
 	@Deprecated BANNED_USERNAME("bannedUsername", AUDIT_BANS),
 	BAN_PARDON("pardon", AUDIT_BANS),
+	
+	//NAME CHANGES
+	OLD_PLAYER_NAME("oldName", AUDIT_NAME_CHANGES),
+	NEW_PLAYER_NAME("newName", AUDIT_NAME_CHANGES),
+	
 	
 	//ADMINS
 	
@@ -46,8 +53,6 @@ public enum Column {
 	// OPERATOR
 	
 	//PLAYER
-	PLAYER_ID("playerID", PLAYERS),
-	FRIEND_CODE("friendCode", PLAYERS),
 	PLAYER_NAME("name", PLAYERS),
 	REDACTED("redacted", PLAYERS),
 	LAST_ONLINE("lastOnline", PLAYERS);

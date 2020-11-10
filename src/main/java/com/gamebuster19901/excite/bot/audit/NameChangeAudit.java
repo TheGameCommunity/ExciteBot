@@ -1,65 +1,62 @@
 package com.gamebuster19901.excite.bot.audit;
 
-import java.util.Arrays;
-import java.util.List;
-
-import org.apache.commons.csv.CSVRecord;
+import java.io.IOError;
+import java.sql.SQLException;
 
 import com.gamebuster19901.excite.Player;
+import com.gamebuster19901.excite.bot.command.ConsoleContext;
 import com.gamebuster19901.excite.bot.command.MessageContext;
-import com.gamebuster19901.excite.bot.common.preferences.IntegerPreference;
-import com.gamebuster19901.excite.bot.common.preferences.StringPreference;
+import com.gamebuster19901.excite.bot.database.Comparison;
+import com.gamebuster19901.excite.bot.database.Insertion;
+import com.gamebuster19901.excite.bot.database.Row;
+import com.gamebuster19901.excite.bot.database.Table;
+import com.gamebuster19901.excite.bot.database.sql.PreparedStatement;
+
+import static com.gamebuster19901.excite.bot.database.Column.*;
+import static com.gamebuster19901.excite.bot.database.Table.*;
+import static com.gamebuster19901.excite.bot.database.Comparator.*;
 
 public class NameChangeAudit extends Audit {
 
-	public static transient final int DB_VERSION = 0;
-	
-	StringPreference oldName;
-	StringPreference newName;
-	IntegerPreference pid;
-	StringPreference fc;
+	Audit parentData;
 			
-	public NameChangeAudit(Player player, String newName) {
-		super(getContext(player), getMessage(getContext(player), newName));
-		this.oldName = new StringPreference(player.getName());
-		this.newName = new StringPreference(newName);
-		this.pid = new IntegerPreference(player.getID());
-		this.fc = new StringPreference(player.getFriendCode());
+	protected NameChangeAudit(Row row) {
+		super(row, AuditType.NAME_CHANGE_AUDIT);
 	}
 	
-	public NameChangeAudit() {
-		
+	@SuppressWarnings("rawtypes")
+	public static NameChangeAudit addNameChange(MessageContext context, Player player, String newName) {
+		Audit parent = Audit.addAudit(context,  AuditType.NAME_CHANGE_AUDIT, getMessage(context, newName));
+		String name = player.getName();
+		PreparedStatement st;
+		try {
+			st = Insertion.insertInto(Table.AUDIT_NAME_CHANGES)
+			.setColumns(AUDIT_ID, OLD_PLAYER_NAME, NEW_PLAYER_NAME, PLAYER_ID, FRIEND_CODE)
+			.to(parent.getID(), name, newName, player.getID(), player.getFriendCode())
+			.prepare(context, true);
+			
+			st.execute();
+			
+			NameChangeAudit ret = getNameChangeByAuditID(ConsoleContext.INSTANCE, parent.getID());
+			ret.parentData = parent;
+			return ret;
+		}
+		catch(SQLException e) {
+			throw new IOError(e);
+		}
 	}
 	
-	public static void ChangeName(Player player, String newName) {
-		Audit.addAudit(new NameChangeAudit(player, newName));
+	@SuppressWarnings("rawtypes")
+	public static NameChangeAudit getNameChangeByAuditID(MessageContext context, long auditID) {
+		try {
+			return new NameChangeAudit(new Row(Table.selectAllFromJoinedUsingWhere(context, AUDITS, AUDIT_NAME_CHANGES, AUDIT_ID, new Comparison(AUDIT_ID, EQUALS, auditID))));
+		}
+		catch(SQLException e) {
+			throw new IOError(e);
+		}
 	}
 	
-	@Override
-	public Audit parseAudit(CSVRecord record) {
-		super.parseAudit(record);
-		//0-7 is audit
-		int i = super.getRecordSize();
-		i++; //8 is NameChangeAudit version
-		oldName = new StringPreference(record.get(i++));
-		newName = new StringPreference(record.get(i++));
-		pid = new IntegerPreference(record.get(i++));
-		fc = new StringPreference(record.get(i++));
-		return this;
-	}
-	
-	@Override
-	protected int getRecordSize() {
-		return super.getRecordSize() + 5;
-	}
-	
-	@Override
-	public List<Object> getParameters() {
-		List<Object> params = super.getParameters();
-		params.addAll(Arrays.asList(new Object[] {new Integer(DB_VERSION), oldName, newName, pid, fc}));
-		return params;
-	}
-	
+	@SuppressWarnings("rawtypes")
 	private static String getMessage(MessageContext context, String newName) {
 		return context.getPlayerAuthor().getName() + "(" + context.getPlayerAuthor().getID() + ") changed their name to " + newName; 
 	}
