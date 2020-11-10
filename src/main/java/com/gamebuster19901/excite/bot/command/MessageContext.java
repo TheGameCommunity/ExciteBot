@@ -130,11 +130,8 @@ public class MessageContext<E>{
 	}
 	
 	public long getSenderId() {
-		if(isConsoleMessage()) {
-			return -1;
-		}
 		if(event instanceof DiscordUser) {
-			return getDiscordAuthor().getJDAUser().getIdLong();
+			return getDiscordAuthor().getID();
 		}
 		if(event instanceof GuildMessageReceivedEvent) {
 			return ((GuildMessageReceivedEvent) event).getAuthor().getIdLong();

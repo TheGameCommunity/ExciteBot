@@ -15,10 +15,12 @@ import net.dv8tion.jda.api.entities.User;
 
 public class ConsoleUser extends UnloadedDiscordUser {
 	
+	public static final long CONSOLE_USER_ID = 0;
+	
 	private final String name = "CONSOLE";
 	
 	public ConsoleUser() {
-		super(1);
+		super(CONSOLE_USER_ID);
 	}
 	
 	@Override

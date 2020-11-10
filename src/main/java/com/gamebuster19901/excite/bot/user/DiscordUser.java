@@ -105,9 +105,6 @@ public class DiscordUser implements Banee {
 	
 	@Nullable
 	public User getJDAUser() {
-		if(discordId == -1) {
-			return null;
-		}
 		User user = Main.discordBot.jda.retrieveUserById(discordId).complete();
 		if(user == null) {
 			System.out.println("Could not find JDA user for " + discordId);
