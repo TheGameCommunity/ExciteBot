@@ -6,22 +6,24 @@ CREATE TABLE IF NOT EXISTS `admins` (
   UNIQUE KEY `discord_id_UNIQUE` (`discordID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
 
+
 CREATE TABLE IF NOT EXISTS `audit_bans` (
-  `auditID` bigint NOT NULL,
+  `auditID` bigint unsigned NOT NULL,
   `duration` varchar(45) COLLATE utf8mb4_bin NOT NULL,
   `expireTime` varchar(45) COLLATE utf8mb4_bin NOT NULL,
   `bannedID` bigint unsigned NOT NULL,
   `bannedUsername` varchar(45) COLLATE utf8mb4_bin NOT NULL,
-  `pardon` bigint DEFAULT NULL,
+  `pardon` bigint unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`auditID`),
   UNIQUE KEY `auditID_UNIQUE` (`auditID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
 
-CREATE TABLE IF NOT EXISTS `auditCommand` (
-  `auditID` bigint NOT NULL,
-  `serverName` varchar(45) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
+
+CREATE TABLE IF NOT EXISTS `audit_commands` (
+  `auditID` bigint unsigned NOT NULL,
+  `serverName` varchar(45) COLLATE utf8mb4_bin DEFAULT NULL,
   `serverID` bigint unsigned NOT NULL,
-  `channelName` varchar(45) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
+  `channelName` varchar(45) COLLATE utf8mb4_bin NOT NULL,
   `channelID` bigint unsigned NOT NULL,
   `isGuildMessage` bit(1) NOT NULL,
   `isPrivateMessage` bit(1) NOT NULL,
@@ -32,48 +34,54 @@ CREATE TABLE IF NOT EXISTS `auditCommand` (
   UNIQUE KEY `auditID_UNIQUE` (`auditID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
 
-CREATE TABLE IF NOT EXISTS `auditNameChange` (
-  `auditID` int NOT NULL,
-  `oldName` varchar(8) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
-  `newName` varchar(8) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
+
+CREATE TABLE IF NOT EXISTS `audit_name_changes` (
+  `auditID` bigint unsigned NOT NULL,
+  `oldName` varchar(8) COLLATE utf8mb4_bin NOT NULL,
+  `newName` varchar(8) COLLATE utf8mb4_bin NOT NULL,
   `playerID` int NOT NULL,
-  `friendCode` varchar(14) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
+  `friendCode` varchar(14) COLLATE utf8mb4_bin NOT NULL,
   PRIMARY KEY (`auditID`),
   UNIQUE KEY `auditID_UNIQUE` (`auditID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
 
-CREATE TABLE IF NOT EXISTS `auditPardon` (
-  `auditID` bigint NOT NULL,
-  `banID` bigint NOT NULL,
+
+CREATE TABLE IF NOT EXISTS `audit_pardons` (
+  `auditID` bigint unsigned NOT NULL,
+  `banID` bigint unsigned NOT NULL,
   PRIMARY KEY (`auditID`),
   UNIQUE KEY `auditID_UNIQUE` (`auditID`),
   UNIQUE KEY `banID_UNIQUE` (`banID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
 
-CREATE TABLE IF NOT EXISTS `auditProfileDiscovery` (
-  `auditID` bigint NOT NULL,
+
+CREATE TABLE IF NOT EXISTS `audit_profile_discoveries` (
+  `auditID` bigint unsigned NOT NULL,
   PRIMARY KEY (`auditID`),
   UNIQUE KEY `auditID_UNIQUE` (`auditID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
 
-CREATE TABLE IF NOT EXISTS `auditRankChange` (
-  `auditID` bigint NOT NULL,
-  `promotee` varchar(45) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
+
+CREATE TABLE IF NOT EXISTS `audit_rank_changes` (
+  `auditID` bigint unsigned NOT NULL,
+  `promotee` varchar(45) COLLATE utf8mb4_bin NOT NULL,
   `promoteeDiscordID` bigint unsigned NOT NULL,
   PRIMARY KEY (`auditID`),
   UNIQUE KEY `auditID_UNIQUE` (`auditID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
 
+
 CREATE TABLE IF NOT EXISTS `audits` (
-  `auditID` bigint NOT NULL AUTO_INCREMENT,
-  `type` varchar(45) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
+  `auditID` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `type` varchar(45) COLLATE utf8mb4_bin NOT NULL,
   `issuer` bigint unsigned NOT NULL,
-  `issuerName` varchar(45) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
-  `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_bin,
-  `issued` varchar(45) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
+  `issuerName` varchar(45) COLLATE utf8mb4_bin NOT NULL,
+  `description` text COLLATE utf8mb4_bin,
+  `issued` varchar(45) COLLATE utf8mb4_bin NOT NULL,
   PRIMARY KEY (`auditID`),
   UNIQUE KEY `auditID_UNIQUE` (`auditID`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=92 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
+
 
 
 CREATE TABLE IF NOT EXISTS `discord_servers` (
@@ -88,14 +96,13 @@ CREATE TABLE IF NOT EXISTS `discord_users` (
   `discordID` bigint unsigned NOT NULL,
   `discord_name` char(37) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
   `threshold` int NOT NULL DEFAULT '-1',
-  `frequency` varchar(45) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT 'PT30M',
-  `lastNotification` varchar(45) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL,
+  `frequency` varchar(45) COLLATE utf8mb4_bin NOT NULL DEFAULT 'PT30M',
+  `lastNotification` varchar(45) COLLATE utf8mb4_bin DEFAULT NULL,
   `dippedBelowThreshold` bit(1) NOT NULL DEFAULT b'0',
   `notifyContinuously` bit(1) NOT NULL DEFAULT b'0',
   PRIMARY KEY (`discordID`),
   UNIQUE KEY `discord_id_UNIQUE` (`discordID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
-
 
 CREATE TABLE IF NOT EXISTS `operators` (
   `discordID` bigint unsigned NOT NULL,
@@ -115,6 +122,8 @@ CREATE TABLE IF NOT EXISTS `players` (
   UNIQUE KEY `player_id_UNIQUE` (`playerID`),
   UNIQUE KEY `friendCode_UNIQUE` (`friendCode`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
+
+
 
 CREATE ROLE IF NOT EXISTS Operator;
 REVOKE ALL PRIVILEGES, GRANT OPTION FROM 'Operator';
