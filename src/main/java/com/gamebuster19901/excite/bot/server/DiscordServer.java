@@ -109,7 +109,7 @@ public class DiscordServer {
 	
 	public void setPrefix(String prefix) {
 		try {
-			Table.updateWhere(ConsoleContext.INSTANCE, DISCORD_SERVERS, SERVER_NAME, prefix, new Comparison(SERVER_ID, EQUALS, getId()));
+			Table.updateWhere(ConsoleContext.INSTANCE, DISCORD_SERVERS, SERVER_PREFIX, prefix, new Comparison(SERVER_ID, EQUALS, getId()));
 		} catch (SQLException e) {
 			throw new IOError(e);
 		}
