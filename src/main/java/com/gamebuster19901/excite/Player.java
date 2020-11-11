@@ -35,9 +35,10 @@ public class Player implements Banee {
 	protected static final String VERIFIED = new String("verified");
 	protected static final String BANNED = new String("banned");
 	protected static final String ONLINE = new String("online");
+	protected static final String ONLINE_PRIVATE = new String("private_room");
 	protected static final String OFFLINE = new String("offline");
 	protected static final String HOSTING = new String("hosting");
-	protected static final String RACING = new String("playing");
+	protected static final String HOSTING_PRIVATE = new String("hosting_private_room");
 	protected static final String SEARCHING = new String("searching");
 	protected static final String SPECTATING = new String("spectating");
 	protected static final String FRIENDS_LIST = new String("friend_list");
@@ -50,8 +51,9 @@ public class Player implements Banee {
 	
 	private final int playerID;
 	
-	private transient boolean hosting;
-	private transient String status;
+	private transient int host;
+	private transient String onlineStatus;
+	private transient int connectionStatus;
 	
 	private Player(ResultSet results) throws SQLException {
 		this.playerID = results.getInt(PLAYER_ID);
@@ -88,11 +90,29 @@ public class Player implements Banee {
 			if(isBanned()) {
 				prefix = prefix + Emote.getEmote(BANNED);
 			}
-			if(isHosting()) {
-				prefix = prefix + Emote.getEmote(HOSTING);
+			if(isGlobal()) {
+				if(isSearching()) {
+					prefix = prefix + Emote.getEmote(SEARCHING);
+				}
+				else {
+					if(isHosting()) {
+						prefix = prefix + Emote.getEmote(HOSTING);
+					}
+					else if (!isBanned()){
+						prefix = prefix + Emote.getEmote(ONLINE);
+					}
+				}
 			}
-			else if (!isBanned()){
-				prefix = prefix + Emote.getEmote(ONLINE);
+			else if (isPrivate()){
+				if(isHosting()) {
+					prefix = prefix + Emote.getEmote(HOSTING_PRIVATE);
+				}
+				else if (!isBanned()){
+					prefix = prefix + Emote.getEmote(ONLINE_PRIVATE);
+				}
+			}
+			else {
+				prefix = prefix + Emote.getEmote(FRIENDS_LIST);
 			}
 		}
 		else {
@@ -142,14 +162,32 @@ public class Player implements Banee {
 		String prefix = "";
 		String suffix = "";
 		if(isOnline()) {
-			if(isBanned()) {
-				prefix = prefix + Emote.getEmote(BANNED);
+			if(isGlobal()) {
+				if(isBanned()) {
+					prefix = prefix + Emote.getEmote(BANNED);
+				}
+				if(isSearching()) {
+					prefix = prefix + Emote.getEmote(SEARCHING);
+				}
+				else {
+					if(isHosting()) {
+						prefix = prefix + Emote.getEmote(HOSTING);
+					}
+					else if (!isBanned()){
+						prefix = prefix + Emote.getEmote(ONLINE);
+					}
+				}
 			}
-			if(isHosting()) {
-				prefix = prefix + Emote.getEmote(HOSTING);
-			}
-			else if (!isBanned()){
-				prefix = prefix + Emote.getEmote(ONLINE);
+			else if (isPrivate()){
+				if(isBanned()) {
+					prefix = prefix + Emote.getEmote(BANNED);
+				}
+				if(isHosting()) {
+					prefix = prefix + Emote.getEmote(HOSTING_PRIVATE);
+				}
+				else if (!isBanned()){
+					prefix = prefix + Emote.getEmote(ONLINE_PRIVATE);
+				}
 			}
 		}
 		else {
@@ -217,8 +255,12 @@ public class Player implements Banee {
 		}
 	}
 	
-	public void setStatus(String status) {
-		this.status = status;
+	public void setOnlineStatus(String status) {
+		this.onlineStatus = status;
+	}
+	
+	public void setConnectionStatus(int status) {
+		this.connectionStatus = status;
 	}
 	
 	public String getFriendCode() {
@@ -284,19 +326,31 @@ public class Player implements Banee {
 	}
 	
 	public boolean isOnline() {
-		return Wiimmfi.getOnlinePlayers().contains(this);
+		return onlineStatus.contains("o");
 	}
 	
 	public boolean isHosting() {
-		return hosting;
+		return host == 2;
 	}
 	
-	public void setIsHosting(boolean hosting) {
-		this.hosting = hosting;
+	public boolean isGlobal() {
+		return onlineStatus.contains("G");
+	}
+	
+	public boolean isPrivate() {
+		return onlineStatus.contains("g");
+	}
+	
+	public boolean isSearching() {
+		return onlineStatus.contains("S") && !isHosting() ;
+	}
+	
+	public void setHost(int host) {
+		this.host = host;
 	}
 	
 	public String getStatus() {
-		return status;
+		return onlineStatus;
 	}
 	
 	@SuppressWarnings("deprecation")

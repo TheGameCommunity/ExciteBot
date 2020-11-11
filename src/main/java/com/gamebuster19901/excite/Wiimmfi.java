@@ -97,14 +97,12 @@ public class Wiimmfi {
 				for(Element e : playerEntries) {
 					
 					String name = parseLine(e.html(), 10);
-					boolean hosting = false;
+					int hosting = 0;
 					String hostingString = parseLine(e.html(), 4);
 					if(!hostingString.equals("<tdclass=\"dbnull\">—")) {
-						hosting = Integer.parseInt(parseLine(e.html(), 4)) != 0;
+						hosting = Integer.parseInt(parseLine(e.html(), 4));
 					}
-					String status = parseLine(e.html(), 7);
-					
-					hosting = !status.equals("o") && hosting;
+					String status = parseLine(e.html(), 6);
 					
 					int playerId = Integer.parseInt(parseLine(e.html(), 1));
 					
@@ -115,8 +113,8 @@ public class Wiimmfi {
 					}
 					else {
 						player.setName(name);
-						player.setStatus(status);
-						player.setIsHosting(hosting);
+						player.setOnlineStatus(status);
+						player.setHost(hosting);
 					}
 					onlinePlayers.add(player);
 				}
