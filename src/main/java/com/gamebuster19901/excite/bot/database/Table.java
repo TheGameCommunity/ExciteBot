@@ -100,9 +100,9 @@ public enum Table {
 	public static void updateWhere(MessageContext context, Table table, Column parameter, Object value, Comparison comparison) throws SQLException {
 		PreparedStatement st = context.getConnection().prepareStatement("UPDATE " + table + " SET " + parameter + " = ? WHERE " + comparison);
 		insertValue(st, 1, value);
+		comparison.offset(1);
 		comparison.insertValues(st, 2);
 		st.execute();
-		System.out.println(st);
 	}
 	
 	@SuppressWarnings("rawtypes")

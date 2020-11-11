@@ -12,6 +12,7 @@ public class Comparison {
 	private final Object value;
 	private String string;
 	private ArrayList<Comparison> sequence = new ArrayList<Comparison>();
+	private int offset;
 	
 	public Comparison(Column column, Comparator comparator, Object value) {
 		this.column = column;
@@ -46,7 +47,12 @@ public class Comparison {
 	}
 	
 	public Object getValue(int index) {
-		return sequence.get(index - 1).getValue();
+		return sequence.get(index - 1 - offset).getValue();
+	}
+	
+	public int offset(int amount) {
+		offset = offset + amount;
+		return offset;
 	}
 	
 	public Comparison or(Comparison comparison) {
@@ -86,6 +92,7 @@ public class Comparison {
 		for(Comparison c : sequence) {
 			if(this.getValue(i) != null) {
 				Table.insertValue(ps, i, this.getValue(i++));
+				System.out.println();
 			}
 		}
 		return this;
