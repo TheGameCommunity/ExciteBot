@@ -26,14 +26,15 @@ public class NameChangeAudit extends Audit {
 	
 	@SuppressWarnings("rawtypes")
 	public static NameChangeAudit addNameChange(MessageContext context, Player player, String newName) {
-		Audit parent = Audit.addAudit(context,  AuditType.NAME_CHANGE_AUDIT, getMessage(context, newName));
+		System.out.println(context + " " + player + " " + newName);
+		Audit parent = Audit.addAudit(ConsoleContext.INSTANCE, context,  AuditType.NAME_CHANGE_AUDIT, getMessage(context, newName));
 		String name = player.getName();
 		PreparedStatement st;
 		try {
 			st = Insertion.insertInto(Table.AUDIT_NAME_CHANGES)
 			.setColumns(AUDIT_ID, OLD_PLAYER_NAME, NEW_PLAYER_NAME, PLAYER_ID, FRIEND_CODE)
 			.to(parent.getID(), name, newName, player.getID(), player.getFriendCode())
-			.prepare(context, true);
+			.prepare(ConsoleContext.INSTANCE, true);
 			
 			st.execute();
 			
