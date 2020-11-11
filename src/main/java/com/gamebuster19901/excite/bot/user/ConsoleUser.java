@@ -29,6 +29,13 @@ public class ConsoleUser extends UnloadedDiscordUser {
 			connection = new DatabaseConnection();
 		} catch (IOException | SQLException e) {
 			Main.discordBot.setNoDB();
+			if(connection != null) {
+				try {
+					connection.close();
+				} catch (SQLException e1) {
+					e1.printStackTrace();
+				}
+			}
 			throw new IOError(e);
 		}
 	}

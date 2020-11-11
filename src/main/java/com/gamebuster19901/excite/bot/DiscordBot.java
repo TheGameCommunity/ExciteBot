@@ -87,9 +87,11 @@ public class DiscordBot {
 	
 	public void updatePresence() {
 		try {
-			ConsoleUser.getConsoleUser().initConnection();
+			ConsoleUser user = ConsoleUser.getConsoleUser();
+			user.initConnection();
+			user.getConnection().close();
 		}
-		catch(IOError e) {
+		catch(IOError | SQLException e) {
 			setNoDB();
 			return;
 		}
