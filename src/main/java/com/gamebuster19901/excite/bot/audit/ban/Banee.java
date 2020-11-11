@@ -1,9 +1,9 @@
 package com.gamebuster19901.excite.bot.audit.ban;
 
 import com.gamebuster19901.excite.bot.command.MessageContext;
-import com.gamebuster19901.excite.util.Identified;
+import com.gamebuster19901.excite.util.Named;
 
-public interface Banee extends Identified {
+public interface Banee extends Named {
 	
 	public String getName();
 	

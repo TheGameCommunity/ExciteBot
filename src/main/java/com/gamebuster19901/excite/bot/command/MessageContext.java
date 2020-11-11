@@ -9,6 +9,7 @@ import com.gamebuster19901.excite.bot.server.DiscordServer;
 import com.gamebuster19901.excite.bot.user.ConsoleUser;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
 import com.gamebuster19901.excite.util.MessageUtil;
+import com.gamebuster19901.excite.util.Named;
 
 import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
@@ -50,6 +51,15 @@ public class MessageContext<E>{
 	
 	public E getEvent() {
 		return event;
+	}
+	
+	public Named getAuthor() {
+		Named author;
+		author = getDiscordAuthor();
+		if(author == null) {
+			author = getPlayerAuthor();
+		}
+		return author;
 	}
 	
 	public DiscordUser getDiscordAuthor() {

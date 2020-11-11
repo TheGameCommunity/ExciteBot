@@ -8,12 +8,14 @@ import java.util.HashSet;
 import java.util.logging.Logger;
 
 import com.gamebuster19901.excite.bot.server.emote.Emote;
+import com.gamebuster19901.excite.bot.audit.DiscoveryAudit;
 import com.gamebuster19901.excite.bot.audit.NameChangeAudit;
 import com.gamebuster19901.excite.bot.audit.ban.Ban;
 import com.gamebuster19901.excite.bot.audit.ban.Banee;
 import com.gamebuster19901.excite.bot.command.ConsoleContext;
 import com.gamebuster19901.excite.bot.command.MessageContext;
 import com.gamebuster19901.excite.bot.database.Comparison;
+import com.gamebuster19901.excite.bot.database.Insertion;
 import com.gamebuster19901.excite.bot.database.Table;
 import com.gamebuster19901.excite.bot.database.sql.PreparedStatement;
 import com.gamebuster19901.excite.bot.database.sql.ResultSet;
@@ -59,19 +61,19 @@ public class Player implements Banee {
 		this.playerID = playerID;
 	}
 
-	@SuppressWarnings({ "rawtypes", "resource" })
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public static Player addPlayer(MessageContext context, int playerID, String friendCode, String name) throws SQLException {
-		//INSERT INTO `excitebot`.`players` (`playerID`, `friendCode`, `name`) VALUES ('01234', '5678-9012-3456', 'Fake');
-		PreparedStatement ps = context.getConnection().prepareStatement("INSERT INTO ? (?, ?, ?) VALUES (?, ?, ?);");
-		ps.setString(1, Table.PLAYERS.toString());
-		ps.setString(2, PLAYER_ID);
-		ps.setString(3, FRIEND_CODE);
-		ps.setString(4, PLAYER_NAME);
-		ps.setInt(5, playerID);
-		ps.setString(6, friendCode);
-		ps.setString(7, name);
+		PreparedStatement ps = Insertion.insertInto(PLAYERS)
+		.setColumns(PLAYER_ID, FRIEND_CODE, PLAYER_NAME)
+		.to(playerID, friendCode, name)
+		.prepare(ConsoleContext.INSTANCE);
+
 		ps.execute();
-		return getPlayerByID(context, playerID);
+
+		Player ret = getPlayerByID(context, playerID);
+		DiscoveryAudit.addProfileDiscovery(new MessageContext(ret));
+		
+		return ret;
 	}
 	
 	@Override
