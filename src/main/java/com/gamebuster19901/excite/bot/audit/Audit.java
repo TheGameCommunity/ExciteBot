@@ -54,7 +54,7 @@ public class Audit implements Identified{
 		PreparedStatement ps;
 		try {
 			ps = Insertion.insertInto(AUDITS).setColumns(AUDIT_TYPE, ISSUER_ID, ISSUER_NAME, DESCRIPTION, DATE_ISSUED)
-				.to(type, context.getAuthor().getID(), context.getDiscordAuthor().getName(), description, Instant.now())
+				.to(type, context.getAuthor().getID(), context.getAuthor().getName(), description, Instant.now())
 				.prepare(executor, true);
 			ps.execute();
 			ResultSet results = ps.getGeneratedKeys();
