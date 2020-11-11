@@ -141,7 +141,7 @@ public class Wiimmfi {
 	public static HashSet<Player> getIgnoredOnlinePlayers() {
 		HashSet<Player> players = new HashSet<Player>();
 		for(Player player : getOnlinePlayers()) {
-			if(player.isBanned() || player.isBot()) {
+			if(player.isBanned() || player.isBot() || !player.isGlobal()) {
 				players.add(player);
 			}
 		}
@@ -159,7 +159,7 @@ public class Wiimmfi {
 			response = "Players Online: (" + onlinePlayers.length + ")\n\n";
 		}
 		else {
-			response = "Players Online: " + (onlinePlayers.length - ignoredPlayers.length) + " (" + onlinePlayers.length + ")" + "\n\n";
+			response = "Players Online: " + (onlinePlayers.length - ignoredPlayers.length) + " (" + onlinePlayers.length + " ignored)" + "\n\n";
 		}
 		
 		if(full) {
