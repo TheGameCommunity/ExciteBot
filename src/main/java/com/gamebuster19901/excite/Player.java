@@ -84,40 +84,9 @@ public class Player implements Banee {
 		String name = getName();
 		long discordID = getDiscord();
 		
-		String prefix = "";
+		String prefix = calculatePrefix();
 		String suffix = "";
-		if(isOnline()) {
-			if(isBanned()) {
-				prefix = prefix + Emote.getEmote(BANNED);
-			}
-			if(isGlobal()) {
-				if(isSearching()) {
-					prefix = prefix + Emote.getEmote(SEARCHING);
-				}
-				else {
-					if(isHosting()) {
-						prefix = prefix + Emote.getEmote(HOSTING);
-					}
-					else if (!isBanned()){
-						prefix = prefix + Emote.getEmote(ONLINE);
-					}
-				}
-			}
-			else if (isPrivate()){
-				if(isHosting()) {
-					prefix = prefix + Emote.getEmote(HOSTING_PRIVATE);
-				}
-				else if (!isBanned()){
-					prefix = prefix + Emote.getEmote(ONLINE_PRIVATE);
-				}
-			}
-			else {
-				prefix = prefix + Emote.getEmote(FRIENDS_LIST);
-			}
-		}
-		else {
-			prefix = prefix + Emote.getEmote(OFFLINE);
-		}
+
 		if(isBot()) {
 			suffix += BOT;
 		}
@@ -159,40 +128,9 @@ public class Player implements Banee {
 		String name = getName();
 		String friendCode = getFriendCode();
 		
-		String prefix = "";
+		String prefix = calculatePrefix();
 		String suffix = "";
-		if(isOnline()) {
-			if(isGlobal()) {
-				if(isBanned()) {
-					prefix = prefix + Emote.getEmote(BANNED);
-				}
-				if(isSearching()) {
-					prefix = prefix + Emote.getEmote(SEARCHING);
-				}
-				else {
-					if(isHosting()) {
-						prefix = prefix + Emote.getEmote(HOSTING);
-					}
-					else if (!isBanned()){
-						prefix = prefix + Emote.getEmote(ONLINE);
-					}
-				}
-			}
-			else if (isPrivate()){
-				if(isBanned()) {
-					prefix = prefix + Emote.getEmote(BANNED);
-				}
-				if(isHosting()) {
-					prefix = prefix + Emote.getEmote(HOSTING_PRIVATE);
-				}
-				else if (!isBanned()){
-					prefix = prefix + Emote.getEmote(ONLINE_PRIVATE);
-				}
-			}
-		}
-		else {
-			prefix = prefix + Emote.getEmote(OFFLINE);
-		}
+
 		if(isBot()) {
 			suffix += BOT;
 		}
@@ -226,6 +164,43 @@ public class Player implements Banee {
 			suffix = suffix + " ";
 		}
 		return String.format(prefix + " " + name + " - FC❲" + friendCode +  "❳ - PID❲"  + playerID + "❳" + suffix);
+	}
+	
+	private String calculatePrefix() {
+		String prefix = "";
+		if(isOnline()) {
+			if(isBanned()) {
+				prefix = prefix + Emote.getEmote(BANNED);
+			}
+			if(isGlobal()) {
+				if(isSearching()) {
+					prefix = prefix + Emote.getEmote(SEARCHING);
+				}
+				else {
+					if(isHosting()) {
+						prefix = prefix + Emote.getEmote(HOSTING);
+					}
+					else if (!isBanned()){
+						prefix = prefix + Emote.getEmote(ONLINE);
+					}
+				}
+			}
+			else if (isPrivate()){
+				if(isHosting()) {
+					prefix = prefix + Emote.getEmote(HOSTING_PRIVATE);
+				}
+				else if (!isBanned()){
+					prefix = prefix + Emote.getEmote(ONLINE_PRIVATE);
+				}
+			}
+			else {
+				prefix = prefix + Emote.getEmote(FRIENDS_LIST);
+			}
+		}
+		else {
+			prefix = prefix + Emote.getEmote(OFFLINE);
+		}
+		return prefix;
 	}
 	
 	@Override
