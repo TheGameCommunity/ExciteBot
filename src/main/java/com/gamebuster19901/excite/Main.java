@@ -1,6 +1,7 @@
 package com.gamebuster19901.excite;
 
 import java.io.File;
+import java.io.IOError;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.time.Duration;
@@ -61,8 +62,8 @@ public class Main {
 			try {
 				bootAttempts++;
 				discordBot = startDiscordBot(args, wiimmfi);
-				discordBot.setWiimmfi(wiimmfi);
 				discordBot.setLoading();
+				discordBot.setWiimmfi(wiimmfi);
 			} catch (LoginException | IOException | ErrorResponseException e) {
 				LOGGER.log(Level.SEVERE, e, () -> e.getMessage());
 				if(bootAttempts >= 3) {
@@ -71,8 +72,17 @@ public class Main {
 				Thread.sleep(5000);
 			}
 		}
-	
-		CONSOLE = new ConsoleUser();
+		
+		while(CONSOLE == null) {
+			try {
+				CONSOLE = new ConsoleUser();
+			}
+			catch(IOError e) {
+				System.out.println(e);
+				discordBot.setNoDB();
+				Thread.sleep(5000);
+			}
+		}
 		
 		Throwable prevError = null;
 		Instant nextWiimmfiPing = Instant.now();
