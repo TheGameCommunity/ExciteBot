@@ -52,15 +52,21 @@ public class Player implements Banee {
 	private final int playerID;
 	
 	private transient int host;
-	private transient String onlineStatus;
+	private transient String onlineStatus = "";
 	private transient int connectionStatus;
 	
 	private Player(ResultSet results) throws SQLException {
-		this.playerID = results.getInt(PLAYER_ID);
+		this(results.getInt(PLAYER_ID));
 	}
 
 	protected Player(int playerID) {
 		this.playerID = playerID;
+		Player onlinePlayer = Wiimmfi.getOnlinePlayerByID(playerID);
+		if(onlinePlayer != null) {
+			this.host = onlinePlayer.host;
+			this.onlineStatus = onlinePlayer.onlineStatus;
+			this.connectionStatus = onlinePlayer.connectionStatus;
+		}
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })

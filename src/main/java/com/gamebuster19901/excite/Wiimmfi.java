@@ -129,6 +129,15 @@ public class Wiimmfi {
 		return ONLINE_PLAYERS;
 	}
 	
+	public static Player getOnlinePlayerByID(long id) {
+		for(Player player : getOnlinePlayers()) {
+			if(player.getID() == id) {
+				return player;
+			}
+		}
+		return null;
+	}
+	
 	public static HashSet<Player> getIgnoredOnlinePlayers() {
 		HashSet<Player> players = new HashSet<Player>();
 		for(Player player : getOnlinePlayers()) {
