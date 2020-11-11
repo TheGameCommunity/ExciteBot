@@ -92,6 +92,7 @@ public class Main {
 		try {
 			while(true) {
 				try {
+					System.gc();
 					Throwable error = wiimmfi.getError();
 					if(nextWiimmfiPing.isBefore(Instant.now())) {
 						wiimmfi.update();
