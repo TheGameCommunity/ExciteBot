@@ -1,8 +1,6 @@
-CREATE DATABASE  IF NOT EXISTS `excitebot` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_bin */ /*!80016 DEFAULT ENCRYPTION='N' */;
-USE `excitebot`;
 -- MySQL dump 10.13  Distrib 8.0.22, for Linux (x86_64)
 --
--- Host: localhost    Database: excitebot
+-- Host: sql.gamebuster19901.com    Database: excitebot
 -- ------------------------------------------------------
 -- Server version	8.0.22
 
@@ -44,7 +42,6 @@ CREATE TABLE `audit_bans` (
   `expireTime` varchar(45) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
   `bannedID` bigint unsigned NOT NULL,
   `bannedUsername` varchar(45) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
-  `pardon` bigint unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`auditID`),
   UNIQUE KEY `auditID_UNIQUE` (`auditID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
@@ -100,10 +97,10 @@ DROP TABLE IF EXISTS `audit_pardons`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `audit_pardons` (
   `auditID` bigint unsigned NOT NULL,
-  `banID` bigint unsigned NOT NULL,
+  `pardonedAuditID` bigint unsigned NOT NULL,
   PRIMARY KEY (`auditID`),
   UNIQUE KEY `auditID_UNIQUE` (`auditID`),
-  UNIQUE KEY `banID_UNIQUE` (`banID`)
+  UNIQUE KEY `banID_UNIQUE` (`pardonedAuditID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -153,7 +150,7 @@ CREATE TABLE `audits` (
   `issued` varchar(45) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
   PRIMARY KEY (`auditID`),
   UNIQUE KEY `auditID_UNIQUE` (`auditID`)
-) ENGINE=InnoDB AUTO_INCREMENT=94 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=35 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -185,8 +182,8 @@ CREATE TABLE `discord_users` (
   `threshold` int NOT NULL DEFAULT '-1',
   `frequency` varchar(45) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT 'PT30M',
   `lastNotification` varchar(45) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL,
-  `dippedBelowThreshold` bit(1) NOT NULL DEFAULT b'0',
-  `notifyContinuously` bit(1) NOT NULL DEFAULT b'0',
+  `dippedBelowThreshold` tinyint(1) NOT NULL DEFAULT '0',
+  `notifyContinuously` tinyint(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`discordID`),
   UNIQUE KEY `discord_id_UNIQUE` (`discordID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
@@ -217,7 +214,28 @@ CREATE TABLE `players` (
   `playerID` int NOT NULL,
   `friendCode` char(14) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
   `name` varchar(8) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
-  `redacted` bit(1) NOT NULL DEFAULT b'0',
+  `redacted` tinyint(1) NOT NULL DEFAULT '0',
+  `discordID` bigint unsigned DEFAULT NULL,
+  `lastOnline` varchar(45) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT '2020-11-01T02:00:00+5000',
+  `secondsPlayed` bigint NOT NULL DEFAULT '0',
+  PRIMARY KEY (`playerID`),
+  UNIQUE KEY `player_id_UNIQUE` (`playerID`),
+  UNIQUE KEY `friendCode_UNIQUE` (`friendCode`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `players_backup`
+--
+
+DROP TABLE IF EXISTS `players_backup`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `players_backup` (
+  `playerID` int NOT NULL,
+  `friendCode` char(14) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
+  `name` varchar(8) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
+  `redacted` tinyint(1) NOT NULL DEFAULT '0',
   `discordID` bigint unsigned DEFAULT NULL,
   `lastOnline` varchar(45) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT '2020-11-01T02:00:00+5000',
   `secondsPlayed` bigint NOT NULL DEFAULT '0',
@@ -236,4 +254,4 @@ CREATE TABLE `players` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2020-11-10 21:19:52
+-- Dump completed on 2020-11-18  5:34:41
