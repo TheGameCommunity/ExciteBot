@@ -92,7 +92,6 @@ public class Comparison {
 		for(Comparison c : sequence) {
 			if(this.getValue(i) != null) {
 				Table.insertValue(ps, i, this.getValue(i++));
-				System.out.println();
 			}
 		}
 		return this;

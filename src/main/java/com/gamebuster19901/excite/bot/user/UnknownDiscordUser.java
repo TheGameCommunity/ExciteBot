@@ -3,10 +3,10 @@ package com.gamebuster19901.excite.bot.user;
 public class UnknownDiscordUser extends UnloadedDiscordUser {
 
 	private String name = "UNKNOWN_DISCORD_USER";
-	private String discriminator = "-1";
+	private String discriminator = "0";
 	
 	public UnknownDiscordUser(String name, String discriminator) {
-		super(-1);
+		super(0);
 		this.name = name;
 		this.discriminator = discriminator;
 	}
@@ -28,7 +28,12 @@ public class UnknownDiscordUser extends UnloadedDiscordUser {
 		return this.name + "#" + discriminator;
 	}
 	
+	@Override
+	public boolean isKnown() {
+		return false;
+	}
+	
 	public boolean hasID() {
-		return this.getID() != -1;
+		return this.getID() != 0;
 	}
 }

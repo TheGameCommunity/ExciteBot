@@ -55,6 +55,11 @@ public class UnknownPlayer extends Player {
 	public boolean isHosting() {
 		return false;
 	}
+	
+	@Override
+	public boolean isKnown() {
+		return false;
+	}
 
 	@Override
 	public long getDiscord() {
