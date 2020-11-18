@@ -70,11 +70,7 @@ public class CommandAudit extends Audit {
 	
 	@SuppressWarnings("rawtypes")
 	public static CommandAudit getCommandAuditByID(MessageContext context, long auditID) {
-		try {
-			return new CommandAudit(new Row(Table.selectAllFromJoinedUsingWhere(context, AUDITS, AUDIT_COMMANDS, AUDIT_ID, new Comparison(AUDIT_ID, EQUALS, auditID))));
-		} catch (SQLException e) {
-			throw new IOError(e);
-		}
+		return new CommandAudit(Table.selectAllFromJoinedUsingWhere(context, AUDITS, AUDIT_COMMANDS, AUDIT_ID, new Comparison(AUDIT_ID, EQUALS, auditID)).getRow(true));
 	}
 	
 }

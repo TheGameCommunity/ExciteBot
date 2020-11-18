@@ -5,10 +5,14 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.SQLException;
 import java.time.Instant;
+
+import javax.annotation.Nullable;
+
 import com.gamebuster19901.excite.Main;
 import com.gamebuster19901.excite.bot.command.MessageContext;
 import com.gamebuster19901.excite.bot.database.Comparison;
 import com.gamebuster19901.excite.bot.database.Insertion;
+import com.gamebuster19901.excite.bot.database.Result;
 import com.gamebuster19901.excite.bot.database.Row;
 import com.gamebuster19901.excite.bot.database.Table;
 import com.gamebuster19901.excite.bot.database.sql.PreparedStatement;
@@ -28,6 +32,9 @@ public class Audit implements Identified{
 	protected Row row;
 	
 	protected Audit(Row result, AuditType type) {
+		if(result == null) {
+			throw new NullPointerException();
+		}
 		this.auditID = result.getLong(AUDIT_ID);
 		this.type = type;
 		this.row = result;
@@ -60,18 +67,29 @@ public class Audit implements Identified{
 			ResultSet results = ps.getGeneratedKeys();
 			results.next();
 			long auditID = results.getLong(GENERATED_KEY);
-			Row row = new Row(Table.selectAllFromWhere(executor, AUDITS, new Comparison(AUDIT_ID, EQUALS, auditID)));
+			Row row = Table.selectAllFromWhere(executor, AUDITS, new Comparison(AUDIT_ID, EQUALS, auditID)).getRow(true);
 			return new Audit(row, type);
 		} catch (SQLException e) {
 			throw new IOError(e);
 		}
 	}
 	
-	protected static Audit createAudit(ResultSet result) {
-		Class<? extends Audit> auditType = AuditType.getType(result).getType();
+	@Nullable
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	protected static Audit createAudit(MessageContext context, Row row) throws SQLException {
+		AuditType type = AuditType.getType(row);
+		long auditID = row.getLong(AUDIT_ID);
+		Class<? extends Audit> auditTypeClazz = AuditType.getType(row).getType();
 		try {
-			Constructor<? extends Audit> constructor = auditType.getDeclaredConstructor(ResultSet.class);
-			return constructor.newInstance(result);
+			Constructor<? extends Audit> constructor = auditTypeClazz.getDeclaredConstructor(Row.class);
+			constructor.setAccessible(true);
+			Result result = Table.selectAllFromJoinedUsingWhere(new MessageContext(context.getAuthor()), AUDITS, type.getTable(), AUDIT_ID, new Comparison(AUDIT_ID, EQUALS, auditID));
+			result.next();
+			if(result.cursorValid()) {
+				Row resultRow = result.getRow();
+				return constructor.newInstance(resultRow);
+			}
+			return null;
 		} catch (NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
 			throw new AssertionError(e);
 		}
@@ -102,10 +120,11 @@ public class Audit implements Identified{
 		return TimeUtils.parseInstant(row.getString(DATE_ISSUED));
 	}
 	
+	@Nullable
 	@SuppressWarnings("rawtypes")
 	public static Audit getAuditById(MessageContext context, long id) {
 		try {
-			return createAudit(Table.selectAllFromWhere(context, AUDITS, new Comparison(AUDIT_ID, EQUALS, id)));
+			return createAudit(context, Table.selectAllFromWhere(context, AUDITS, new Comparison(AUDIT_ID, EQUALS, id)).getRow(true));
 		} catch (SQLException e) {
 			throw new IOError(e);
 		}

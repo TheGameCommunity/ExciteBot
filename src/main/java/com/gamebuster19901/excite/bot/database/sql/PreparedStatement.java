@@ -21,6 +21,7 @@ import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.Calendar;
 import com.gamebuster19901.excite.bot.database.Column;
+import com.gamebuster19901.excite.bot.database.Result;
 import com.gamebuster19901.excite.bot.database.Table;
 
 public class PreparedStatement implements java.sql.PreparedStatement {
@@ -28,6 +29,9 @@ public class PreparedStatement implements java.sql.PreparedStatement {
 	private final java.sql.PreparedStatement parent;
 	
 	public PreparedStatement(java.sql.PreparedStatement parent) {
+		if(parent == null) {
+			throw new Error();
+		}
 		this.parent = parent;
 	}
 	
@@ -39,6 +43,11 @@ public class PreparedStatement implements java.sql.PreparedStatement {
 		for(int i = offset; i < values.length + 1; i++) {
 			Table.insertValue(this, i, values[i - 1]);
 		}
+	}
+	
+	@Deprecated
+	public java.sql.PreparedStatement getParent() {
+		return parent;
 	}
 	
 	@Override
@@ -58,6 +67,7 @@ public class PreparedStatement implements java.sql.PreparedStatement {
 
 	@Override
 	public void close() throws SQLException {
+		new Exception(this.hashCode() + "").printStackTrace();
 		parent.close();
 	}
 
@@ -267,8 +277,13 @@ public class PreparedStatement implements java.sql.PreparedStatement {
 	}
 
 	@Override
-	public ResultSet executeQuery() throws SQLException {
-		return new ResultSet(parent.executeQuery());
+	@Deprecated
+	public ResultSet executeQuery() throws Error {
+		throw new Error("Unresolved compilation problem: Calling unimplemented method executeQuery(). Use execute() instead.");
+	}
+	
+	public Result query() throws SQLException {
+		return new Result(new ResultSet(parent.executeQuery()));
 	}
 
 	@Override

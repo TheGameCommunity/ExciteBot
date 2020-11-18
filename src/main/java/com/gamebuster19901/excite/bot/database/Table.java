@@ -7,7 +7,6 @@ import com.gamebuster19901.excite.Main;
 import com.gamebuster19901.excite.bot.command.ConsoleContext;
 import com.gamebuster19901.excite.bot.command.MessageContext;
 import com.gamebuster19901.excite.bot.database.sql.PreparedStatement;
-import com.gamebuster19901.excite.bot.database.sql.ResultSet;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
 import com.gamebuster19901.excite.util.StacktraceUtil;
 
@@ -36,21 +35,19 @@ public enum Table {
 	}
 	
 	@SuppressWarnings("rawtypes")
-	public static ResultSet selectColumnsFrom(MessageContext context, Column columns, Table table) throws SQLException {
+	public static Result selectColumnsFrom(MessageContext context, Column columns, Table table) throws SQLException {
 		PreparedStatement st = context.getConnection().prepareStatement("SELECT " + columns + " FROM " + table);
-		return st.executeQuery();
+		return st.query();
 	}
 	
 	@SuppressWarnings("rawtypes")
-	public static ResultSet selectColumnsFromWhere(MessageContext context, Column columns, Table table, Comparison comparison) throws SQLException {
+	public static Result selectColumnsFromWhere(MessageContext context, Column columns, Table table, Comparison comparison) throws SQLException {
 		PreparedStatement st;
 		st = context.getConnection().prepareStatement("SELECT " + columns + " FROM " + table + " WHERE " + comparison);
-		System.out.println(st);
 		comparison.insertValues(st);
-		System.out.println(st);
-		
+
 		try {
-			return st.executeQuery();
+			return st.query();
 		}
 		catch(SQLException e) {
 			throw new SQLException(e);
@@ -58,36 +55,34 @@ public enum Table {
 	}
 	
 	@SuppressWarnings("rawtypes")
-	public static ResultSet selectAllFrom(MessageContext context, Table table) throws SQLException {
+	public static Result selectAllFrom(MessageContext context, Table table) throws SQLException {
 		return selectColumnsFrom(context, ALL_COLUMNS, table);
 	}
 	
 	@SuppressWarnings("rawtypes")
-	public static ResultSet selectAllFromWhere(MessageContext context, Table table, Comparison comparison) throws SQLException {
+	public static Result selectAllFromWhere(MessageContext context, Table table, Comparison comparison) throws SQLException {
 		return selectColumnsFromWhere(context, ALL_COLUMNS, table, comparison);
 	}
 	
 	@SuppressWarnings("rawtypes")
-	public static ResultSet selectAllFromJoinedUsingWhere(MessageContext context, Table mainTable, Table otherTable, Column usingColumn, Comparison comparison) {
+	public static Result selectAllFromJoinedUsingWhere(MessageContext context, Table mainTable, Table otherTable, Column usingColumn, Comparison comparison) {
 		try {
 			PreparedStatement st = context.getConnection().prepareStatement("SELECT * FROM " + mainTable + " JOIN " + otherTable + " USING (" + usingColumn + ") WHERE " + comparison);
 			comparison.insertValues(st);
-			context.sendMessage(st.toString());
-			return st.executeQuery();
+			return st.query();
 		} catch (SQLException e) {
 			throw new IOError(e);
 		}
 	}
 	
-	@SuppressWarnings({ "rawtypes", "deprecation" })
+	@SuppressWarnings({ "rawtypes" })
 	public static boolean existsWhere(MessageContext context, Table table, Comparison comparison) {
 		PreparedStatement st = null;
 		try {
 			st = context.getConnection().prepareStatement("SELECT EXISTS(SELECT 1 FROM " + table + " WHERE " + comparison);
 			comparison.insertValues(st);
-			ResultSet rs = st.executeQuery();
-			rs.next();
-			return rs.getBoolean(1);
+			Result result = st.query();
+			return result.getRowCount() > 0;
 		} catch (SQLException e) {
 			if(st != null) {
 				System.out.println(st);
@@ -250,8 +245,6 @@ public enum Table {
 		insertValue(st2, 1, user);
 		st.execute();
 		st2.execute();
-		System.out.println(st);
-		System.out.println(st2);
 	}
 	
 	@SuppressWarnings("rawtypes")

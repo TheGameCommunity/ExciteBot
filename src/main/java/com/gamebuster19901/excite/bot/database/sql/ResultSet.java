@@ -22,18 +22,28 @@ import java.util.Calendar;
 import java.util.Map;
 
 import com.gamebuster19901.excite.bot.database.Column;
+import com.gamebuster19901.excite.bot.database.Result;
+import com.gamebuster19901.excite.bot.database.TableRetriever;
 
-public class ResultSet implements java.sql.ResultSet{
+public class ResultSet implements java.sql.ResultSet, TableRetriever {
 
 	private final java.sql.ResultSet parent;
 	
-	public ResultSet(java.sql.ResultSet parent) {
+	public ResultSet(java.sql.ResultSet parent) throws SQLException {
+		if(parent == null) {
+			throw new Error();
+		}
 		this.parent = parent;
 	}
 	
 	@Override
 	public String toString() {
 		return parent.toString();
+	}
+	
+	public Result toResult() throws SQLException {
+		beforeFirst();
+		return new Result(this);
 	}
 	
 	@Override
@@ -226,7 +236,7 @@ public class ResultSet implements java.sql.ResultSet{
 		return parent.getDouble(columnLabel);
 	}
 	
-	public double getDoutble(Column column) throws SQLException {
+	public double getDouble(Column column) throws SQLException {
 		return getDouble(column.toString());
 	}
 
@@ -1065,6 +1075,17 @@ public class ResultSet implements java.sql.ResultSet{
 	@Override
 	public <T> T getObject(String columnLabel, Class<T> type) throws SQLException {
 		return parent.getObject(columnLabel, type);
+	}
+
+	public boolean hasNext() throws SQLException {
+		boolean ret = next();
+		beforeFirst();
+		return ret;
+	}
+
+	@Override
+	public int size() {
+		throw new NoSuchMethodError("Unimplemented method");
 	}
 
 }

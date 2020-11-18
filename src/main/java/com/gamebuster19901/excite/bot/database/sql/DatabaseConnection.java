@@ -30,9 +30,11 @@ import com.gamebuster19901.excite.util.file.File;
 
 public class DatabaseConnection implements Connection {
 
+	private final DiscordUser user;
 	private final Connection parent;
 	
 	public DatabaseConnection() throws IOException, SQLException {
+		user = null;
 		File file = new File("./mysql.secret");
 		if(file.isSecret()) {
 			List<String> lines = Files.readAllLines(file.toPath());
@@ -45,18 +47,17 @@ public class DatabaseConnection implements Connection {
 	
 	public DatabaseConnection(DiscordUser discord) throws IOException, SQLException {
 		String username = discord.getMySQLUsername();
+		this.user = discord;
 		if(!MySQLUserExists(username)) {
 			PreparedStatement createUser = Main.CONSOLE.getConnection().prepareStatement("CREATE USER ?@localhost IDENTIFIED BY ?");
 			createUser.setString(1, username);
 			createUser.setString(2, username);
-			System.out.println(createUser);
 			createUser.execute();
 			
 			Table.grantUserDBPermissions(ConsoleContext.INSTANCE, username);
 			
 			PreparedStatement setDefaultRole = Main.CONSOLE.getConnection().prepareStatement("SET DEFAULT ROLE User TO ?@localhost;");
 			setDefaultRole.setString(1, username);
-			System.out.println(setDefaultRole);
 			setDefaultRole.execute();
 		}
 		File file = new File("./mysql.secret");
@@ -70,6 +71,7 @@ public class DatabaseConnection implements Connection {
 	}
 		
 	public DatabaseConnection(String connectionInfo) throws SQLException {
+		this.user = null;
 		this.parent = DriverManager.getConnection(connectionInfo);
 	}
 	
@@ -77,7 +79,7 @@ public class DatabaseConnection implements Connection {
 	public static boolean MySQLUserExists(String username) throws SQLException {
 		PreparedStatement st = Main.CONSOLE.getConnection().prepareStatement("SELECT EXISTS(SELECT 1 FROM mysql.user WHERE user = ?);");
 		st.setString(1, username);
-		ResultSet rs = st.executeQuery();
+		java.sql.ResultSet rs = st.getParent().executeQuery(); //There is no table called "SELECT EXISTS(SELECT ...) so we must use java.sql.ResultSet
 		rs.next();
 		return rs.getBoolean(1);
 	}
@@ -99,7 +101,7 @@ public class DatabaseConnection implements Connection {
 
 	@Override
 	public PreparedStatement prepareStatement(String sql) throws SQLException {
-		return new PreparedStatement(parent.prepareStatement(sql));
+		return new PreparedStatement(parent.prepareStatement(sql, ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_READ_ONLY));
 	}
 
 	@Override

@@ -16,9 +16,9 @@ import com.gamebuster19901.excite.bot.command.ConsoleContext;
 import com.gamebuster19901.excite.bot.command.MessageContext;
 import com.gamebuster19901.excite.bot.database.Comparison;
 import com.gamebuster19901.excite.bot.database.Insertion;
+import com.gamebuster19901.excite.bot.database.Result;
 import com.gamebuster19901.excite.bot.database.Table;
 import com.gamebuster19901.excite.bot.database.sql.PreparedStatement;
-import com.gamebuster19901.excite.bot.database.sql.ResultSet;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
 import com.gamebuster19901.excite.bot.user.UnknownDiscordUser;
 
@@ -55,7 +55,7 @@ public class Player implements Banee {
 	private transient String onlineStatus = "";
 	private transient int connectionStatus;
 	
-	private Player(ResultSet results) throws SQLException {
+	private Player(Result results) throws SQLException {
 		this(results.getInt(PLAYER_ID));
 	}
 
@@ -215,7 +215,7 @@ public class Player implements Banee {
 			if(isRedacted()) {
 				return "REDACTED_NAME";
 			}
-			ResultSet result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, PLAYER_NAME, PLAYERS, new Comparison(PLAYER_ID, EQUALS, getID()));
+			Result result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, PLAYER_NAME, PLAYERS, new Comparison(PLAYER_ID, EQUALS, getID()));
 			if(result.next()) {
 				return result.getString(PLAYER_NAME);
 			}
@@ -246,7 +246,7 @@ public class Player implements Banee {
 	
 	public String getFriendCode() {
 		try {
-			ResultSet result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, FRIEND_CODE, PLAYERS, new Comparison(PLAYER_ID, EQUALS, getID()));
+			Result result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, FRIEND_CODE, PLAYERS, new Comparison(PLAYER_ID, EQUALS, getID()));
 			if(result.next()) {
 				return result.getString(FRIEND_CODE);
 			}
@@ -286,7 +286,7 @@ public class Player implements Banee {
 	
 	public boolean isRedacted() {
 		try {
-			ResultSet result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, REDACTED, PLAYERS, new Comparison(PLAYER_ID, EQUALS, getID()));
+			Result result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, REDACTED, PLAYERS, new Comparison(PLAYER_ID, EQUALS, getID()));
 			if(result.next()) {
 				return result.getBoolean(REDACTED);
 			}
@@ -337,9 +337,9 @@ public class Player implements Banee {
 	@SuppressWarnings("deprecation")
 	public long getDiscord() {
 		try {
-			ResultSet result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, DISCORD_ID, PLAYERS, new Comparison(PLAYER_ID, EQUALS, getID()));
+			Result result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, DISCORD_ID, PLAYERS, new Comparison(PLAYER_ID, EQUALS, getID()));
 			if(result.next()) {
-				long ret = result.getLong(1);
+				long ret = result.getLong(DISCORD_ID);
 				if(ret != 0) {
 					return ret;
 				}
@@ -397,7 +397,7 @@ public class Player implements Banee {
 	@SuppressWarnings("rawtypes")
 	public static Player getPlayerByID(MessageContext context, int pid) {
 		try {
-			ResultSet rs = Table.selectAllFromWhere(context, PLAYERS, new Comparison(PLAYER_ID, EQUALS, pid));
+			Result rs = Table.selectAllFromWhere(context, PLAYERS, new Comparison(PLAYER_ID, EQUALS, pid));
 			if(rs.next()) {
 				return new Player(rs);
 			}
@@ -412,7 +412,7 @@ public class Player implements Banee {
 	public static Player[] getPlayersByName(MessageContext context, String name) {
 		HashSet<Player> players = new HashSet<Player>();
 		try {
-			ResultSet rs = Table.selectAllFromWhere(context, PLAYERS, new Comparison(PLAYER_NAME, EQUALS, name));
+			Result rs = Table.selectAllFromWhere(context, PLAYERS, new Comparison(PLAYER_NAME, EQUALS, name));
 			while(rs.next()) {
 				players.add(new Player(rs));
 			}
@@ -425,7 +425,7 @@ public class Player implements Banee {
 	public static Player[] getPlayersByAnyIdentifier(MessageContext context, String identifier) {
 		HashSet<Player> players = new HashSet<Player>();
 		try {
-			ResultSet rs = Table.selectAllFromWhere(context, PLAYERS, 
+			Result rs = Table.selectAllFromWhere(context, PLAYERS, 
 				new Comparison(PLAYER_NAME, EQUALS, identifier)
 				.or(
 				new Comparison(PLAYER_ID, EQUALS, identifier))
@@ -444,7 +444,7 @@ public class Player implements Banee {
 	public static Player[] getUnclaimedPlayersByAnyIdentifier(MessageContext context, String identifier) {
 		HashSet<Player> players = new HashSet<Player>();
 		try {
-			ResultSet rs = Table.selectAllFromWhere(context, PLAYERS, 
+			Result rs = Table.selectAllFromWhere(context, PLAYERS, 
 				new Comparison(PLAYER_NAME, EQUALS, identifier)
 				.openBeginning().or(
 				new Comparison(PLAYER_ID, EQUALS, identifier))
@@ -466,7 +466,7 @@ public class Player implements Banee {
 	public static Player[] getEncounteredPlayers(MessageContext context) {
 		HashSet<Player> players = new HashSet<Player>();
 		try {
-			ResultSet rs = Table.selectAllFrom(context, PLAYERS);
+			Result rs = Table.selectAllFrom(context, PLAYERS);
 			while(rs.next()) {
 				players.add(new Player(rs));
 			}

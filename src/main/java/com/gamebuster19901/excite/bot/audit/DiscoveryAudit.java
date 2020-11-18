@@ -48,22 +48,12 @@ public class DiscoveryAudit extends Audit {
 	
 	@SuppressWarnings("rawtypes")
 	public static DiscoveryAudit getProfileDiscoveryByDiscoveredID(MessageContext context, long playerID) {
-		try {
-			return new DiscoveryAudit(new Row(Table.selectAllFromJoinedUsingWhere(context, PLAYERS, AUDITS, AUDIT_ID, new Comparison(PLAYER_ID, EQUALS, playerID))));
-		}
-		catch(SQLException e) {
-			throw new IOError(e);
-		}
+		return new DiscoveryAudit(Table.selectAllFromJoinedUsingWhere(context, PLAYERS, AUDITS, AUDIT_ID, new Comparison(PLAYER_ID, EQUALS, playerID)).getRow(true));
 	}
 	
 	@SuppressWarnings("rawtypes")
 	public static DiscoveryAudit getProfileDiscoveryByAuditID(MessageContext context, long auditID) {
-		try {
-			return new DiscoveryAudit(new Row(Table.selectAllFromJoinedUsingWhere(context, PLAYERS, AUDITS, AUDIT_ID, new Comparison(AUDIT_ID, EQUALS, auditID))));
-		}
-		catch(SQLException e) {
-			throw new IOError(e);
-		}
+		return new DiscoveryAudit(Table.selectAllFromJoinedUsingWhere(context, PLAYERS, AUDITS, AUDIT_ID, new Comparison(AUDIT_ID, EQUALS, auditID)).getRow(true));
 	}
 	
 	@SuppressWarnings("rawtypes")

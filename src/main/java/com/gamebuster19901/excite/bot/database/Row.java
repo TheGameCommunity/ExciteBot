@@ -7,7 +7,7 @@ import java.util.HashMap;
 
 import com.gamebuster19901.excite.bot.database.sql.ResultSet;
 
-public class Row {
+public class Row implements TableRetriever {
 
 	public HashMap<Column, Object> results = new HashMap<Column, Object>();
 	
@@ -56,7 +56,7 @@ public class Row {
 			}
 			
 			if(type == Types.DOUBLE) {
-				this.results.put(column, results.getDoutble(column));
+				this.results.put(column, results.getDouble(column));
 				continue;
 			}
 			
@@ -66,31 +66,52 @@ public class Row {
 	}
 	
 	public String getString(Column column) {
-		return (String) results.get(column);
+		if(results.containsKey(column)) {
+			return (String) results.get(column);
+		}
+		throw new AssertionError("Column " + column + " is not in " + results);
 	}
 	
 	public boolean getBoolean(Column column) {
-		return (boolean) results.get(column);
+		if(results.containsKey(column)) {
+			return (boolean) results.get(column);
+		}
+		throw new AssertionError("Column " + column + " is not in " + results);
 	}
 	
 	public short getShort(Column column) {
-		return (short) results.get(column);
+		if(results.containsKey(column)) {
+			return (short) results.get(column);
+		}
+		throw new AssertionError("Column " + column + " is not in " + results);
 	}
 	
 	public int getInt(Column column) {
-		return (int) results.get(column);
+		if(results.containsKey(column)) {
+			return (int) results.get(column);
+		}
+		throw new AssertionError("Column " + column + " is not in " + results);
 	}
 	
 	public long getLong(Column column) {
-		return (long) results.get(column);
+		if(results.containsKey(column)) {
+			return (long) results.get(column);
+		}
+		throw new AssertionError("Column " + column + " is not in " + results);
 	}
 	
 	public float getFloat(Column column) {
-		return (float) results.get(column);
+		if(results.containsKey(column)) {
+			return (float) results.get(column);
+		}
+		throw new AssertionError("Column " + column + " is not in " + results);
 	}
 	
 	public double getDouble(Column column) {
-		return (double) results.get(column);
+		if(results.containsKey(column)) {
+			return (double) results.get(column);
+		}
+		throw new AssertionError("Column " + column + " is not in " + results);
 	}
 	
 	public int size() {

@@ -10,9 +10,9 @@ import com.gamebuster19901.excite.Main;
 import com.gamebuster19901.excite.bot.command.ConsoleContext;
 import com.gamebuster19901.excite.bot.command.MessageContext;
 import com.gamebuster19901.excite.bot.database.Comparison;
+import com.gamebuster19901.excite.bot.database.Result;
 import com.gamebuster19901.excite.bot.database.Table;
 import com.gamebuster19901.excite.bot.database.sql.PreparedStatement;
-import com.gamebuster19901.excite.bot.database.sql.ResultSet;
 
 import static com.gamebuster19901.excite.bot.database.Column.*;
 
@@ -25,7 +25,7 @@ public class DiscordServer {
 	
 	protected final long id;
 	
-	public DiscordServer(ResultSet results) throws SQLException {
+	public DiscordServer(Result results) throws SQLException {
 		this.id = results.getLong(SERVER_ID);
 	}
 	
@@ -72,9 +72,9 @@ public class DiscordServer {
 	@SuppressWarnings("deprecation")
 	public String getName() {
 		try {
-			ResultSet result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, SERVER_NAME, DISCORD_SERVERS, new Comparison(SERVER_ID, EQUALS, getId()));
+			Result result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, SERVER_NAME, DISCORD_SERVERS, new Comparison(SERVER_ID, EQUALS, getId()));
 			if(result.next()) {
-				return result.getString(1);
+				return result.getString(SERVER_NAME);
 			}
 			else {
 				throw new AssertionError("Could not find name for server " + getId());
@@ -95,9 +95,9 @@ public class DiscordServer {
 	@SuppressWarnings("deprecation")
 	public String getPrefix() {
 		try {
-			ResultSet result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, SERVER_PREFIX, DISCORD_SERVERS, new Comparison(SERVER_ID, EQUALS, getId()));
+			Result result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, SERVER_PREFIX, DISCORD_SERVERS, new Comparison(SERVER_ID, EQUALS, getId()));
 			if(result.next()) {
-				return result.getString(1);
+				return result.getString(SERVER_PREFIX);
 			}
 			else {
 				throw new AssertionError("Could not find prefix for server " + getId());
@@ -139,7 +139,7 @@ public class DiscordServer {
 	@SuppressWarnings("rawtypes")
 	public static DiscordServer getServer(MessageContext context, long serverId) {
 		try {
-			ResultSet results = Table.selectAllFromWhere(context, DISCORD_SERVERS, new Comparison(SERVER_ID, EQUALS, serverId));
+			Result results = Table.selectAllFromWhere(context, DISCORD_SERVERS, new Comparison(SERVER_ID, EQUALS, serverId));
 			
 			if(results.next()) {
 				return new DiscordServer(results.getLong(SERVER_ID));
@@ -153,7 +153,7 @@ public class DiscordServer {
 	public static DiscordServer[] getKnownDiscordServers() {
 		try {
 			ArrayList<DiscordServer> servers = new ArrayList<DiscordServer>();
-			ResultSet results = Table.selectAllFrom(ConsoleContext.INSTANCE, DISCORD_SERVERS);
+			Result results = Table.selectAllFrom(ConsoleContext.INSTANCE, DISCORD_SERVERS);
 			while(results.next()) {
 				servers.add(new DiscordServer(results));
 			}

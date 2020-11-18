@@ -26,7 +26,6 @@ public class NameChangeAudit extends Audit {
 	
 	@SuppressWarnings("rawtypes")
 	public static NameChangeAudit addNameChange(MessageContext context, Player player, String newName) {
-		System.out.println(context + " " + player + " " + newName);
 		Audit parent = Audit.addAudit(ConsoleContext.INSTANCE, context,  AuditType.NAME_CHANGE_AUDIT, getMessage(context, newName));
 		String name = player.getName();
 		PreparedStatement st;
@@ -49,12 +48,7 @@ public class NameChangeAudit extends Audit {
 	
 	@SuppressWarnings("rawtypes")
 	public static NameChangeAudit getNameChangeByAuditID(MessageContext context, long auditID) {
-		try {
-			return new NameChangeAudit(new Row(Table.selectAllFromJoinedUsingWhere(context, AUDITS, AUDIT_NAME_CHANGES, AUDIT_ID, new Comparison(AUDIT_ID, EQUALS, auditID))));
-		}
-		catch(SQLException e) {
-			throw new IOError(e);
-		}
+		return new NameChangeAudit(Table.selectAllFromJoinedUsingWhere(context, AUDITS, AUDIT_NAME_CHANGES, AUDIT_ID, new Comparison(AUDIT_ID, EQUALS, auditID)).getRow(true));
 	}
 	
 	@SuppressWarnings("rawtypes")

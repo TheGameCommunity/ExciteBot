@@ -22,9 +22,9 @@ import com.gamebuster19901.excite.bot.command.ConsoleContext;
 import com.gamebuster19901.excite.bot.command.MessageContext;
 import com.gamebuster19901.excite.bot.database.sql.DatabaseConnection;
 import com.gamebuster19901.excite.bot.database.Comparison;
+import com.gamebuster19901.excite.bot.database.Result;
 import com.gamebuster19901.excite.bot.database.Table;
 import com.gamebuster19901.excite.bot.database.sql.PreparedStatement;
-import com.gamebuster19901.excite.bot.database.sql.ResultSet;
 import com.gamebuster19901.excite.util.StacktraceUtil;
 import com.gamebuster19901.excite.util.TimeUtils;
 
@@ -48,7 +48,7 @@ public class DiscordUser implements Banee {
 	
 	private final long discordId;
 	
-	public DiscordUser(ResultSet results) throws SQLException {
+	public DiscordUser(Result results) throws SQLException {
 		this.discordId = results.getLong(DISCORD_ID);
 		initConnection();
 	}
@@ -88,8 +88,7 @@ public class DiscordUser implements Banee {
 	}
 	
 	public DatabaseConnection getConnection() throws SQLException {
-		if(!connection.isValid(5)) {
-			connection.close();
+		if(!connection.isValid(0)) {
 			initConnection();
 		}
 		return connection;
@@ -129,9 +128,9 @@ public class DiscordUser implements Banee {
 	public Set<Player> getProfiles(MessageContext context) {
 		try {
 			HashSet<Player> players = new HashSet<Player>();
-			ResultSet results = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, PLAYER_ID, PLAYERS, new Comparison(DISCORD_ID, EQUALS, getID()));
+			Result results = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, PLAYER_ID, PLAYERS, new Comparison(DISCORD_ID, EQUALS, getID()));
 			while(results.next()) {
-				players.add(Player.getPlayerByID(context, results.getInt(1)));
+				players.add(Player.getPlayerByID(context, results.getInt(PLAYER_ID)));
 			}
 			return players;
 		}
@@ -154,7 +153,7 @@ public class DiscordUser implements Banee {
 			if(isOperator()) {
 				return true;
 			}
-			ResultSet result = Table.selectAllFromWhere(ConsoleContext.INSTANCE, Table.ADMINS, new Comparison(DISCORD_ID, EQUALS, getID()));
+			Result result = Table.selectAllFromWhere(ConsoleContext.INSTANCE, Table.ADMINS, new Comparison(DISCORD_ID, EQUALS, getID()));
 			return result.next();
 		}
 		catch(SQLException e) {
@@ -164,7 +163,7 @@ public class DiscordUser implements Banee {
 	
 	public boolean isOperator() {
 		try {
-			ResultSet result = Table.selectAllFromWhere(ConsoleContext.INSTANCE, Table.OPERATORS, new Comparison(DISCORD_ID, EQUALS, getID()));
+			Result result = Table.selectAllFromWhere(ConsoleContext.INSTANCE, Table.OPERATORS, new Comparison(DISCORD_ID, EQUALS, getID()));
 			return result.next();
 		}
 		catch(SQLException e) {
@@ -200,9 +199,9 @@ public class DiscordUser implements Banee {
 	
 	public int getNotifyThreshold() {
 		try {
-			ResultSet result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, THRESHOLD, DISCORD_USERS, new Comparison(DISCORD_ID, EQUALS, getID()));
+			Result result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, THRESHOLD, DISCORD_USERS, new Comparison(DISCORD_ID, EQUALS, getID()));
 			if(result.next()) {
-				return result.getInt(1);
+				return result.getInt(THRESHOLD);
 			}
 			else {
 				throw new AssertionError("Could not find threshold for discord user " + discordId);
@@ -227,9 +226,9 @@ public class DiscordUser implements Banee {
 	
 	public Duration getNotifyFrequency() {
 		try {
-			ResultSet result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, FREQUENCY, DISCORD_USERS, new Comparison(DISCORD_ID, EQUALS, getID()));
+			Result result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, FREQUENCY, DISCORD_USERS, new Comparison(DISCORD_ID, EQUALS, getID()));
 			if(result.next()) {
-				return Duration.parse(result.getString(1));
+				return Duration.parse(result.getString(FREQUENCY));
 			}
 			else {
 				throw new AssertionError("Could not get notification frequency for " + discordId);
@@ -255,9 +254,9 @@ public class DiscordUser implements Banee {
 	
 	public boolean isNotifyingContinuously() {
 		try {
-			ResultSet result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, NOTIFY_CONTINUOUSLY, DISCORD_USERS, new Comparison(DISCORD_ID, EQUALS, getID()));
+			Result result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, NOTIFY_CONTINUOUSLY, DISCORD_USERS, new Comparison(DISCORD_ID, EQUALS, getID()));
 			if(result.next()) {
-				return result.getBoolean(1);
+				return result.getBoolean(NOTIFY_CONTINUOUSLY);
 			}
 			throw new AssertionError("Could not get notification frequency for " + discordId);
 		} catch (SQLException e) {
@@ -279,9 +278,9 @@ public class DiscordUser implements Banee {
 	
 	public Instant getLastNotification() {
 		try {
-			ResultSet result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, LAST_NOTIFICATION, DISCORD_USERS, new Comparison(DISCORD_ID, EQUALS, getID()));
+			Result result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, LAST_NOTIFICATION, DISCORD_USERS, new Comparison(DISCORD_ID, EQUALS, getID()));
 			if(result.next()) {
-				return TimeUtils.parseInstant(result.getString(1));
+				return TimeUtils.parseInstant(result.getString(LAST_NOTIFICATION));
 			}
 			throw new AssertionError("Could not get last notification of " + discordId);
 		} catch (SQLException e) {
@@ -303,9 +302,9 @@ public class DiscordUser implements Banee {
 	
 	public boolean dippedBelowThreshold() {
 		try {
-			ResultSet result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, BELOW_THRESHOLD, DISCORD_USERS, new Comparison(DISCORD_ID, EQUALS, getID()));
+			Result result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, BELOW_THRESHOLD, DISCORD_USERS, new Comparison(DISCORD_ID, EQUALS, getID()));
 			if(result.next()) {
-				return result.getBoolean(1);
+				return result.getBoolean(BELOW_THRESHOLD);
 			}
 			throw new AssertionError("Could not get theshold state of " + discordId);
 		} catch (SQLException e) {
@@ -358,7 +357,6 @@ public class DiscordUser implements Banee {
 		if(Main.discordBot != null && !getJDAUser().equals(Main.discordBot.jda.getSelfUser())) {
 			if(!getJDAUser().isBot()) {
 				PrivateChannel privateChannel = getJDAUser().openPrivateChannel().complete();
-				System.out.println(privateChannel.getClass().getCanonicalName());
 				try {
 					privateChannel.sendMessage(message).complete();
 				}
@@ -433,10 +431,10 @@ public class DiscordUser implements Banee {
 	@SuppressWarnings("rawtypes")
 	public static final DiscordUser getDiscordUser(MessageContext context, long id) {
 		try {
-			ResultSet results = Table.selectAllFromWhere(context, DISCORD_USERS, new Comparison(DISCORD_ID, EQUALS, id));
+			Result results = Table.selectAllFromWhere(context, DISCORD_USERS, new Comparison(DISCORD_ID, EQUALS, id));
 			
 			if(results.next()) {
-				return new DiscordUser(results.getLong(DISCORD_ID.toString()));
+				return new DiscordUser(results.getLong(DISCORD_ID));
 			}
 			return null;
 		}
@@ -480,9 +478,10 @@ public class DiscordUser implements Banee {
 		return user;
 	}
 	
+	@SuppressWarnings("rawtypes")
 	public static final DiscordUser getDiscordUser(MessageContext context, String username) {
 		try {
-			ResultSet results = Table.selectAllFromWhere(context, DISCORD_USERS, new Comparison(DISCORD_NAME, EQUALS, username));
+			Result results = Table.selectAllFromWhere(context, DISCORD_USERS, new Comparison(DISCORD_NAME, EQUALS, username));
 			if(results.next()) {
 				return new DiscordUser(results.getLong(DISCORD_ID));
 			}
@@ -495,7 +494,7 @@ public class DiscordUser implements Banee {
 	@SuppressWarnings("rawtypes")
 	public static final DiscordUser getDiscordUser(MessageContext context, String username, String discriminator) {
 		try {
-			ResultSet results = Table.selectAllFromWhere(context, DISCORD_USERS, new Comparison(DISCORD_NAME, EQUALS, username + "#" + discriminator));
+			Result results = Table.selectAllFromWhere(context, DISCORD_USERS, new Comparison(DISCORD_NAME, EQUALS, username + "#" + discriminator));
 			if(results.next()) {
 				return new DiscordUser(results.getLong(DISCORD_ID));
 			}
@@ -510,7 +509,7 @@ public class DiscordUser implements Banee {
 	public static final DiscordUser[] getDiscordUsersWithUsername(MessageContext context, String username) {
 		try {
 			ArrayList<DiscordUser> users = new ArrayList<DiscordUser>();
-			ResultSet results = Table.selectAllFromWhere(context, DISCORD_USERS, new Comparison(DISCORD_NAME, LIKE, Table.makeSafe(username) + "_____"));
+			Result results = Table.selectAllFromWhere(context, DISCORD_USERS, new Comparison(DISCORD_NAME, LIKE, Table.makeSafe(username) + "_____"));
 			while(results.next()) {
 				users.add(new DiscordUser(results));
 			}
@@ -521,10 +520,11 @@ public class DiscordUser implements Banee {
 		}
 	}
 	
+	@SuppressWarnings("rawtypes")
 	public static final DiscordUser[] getDiscordUsersWithUsernameOrID(MessageContext context, String usernameOrID) {
 		try {
 			ArrayList<DiscordUser> users = new ArrayList<DiscordUser>();
-			ResultSet results = Table.selectAllFromWhere(context, DISCORD_USERS, new Comparison(DISCORD_NAME, LIKE, Table.makeSafe(usernameOrID) + "_____").or(new Comparison(DISCORD_ID, EQUALS, usernameOrID)));
+			Result results = Table.selectAllFromWhere(context, DISCORD_USERS, new Comparison(DISCORD_NAME, LIKE, Table.makeSafe(usernameOrID) + "_____").or(new Comparison(DISCORD_ID, EQUALS, usernameOrID)));
 			while(results.next()) {
 				users.add(new DiscordUser(results));
 			}
@@ -548,8 +548,8 @@ public class DiscordUser implements Banee {
 	public static DiscordUser[] getAllAdmins() {
 		try {
 			PreparedStatement st = ConsoleContext.INSTANCE.getConnection().prepareStatement("SELECT * FROM discord_users INNER JOIN admins ON(discord_users.discordID = admins.discordID);");
-			ResultSet results = st.executeQuery();
-			int columns = results.getMetaData().getColumnCount();
+			Result results = st.query();
+			int columns = results.getColumnCount();
 			DiscordUser[] operators = new DiscordUser[columns];
 			for(int i = 0; i < columns; i++) {
 				results.next();
@@ -564,8 +564,8 @@ public class DiscordUser implements Banee {
 	public static DiscordUser[] getAllOperators() {
 		try {
 			PreparedStatement st = ConsoleContext.INSTANCE.getConnection().prepareStatement("SELECT * FROM discord_users INNER JOIN operators ON(discord_users.discordID = operators.discordID);");
-			ResultSet results = st.executeQuery();
-			int columns = results.getMetaData().getColumnCount();
+			Result results = st.query();
+			int columns = results.getColumnCount();
 			DiscordUser[] operators = new DiscordUser[columns];
 			for(int i = 0; i < columns; i++) {
 				results.next();
