@@ -25,7 +25,9 @@ public enum Column {
 	BAN_EXPIRE("expireTime", AUDIT_BANS),
 	BANNED_ID("bannedID", AUDIT_BANS),
 	@Deprecated BANNED_USERNAME("bannedUsername", AUDIT_BANS),
-	BAN_PARDON("pardon", AUDIT_BANS),
+	
+	//PARDONS
+	PARDONED_AUDIT_ID("pardonedAuditID", AUDIT_PARDONS),
 	
 	//NAME CHANGES
 	OLD_PLAYER_NAME("oldName", AUDIT_NAME_CHANGES),
@@ -55,7 +57,7 @@ public enum Column {
 	SERVER_PREFIX("prefix", DISCORD_SERVERS),
 	
 	//DISCORD_USER
-	DISCORD_ID("DiscordID", ADMINS, DISCORD_USERS, OPERATORS, PLAYERS),
+	DISCORD_ID("discordID", ADMINS, DISCORD_USERS, OPERATORS, PLAYERS),
 	DISCORD_NAME("discord_name", DISCORD_USERS),
 	THRESHOLD("threshold", DISCORD_USERS),
 	FREQUENCY("frequency", DISCORD_USERS),
@@ -70,7 +72,8 @@ public enum Column {
 	FRIEND_CODE("friendCode", PLAYERS, AUDIT_NAME_CHANGES),
 	PLAYER_NAME("name", PLAYERS),
 	REDACTED("redacted", PLAYERS),
-	LAST_ONLINE("lastOnline", PLAYERS);
+	LAST_ONLINE("lastOnline", PLAYERS),
+	SECONDS_PLAYED("secondsPlayed", PLAYERS);
 	
 	;
 	
@@ -99,6 +102,6 @@ public enum Column {
 				return column;
 			}
 		}
-		throw new IllegalArgumentException("No column with db name " + dbName);
+		throw new IllegalArgumentException("No column with name " + dbName);
 	}
 }
