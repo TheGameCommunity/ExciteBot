@@ -39,6 +39,7 @@ public class Commands {
 		GameDataCommand.register(dispatcher);
 		RankCommand.register(dispatcher);
 		PrefixCommand.register(dispatcher);
+		ChangelogCommand.register(dispatcher);
 	}
 	
 	public void handleCommand(String command) {
