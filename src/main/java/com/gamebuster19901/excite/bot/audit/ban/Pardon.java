@@ -1,92 +1,90 @@
 package com.gamebuster19901.excite.bot.audit.ban;
 
-import java.util.Arrays;
-import java.util.List;
-
-import org.apache.commons.csv.CSVRecord;
-
 import com.gamebuster19901.excite.bot.audit.Audit;
-import com.gamebuster19901.excite.bot.audit.UnknownAudit;
+import com.gamebuster19901.excite.bot.audit.AuditType;
 import com.gamebuster19901.excite.bot.command.MessageContext;
-import com.gamebuster19901.excite.bot.common.preferences.LongPreference;
-import com.gamebuster19901.excite.bot.common.preferences.PermissionPreference;
+import com.gamebuster19901.excite.bot.database.Comparison;
+import com.gamebuster19901.excite.bot.database.Insertion;
+import com.gamebuster19901.excite.bot.database.Row;
+import com.gamebuster19901.excite.bot.database.Table;
+import com.gamebuster19901.excite.bot.database.sql.PreparedStatement;
 
-import static com.gamebuster19901.excite.util.Permission.ADMIN_ONLY;
+import static com.gamebuster19901.excite.bot.database.Table.*;
+
+import java.io.IOError;
+import java.sql.SQLException;
+
+import javax.annotation.Nullable;
+
+import static com.gamebuster19901.excite.bot.database.Column.*;
+import static com.gamebuster19901.excite.bot.database.Comparator.*;
+import static com.gamebuster19901.excite.bot.audit.AuditType.*;
 
 public class Pardon extends Audit{
 
-	private static transient final int DB_VERSION = 0;
+	Audit parentData;
 	
-	private LongPreference banId = new LongPreference(UnknownAudit.DEFAULT_INSTANCE.getAuditId());
-	
-	{
-		secrecy = new PermissionPreference(ADMIN_ONLY);
+	protected Pardon(Row result) {
+		super(result, PARDON);
 	}
 	
+	@Nullable
 	@SuppressWarnings("rawtypes")
-	public Pardon(MessageContext pardonContext, long banId) {
-		this(pardonContext, banId, "");
-	}
-	
-	@SuppressWarnings("rawtypes")
-	public Pardon(MessageContext pardonContext, Audit audit) {
-		this(pardonContext, audit, "");
-	}
-	
-	@SuppressWarnings("rawtypes")
-	public Pardon(MessageContext pardonContext, long banId, String reason) {
-		super(pardonContext, reason);
-		this.banId.setValue(banId);
-	}
-	
-	@SuppressWarnings("rawtypes")
-	public Pardon(MessageContext pardonContext, Audit audit, String reason) {
-		super(pardonContext, reason);
-		String errMessage;
-		if(audit == null || audit instanceof Pardon) {
-			throw new IllegalArgumentException(errMessage = audit != null ? audit.getAuditId() + "" : "null");
+	public static Pardon addPardonByAuditID(MessageContext context, long id) {
+		try {
+			Audit pardoned = Audit.getAuditById(context, id);
+			if(pardoned == null) {
+				context.sendMessage("Could not find audit #" + id);
+				return null;
+			}
+			AuditType type = pardoned.getType();
+			if(type == BAN) {
+				Ban ban = (Ban) pardoned;
+				if(ban.isPardoned()) {
+					context.sendMessage(type + " #" + id + " is already pardoned.");
+					return null;
+				}
+				Audit parent = Audit.addAudit(context, PARDON, context.getAuthor().getIdentifierName() + " pardoned " + ban.getBannedUsername());
+				
+				PreparedStatement st;
+				
+				st = Insertion.insertInto(AUDIT_PARDONS)
+				.setColumns(AUDIT_ID, PARDONED_AUDIT_ID)
+				.to(parent.getID(), pardoned.getID())
+				.prepare(context, true);
+				
+				st.execute();
+				
+				Pardon ret = getPardonByAuditID(context, parent.getID());
+				ret.parentData = parent;
+				
+				return ret;
+			}
+			else {
+				context.sendMessage("Audit #" + id + " is a " + type + ", not a " + BAN);
+				return null;
+			}
+		} catch (SQLException e) {
+			throw new IOError(e);
 		}
-		this.banId.setValue(audit.getAuditId());
 	}
 	
-	public Pardon() {
-		super();
-	}
-
-	@Override
-	public Audit parseAudit(CSVRecord record) {
-		super.parseAudit(record);
-		//0-7 is audit
-		int i = super.getRecordSize(); //8 is pardon version
-		banId = new LongPreference(Long.parseLong(record.get(i++).substring(1)));
-		
-		return this;
-	}
-	
-	protected int getRecordSize() {
-		return super.getRecordSize() + 2;
-	}
-	
-	@Override
-	public List<Object> getParameters() {
-		List<Object> params = super.getParameters();
-		params.addAll(Arrays.asList(new Object[] {new Integer(DB_VERSION), "`" + banId}));
-		return params;
-	}
-	
-	public long getBanId() {
-		return banId.getValue();
-	}
-	
-	/*@SuppressWarnings("rawtypes")
-	public static void pardon(MessageContext context, long banId, String reason) {
-		if(Audit.BANS.containsKey(banId)) {
-			Ban ban = Audit.BANS.get(banId);
-			ban.pardon(context, reason);
+	@SuppressWarnings("rawtypes")
+	public static Pardon addPardonByBan(MessageContext context, Ban ban) {
+		if(ban != null) {
+			return addPardonByAuditID(context, ban.getID());
 		}
-		else {
-			context.sendMessage("Could not find ban #" + banId);
-		}
-	}*/
+		throw new NullPointerException();
+	}
+	
+	@SuppressWarnings("rawtypes")
+	public static Pardon getPardonByAuditID(MessageContext context, long auditID) {
+		return new Pardon(Table.selectAllFromJoinedUsingWhere(context, AUDITS, AUDIT_PARDONS, AUDIT_ID, new Comparison(AUDIT_ID, EQUALS, auditID)).getRow(true));
+	}
+	
+	@SuppressWarnings("rawtypes")
+	public static Pardon getPardonByPardonedID(MessageContext context, long banID) {
+		return new Pardon(Table.selectAllFromJoinedUsingWhere(context, AUDITS, AUDIT_PARDONS, AUDIT_ID, new Comparison(PARDONED_AUDIT_ID, EQUALS, banID)).getRow(true));
+	}
 	
 }

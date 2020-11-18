@@ -26,7 +26,7 @@ public class Commands {
 		OnlineCommand.register(dispatcher);
 		WhoIsCommand.register(dispatcher);
 		BanCommand.register(dispatcher);
-//		PardonCommand.register(dispatcher);
+		PardonCommand.register(dispatcher);
 		RegisterCommand.register(dispatcher);
 		NotifyCommand.register(dispatcher);
 		StopCommand.register(dispatcher);
