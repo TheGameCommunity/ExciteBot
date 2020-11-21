@@ -30,7 +30,7 @@ public class DiscoveryAudit extends Audit {
 		PreparedStatement st;
 		
 		try {
-			st = Insertion.insertInto(Table.AUDIT_DISCOVERIES)
+			st = Insertion.insertInto(Table.AUDIT_PROFILE_DISCOVERIES)
 			.setColumns(AUDIT_ID, PLAYER_ID)
 			.to(parent.getID(), context.getSenderId())
 			.prepare(context, true);

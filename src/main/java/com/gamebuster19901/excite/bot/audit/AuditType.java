@@ -14,7 +14,7 @@ public enum AuditType {
 	
 	COMMAND_AUDIT(CommandAudit.class, AUDIT_COMMANDS),
 	NAME_CHANGE_AUDIT(NameChangeAudit.class, AUDIT_NAME_CHANGES),
-	DISCOVERY_AUDIT(DiscoveryAudit.class, AUDIT_DISCOVERIES),
+	DISCOVERY_AUDIT(DiscoveryAudit.class, AUDIT_PROFILE_DISCOVERIES),
 	RANK_CHANGE_AUDIT(RankChangeAudit.class, AUDIT_RANK_CHANGES)
 	
 	;
