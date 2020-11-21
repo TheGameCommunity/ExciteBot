@@ -23,7 +23,7 @@ public class OnlineCommand {
 		Wiimmfi wiimmfi = Main.discordBot.getWiimmfi();
 		String response;
 		if(wiimmfi.getError() == null) {
-			response = Wiimmfi.getOnlinePlayerList(context, cmdContext.getInput().equals("online"));
+			response = "Players Online " + Wiimmfi.getOnlinePlayerList(cmdContext.getInput().equals("online"));
 		}
 		else {
 			response = "Bot offline due to an error: \n\n" + StacktraceUtil.getStackTrace(wiimmfi.getError());

@@ -87,6 +87,7 @@ public class Main {
 		Throwable prevError = null;
 		Instant nextWiimmfiPing = Instant.now();
 		Instant nextDiscordPing = Instant.now();
+		Instant sendDiscordNotifications = Instant.now();
 		startConsole();
 		
 		try {
@@ -117,6 +118,10 @@ public class Main {
 						if(nextDiscordPing.isBefore(Instant.now())) {
 							nextDiscordPing = Instant.now().plus(Duration.ofSeconds(5));
 							updateLists(true, true);
+						}
+						if(sendDiscordNotifications.isBefore(Instant.now())) {
+							sendDiscordNotifications = Instant.now().plus(Duration.ofSeconds(4));
+							DiscordUser.notifyDiscordUsers();
 						}
 					}
 					

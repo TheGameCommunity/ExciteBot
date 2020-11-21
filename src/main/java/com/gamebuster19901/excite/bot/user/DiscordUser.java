@@ -15,6 +15,7 @@ import javax.annotation.Nullable;
 
 import com.gamebuster19901.excite.Main;
 import com.gamebuster19901.excite.Player;
+import com.gamebuster19901.excite.Wiimmfi;
 import com.gamebuster19901.excite.bot.audit.RankChangeAudit;
 import com.gamebuster19901.excite.bot.audit.ban.Ban;
 import com.gamebuster19901.excite.bot.audit.ban.Banee;
@@ -28,8 +29,7 @@ import com.gamebuster19901.excite.bot.database.sql.PreparedStatement;
 import com.gamebuster19901.excite.util.StacktraceUtil;
 import com.gamebuster19901.excite.util.TimeUtils;
 
-import static com.gamebuster19901.excite.bot.database.Comparator.EQUALS;
-import static com.gamebuster19901.excite.bot.database.Comparator.LIKE;
+import static com.gamebuster19901.excite.bot.database.Comparator.*;
 import static com.gamebuster19901.excite.bot.database.Table.DISCORD_USERS;
 import static com.gamebuster19901.excite.bot.database.Table.PLAYERS;
 
@@ -73,10 +73,11 @@ public class DiscordUser implements Banee {
 	private static DiscordUser addDiscordUser(MessageContext context, long discordID, String name) throws SQLException {
 		PreparedStatement ps = null;
 		try {
-			ps = context.getConnection().prepareStatement("INSERT INTO " + DISCORD_USERS + " (" + DISCORD_ID + ", "+ DISCORD_NAME + ") VALUES (?, ?);");
+			ps = context.getConnection().prepareStatement("INSERT INTO " + DISCORD_USERS + " (" + DISCORD_ID + ", "+ DISCORD_NAME + ", " + LAST_NOTIFICATION + ") VALUES (?, ?, ?);");
 			
 			Table.insertValue(ps, 1, discordID);
 			Table.insertValue(ps, 2, name);
+			Table.insertValue(ps, 3, TimeUtils.PLAYER_EPOCH);
 			
 			ps.execute();
 		}
@@ -574,6 +575,35 @@ public class DiscordUser implements Banee {
 			return operators;
 		} catch (SQLException e) {
 			throw new AssertionError(e);
+		}
+	}
+	
+	public static void notifyDiscordUsers() throws SQLException {
+		int count = Wiimmfi.getAcknowledgedPlayerCount();
+		Result result = Table.selectAllFrom(ConsoleContext.INSTANCE, DISCORD_USERS);
+		while(result.next()) {
+			int threshold = result.getInt(THRESHOLD);
+			if(count < threshold) {
+				new DiscordUser(result).setDippedBelowThreshold(true);
+				continue;
+			}
+			else {
+				if(Instant.parse(result.getString(LAST_NOTIFICATION)).plus(Duration.parse(result.getString(FREQUENCY))).isBefore(Instant.now())) {
+					if(result.getBoolean(BELOW_THRESHOLD)) {
+						DiscordUser user = new DiscordUser(result);
+						if(!result.getBoolean(NOTIFY_CONTINUOUSLY)) {
+							user.setDippedBelowThreshold(false);
+						}
+						for(Player player : Wiimmfi.getOnlinePlayers()) {
+							if(player.getDiscord() == result.getLong(DISCORD_ID)) {
+								return;
+							}
+							user.sendMessage("Players Online" + Wiimmfi.getOnlinePlayerList(false));
+							user.setLastNotification();
+						}
+					}
+				}
+			}
 		}
 	}
 	

@@ -14,7 +14,6 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import com.gamebuster19901.excite.bot.command.ConsoleContext;
-import com.gamebuster19901.excite.bot.command.MessageContext;
 
 public class Wiimmfi {
 	
@@ -148,18 +147,17 @@ public class Wiimmfi {
 		return players;
 	}
 	
-	@SuppressWarnings("rawtypes")
-	public static String getOnlinePlayerList(MessageContext messageContext, boolean full) {
+	public static String getOnlinePlayerList(boolean full) {
 		Player[] onlinePlayers = getOnlinePlayers().toArray(new Player[]{});
 		Player[] ignoredPlayers = getIgnoredOnlinePlayers().toArray(new Player[]{});
 		
 		String response;
 		
 		if(ignoredPlayers.length == 0) {
-			response = "Players Online: (" + onlinePlayers.length + ")\n\n";
+			response = ": (" + onlinePlayers.length + ")\n\n";
 		}
 		else {
-			response = "Players Online: " + (onlinePlayers.length - ignoredPlayers.length) + " (" + onlinePlayers.length + " ignored)" + "\n\n";
+			response = ": " + (onlinePlayers.length - ignoredPlayers.length) + " (" + onlinePlayers.length + " ignored)" + "\n\n";
 		}
 		
 		if(full) {
