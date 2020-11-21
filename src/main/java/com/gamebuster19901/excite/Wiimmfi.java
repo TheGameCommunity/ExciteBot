@@ -100,7 +100,7 @@ public class Wiimmfi {
 					int hosting = 0;
 					String hostingString = parseLine(e.html(), 4);
 					if(!hostingString.equals("<tdclass=\"dbnull\">—")) {
-						hosting = Integer.parseInt(parseLine(e.html(), 4));
+						hosting = Integer.parseInt(parseLine(e.html(), 3));
 					}
 					String status = parseLine(e.html(), 6);
 					
