@@ -1,6 +1,7 @@
 package com.gamebuster19901.excite.bot;
 
 import com.gamebuster19901.excite.bot.command.Commands;
+import com.gamebuster19901.excite.bot.server.DiscordServer;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
 
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
@@ -11,16 +12,17 @@ public class EventReceiver extends ListenerAdapter {
 
 	@Override
 	public void onGuildMessageReceived(GuildMessageReceivedEvent e) {
+		DiscordServer.addServer(e.getGuild());
+		DiscordUser.addUser(e.getAuthor());
 		if(!e.getAuthor().isBot()) {
-			DiscordUser.addUser(new DiscordUser(e.getAuthor()));
 			Commands.DISPATCHER.handleCommand(e);
 		}
 	}
 	
 	@Override
 	public void onPrivateMessageReceived(PrivateMessageReceivedEvent e) {
+		DiscordUser.addUser(e.getAuthor());
 		if(!e.getAuthor().isBot()) {
-			DiscordUser.addUser(new DiscordUser(e.getAuthor()));
 			Commands.DISPATCHER.handleCommand(e);
 		}
 	}

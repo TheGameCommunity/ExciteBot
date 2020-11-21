@@ -7,6 +7,9 @@ public class UnloadedDiscordUser extends DiscordUser{
 	UnloadedDiscordUser(long userId) {
 		super(userId);
 	}
+	
+	@Override
+	public void initConnection() {}
 
 	@Override
 	public void sendMessage(String message) {}
@@ -17,6 +20,6 @@ public class UnloadedDiscordUser extends DiscordUser{
 	
 	@Override
 	public String toString() {
-		return "UNLOADED_DISCORD_USER#???? " + "(" + getId() + ")"; 
+		return "UNLOADED_DISCORD_USER#???? " + "(" + getID() + ")"; 
 	}
 }
