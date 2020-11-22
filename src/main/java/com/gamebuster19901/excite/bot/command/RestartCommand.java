@@ -1,13 +1,14 @@
 package com.gamebuster19901.excite.bot.command;
 
+import com.gamebuster19901.excite.Main;
+import com.gamebuster19901.excite.bot.WiimmfiCommand;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
-import com.gamebuster19901.excite.util.ThreadService;
 import com.mojang.brigadier.CommandDispatcher;
 
-public class RestartCommand {
+public class RestartCommand extends WiimmfiCommand {
 	@SuppressWarnings("rawtypes")
 	public static void register(CommandDispatcher<MessageContext> dispatcher) {
-		dispatcher.register(Commands.literal("restart").executes((context) -> {
+		dispatcher.register(Commands.literal("!restart").executes((context) -> {
 			return stop(context.getSource());
 		}));
 	}
@@ -16,14 +17,18 @@ public class RestartCommand {
 	private static int stop(MessageContext context) {
 		if(context.isAdmin()) {
 			try {
+				System.out.println(context.getTag() + "(" + context.getSenderId() + ") is restarting the bot!");
 				context.sendMessage("Restarting!");
-				DiscordUser.messageAllAdmins(context.getDiscordAuthor().toDetailedString() + " is restarting the bot!");
+				if(Main.botOwner != null) {
+					DiscordUser botOwner = DiscordUser.getDiscordUser(Main.botOwner);
+					botOwner.sendMessage(botOwner.getJDAUser().getAsMention() + ", " + context.getTag() + "(" + context.getSenderId() + ") is restarting the bot!");
+				}
 			}
 			catch (Throwable t) {
 				t.printStackTrace();
 			}
 			finally {
-				ThreadService.shutdown(context);
+				System.exit(-1);
 			}
 		}
 		else {

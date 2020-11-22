@@ -1,17 +1,12 @@
 package com.gamebuster19901.excite.bot.command;
 
-import java.sql.SQLException;
-
 import com.gamebuster19901.excite.Main;
-import com.gamebuster19901.excite.Player;
-import com.gamebuster19901.excite.bot.database.sql.DatabaseConnection;
 import com.gamebuster19901.excite.bot.server.DiscordServer;
-import com.gamebuster19901.excite.bot.user.ConsoleUser;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
 import com.gamebuster19901.excite.util.MessageUtil;
-import com.gamebuster19901.excite.util.Named;
 
-import net.dv8tion.jda.api.entities.MessageChannel;
+import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.events.message.priv.PrivateMessageReceivedEvent;
 
@@ -20,7 +15,7 @@ public class MessageContext<E>{
 	private E event;
 	
 	public MessageContext(E e) {
-		if(e instanceof GuildMessageReceivedEvent || e instanceof PrivateMessageReceivedEvent || e instanceof DiscordUser || e instanceof Player) {
+		if(e == null || e instanceof GuildMessageReceivedEvent || e instanceof PrivateMessageReceivedEvent || e instanceof DiscordUser) {
 			this.event = e;
 		}
 		else {
@@ -28,9 +23,8 @@ public class MessageContext<E>{
 		}
 	}
 	
-	@SuppressWarnings("unchecked")
 	public MessageContext() {
-		this.event = (E) Main.CONSOLE;
+		this.event = null;
 	}
 	
 	public boolean isGuildMessage() {
@@ -42,42 +36,25 @@ public class MessageContext<E>{
 	}
 	
 	public boolean isConsoleMessage() {
-		return event instanceof ConsoleUser;
-	}
-	
-	public boolean isIngameEvent() {
-		return event instanceof Player;
+		return event == null;
 	}
 	
 	public E getEvent() {
 		return event;
 	}
 	
-	public Named getAuthor() {
-		Named author;
-		author = getDiscordAuthor();
-		if(author == null) {
-			author = getPlayerAuthor();
+	public DiscordUser getAuthor() {
+		if(isConsoleMessage()) {
+			return null;
 		}
-		return author;
-	}
-	
-	public DiscordUser getDiscordAuthor() {
 		if(event instanceof GuildMessageReceivedEvent) {
-			return DiscordUser.getDiscordUser(ConsoleContext.INSTANCE, ((GuildMessageReceivedEvent)event).getMessage().getAuthor().getIdLong());
+			return DiscordUser.getDiscordUser(((GuildMessageReceivedEvent)event).getMessage().getAuthor().getIdLong());
 		}
 		else if (event instanceof PrivateMessageReceivedEvent) {
-			return DiscordUser.getDiscordUser(ConsoleContext.INSTANCE, ((PrivateMessageReceivedEvent)event).getMessage().getAuthor().getIdLong());
+			return DiscordUser.getDiscordUser(((PrivateMessageReceivedEvent)event).getMessage().getAuthor().getIdLong());
 		}
 		else if (event instanceof DiscordUser) {
 			return (DiscordUser) event;
-		}
-		return null;
-	}
-	
-	public Player getPlayerAuthor() {
-		if(event instanceof Player) {
-			return (Player) event;
 		}
 		return null;
 	}
@@ -86,11 +63,22 @@ public class MessageContext<E>{
 		if (isOperator()){
 			return true;
 		}
-		return getDiscordAuthor().isAdmin();
+		else if(event instanceof GuildMessageReceivedEvent) {
+			GuildMessageReceivedEvent e = (GuildMessageReceivedEvent) event;
+			DiscordServer server = getServer();
+			Role[] adminRoles = server.getAdminRoles();
+			Member member = e.getMessage().getMember();
+			for(Role role : adminRoles) {
+				if(member.getRoles().contains(role)) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 	
 	public boolean isOperator() {
-		return isConsoleMessage() || getDiscordAuthor().isOperator();
+		return isConsoleMessage() || getAuthor().getJDAUser().getAsTag().equalsIgnoreCase(Main.botOwner);
 	}
 	
 	public void sendMessage(String message) {
@@ -111,71 +99,36 @@ public class MessageContext<E>{
 				}
 			}
 		}
-		else if (isConsoleMessage()) {
+		else {
 			System.out.println(message);
-		}
-		if(isIngameEvent()) {
-			throw new UnsupportedOperationException();
 		}
 	}
 	
 	public String getMention() {
 		if(isConsoleMessage()) {
-			return "@CONSOLE";
+			return "@ CONSOLE";
 		}
-		if(isIngameEvent()) {
-			throw new UnsupportedOperationException();
-		}
-		return getDiscordAuthor().getJDAUser().getAsMention();
+		return getAuthor().getJDAUser().getAsMention();
 	}
 	
 	public String getTag() {
 		if(isConsoleMessage()) {
 			return "CONSOLE";
 		}
-		if(isIngameEvent()) {
-			return getPlayerAuthor().toString();
-		}
-		return getDiscordAuthor().getJDAUser().getAsTag();
+		return getAuthor().getJDAUser().getAsTag();
 	}
 	
 	public long getSenderId() {
-		if(event instanceof DiscordUser) {
-			return getDiscordAuthor().getID();
+		if(isConsoleMessage()) {
+			return -1;
 		}
-		if(event instanceof GuildMessageReceivedEvent) {
-			return ((GuildMessageReceivedEvent) event).getAuthor().getIdLong();
-		}
-		if(event instanceof PrivateMessageReceivedEvent) {
-			return ((PrivateMessageReceivedEvent)event).getAuthor().getIdLong();
-		}
-		if (event instanceof Player) {
-			return ((Player) event).getID();
-		}
-		throw new IllegalStateException(event.getClass().getCanonicalName());
+		return getAuthor().getJDAUser().getIdLong();
 	}
 	
 	public DiscordServer getServer() {
 		if(event instanceof GuildMessageReceivedEvent) {
-			return DiscordServer.getServer(ConsoleContext.INSTANCE, ((GuildMessageReceivedEvent)event).getMessage().getGuild().getIdLong());
+			return DiscordServer.getServer(((GuildMessageReceivedEvent)event).getMessage().getGuild().getIdLong());
 		}
 		return null;
-	}
-	
-	public MessageChannel getChannel() {
-		if (event instanceof GuildMessageReceivedEvent) {
-			return ((GuildMessageReceivedEvent) event).getChannel();
-		}
-		if (event instanceof PrivateMessageReceivedEvent) {
-			return ((PrivateMessageReceivedEvent) event).getChannel();
-		}
-		return null;
-	}
-	
-	public DatabaseConnection getConnection() throws SQLException {
-		if(getDiscordAuthor() == null) {
-			return ConsoleContext.INSTANCE.getConnection();
-		}
-		return getDiscordAuthor().getConnection();
 	}
 }

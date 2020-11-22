@@ -5,8 +5,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.gamebuster19901.excite.bot.command.ConsoleContext;
 import com.gamebuster19901.excite.bot.server.DiscordServer;
+import com.gamebuster19901.excite.bot.server.UnloadedDiscordServer;
 
 public class Emote {
 	
@@ -37,12 +37,12 @@ public class Emote {
 		Emote emote = EMOTES.get(name);
 		if(emote != null && 
 				emote.discordServer != -1 
-				&& DiscordServer.getServer(ConsoleContext.INSTANCE, emote.discordServer).isLoaded()) {
+				&& ! (DiscordServer.getServer(emote.discordServer) instanceof UnloadedDiscordServer)) {
 			return EMOTES.get(name);
 		}
 		
 		String ret = "";
-		for(DiscordServer server : DiscordServer.getKnownDiscordServers()) {
+		for(DiscordServer server : DiscordServer.getLoadedDiscordServers()) {
 			List<net.dv8tion.jda.api.entities.Emote> emotes = server.getGuild().getEmotesByName(name, false);
 			if(emotes.size() > 0) {
 				LOGGER.info("Found emote :" + name + ": " + " in " + server);

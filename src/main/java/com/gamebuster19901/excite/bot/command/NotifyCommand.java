@@ -2,17 +2,18 @@ package com.gamebuster19901.excite.bot.command;
 
 import java.time.Duration;
 
+import com.gamebuster19901.excite.bot.WiimmfiCommand;
 import com.gamebuster19901.excite.util.TimeUtils;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 
-public class NotifyCommand {
+public class NotifyCommand extends WiimmfiCommand{
 
 	@SuppressWarnings("rawtypes")
 	public static void register(CommandDispatcher<MessageContext> dispatcher) {
-		dispatcher.register(Commands.literal("notify").then(Commands.literal("threshold").then(Commands.argument("amount", IntegerArgumentType.integer()).executes((context) -> {
+		dispatcher.register(Commands.literal("!notify").then(Commands.literal("threshold").then(Commands.argument("amount", IntegerArgumentType.integer()).executes((context) -> {
 			return setThreshold(context.getSource(), context.getArgument("amount", Integer.class));
 		})))
 		.then(Commands.literal("frequency").then(Commands.argument("amount", IntegerArgumentType.integer()).then(Commands.argument("timeUnit", StringArgumentType.word()).executes((context) -> {
@@ -30,11 +31,11 @@ public class NotifyCommand {
 	private static int setThreshold(MessageContext context, int threshold) {
 		if(!context.isConsoleMessage()) {
 			if(threshold > 0) {
-				context.getDiscordAuthor().setNotifyThreshold(threshold);
+				context.getAuthor().setNotifyThreshold(threshold);
 				context.sendMessage(context.getMention() + ", the player count must now be " + threshold + " or higher for you to be notified");
 			}
 			else if (threshold == -1) {
-				context.getDiscordAuthor().setNotifyThreshold(threshold);
+				context.getAuthor().setNotifyThreshold(threshold);
 				context.sendMessage(context.getMention() + ", you will no longer be notified if players are online.");
 			}
 			else {
@@ -54,7 +55,7 @@ public class NotifyCommand {
 			if(frequency != null) {
 				Duration min = Duration.ofMinutes(5);
 				if(frequency.compareTo(min) >= 0) {
-					context.getDiscordAuthor().setNotifyFrequency(frequency);
+					context.getAuthor().setNotifyFrequency(frequency);
 					context.sendMessage(context.getMention() + ", You will now be notified of online players a maximum of once every " + TimeUtils.readableDuration(frequency));
 				}
 				else {
@@ -74,8 +75,8 @@ public class NotifyCommand {
 	@SuppressWarnings("rawtypes")
 	private static int setContinuous(MessageContext context, boolean continuous) {
 		if(!context.isConsoleMessage()) {
-			context.getDiscordAuthor().setNotifyContinuously(continuous);
-			context.sendMessage(context.getDiscordAuthor().getJDAUser().getAsMention() + ", you have set continuous notifications to " + continuous);
+			context.getAuthor().setNotifyContinuously(continuous);
+			context.sendMessage(context.getAuthor().getJDAUser().getAsMention() + ", you have set continuous notifications to " + continuous);
 		}
 		else {
 			context.sendMessage("This command must be executed from discord");

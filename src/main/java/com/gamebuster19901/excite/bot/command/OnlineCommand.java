@@ -2,28 +2,28 @@ package com.gamebuster19901.excite.bot.command;
 
 import com.gamebuster19901.excite.Main;
 import com.gamebuster19901.excite.Wiimmfi;
+import com.gamebuster19901.excite.bot.WiimmfiCommand;
 import com.gamebuster19901.excite.util.StacktraceUtil;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import com.mojang.brigadier.context.CommandContext;
 
 @SuppressWarnings("rawtypes") 
-public class OnlineCommand {
+public class OnlineCommand extends WiimmfiCommand{
 
 	public static void register(CommandDispatcher<MessageContext> dispatcher) {
-		LiteralArgumentBuilder<MessageContext> builder = Commands.literal("online").executes((command) -> {
-			return sendResponse(command.getSource(), command);
+		LiteralArgumentBuilder<MessageContext> builder = Commands.literal("!online").executes((command) -> {
+			return sendResponse(command.getSource());
 		});
 		
 		dispatcher.register(builder);
-		dispatcher.register(Commands.literal("o").executes(builder.getCommand()));
+		dispatcher.register(Commands.literal("!o").executes(builder.getCommand()));
 	}
 	
-	public static int sendResponse(MessageContext context, CommandContext<MessageContext> cmdContext) {
+	public static int sendResponse(MessageContext context) {
 		Wiimmfi wiimmfi = Main.discordBot.getWiimmfi();
 		String response;
-		if(wiimmfi.getError() == null) {
-			response = Wiimmfi.getOnlinePlayerList(context, cmdContext.getInput().equals("online"));
+		if(checkNotErrored(context)) {
+			response = Wiimmfi.getOnlinePlayerList(context);
 		}
 		else {
 			response = "Bot offline due to an error: \n\n" + StacktraceUtil.getStackTrace(wiimmfi.getError());

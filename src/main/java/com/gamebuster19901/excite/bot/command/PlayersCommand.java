@@ -8,7 +8,7 @@ public class PlayersCommand {
 	
 	@SuppressWarnings("rawtypes")
 	public static void register(CommandDispatcher<MessageContext> dispatcher) {
-		dispatcher.register(Commands.literal("players").executes((command) -> {
+		dispatcher.register(Commands.literal("!players").executes((command) -> {
 			return sendResponse(command.getSource());
 		}));	
 	}
@@ -16,14 +16,14 @@ public class PlayersCommand {
 	@SuppressWarnings("rawtypes")
 	public static int sendResponse(MessageContext context) {
 		if(context.isAdmin() || context.isPrivateMessage()) {
-			Player[] players = Player.getEncounteredPlayers(ConsoleContext.INSTANCE);
+			Player[] players = Player.getEncounteredPlayers();
 			String response = "Known players: (" + players.length + ") \n\n";
 			for(Player player : players) {
-				response += player.toFullString() + "\n";
+				response += player + "\n";
 			}
 			context.sendMessage(response);
 			if(!context.isConsoleMessage()) {
-				DiscordUser.getDiscordUser(ConsoleContext.INSTANCE, context.getSenderId()).sentCommand(context, 2);
+				DiscordUser.getDiscordUser(context.getSenderId()).sentCommand(context, 2);
 			}
 		}
 		else {
