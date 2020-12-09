@@ -266,7 +266,7 @@ public class DiscordUser implements Banee {
 	}
 	
 	public void setNotifyContinuously(boolean continuous) {
-		String value = continuous ? "b'1'" : "b'0'";
+		int value = continuous ? 1 : 0;
 		try {
 			Table.updateWhere(ConsoleContext.INSTANCE, DISCORD_USERS, NOTIFY_CONTINUOUSLY, value, new Comparison(DISCORD_ID, EQUALS, getID()));
 			if(continuous) {
