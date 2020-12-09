@@ -5,13 +5,13 @@ import com.mojang.brigadier.CommandDispatcher;
 public class ChangelogCommand {
 
 	private static final String changelog = 
-			"@everyone\n" + 
+			"Everyone,\n" + 
 			"\n" + 
 			"I've been updated!" +
 			"\n" + 
 			"Here is a summary of the changes:\n" + 
 			"\n" + 
-			" * Changed `9043` lines of code in `92` files :woozy_face: <https://github.com/Gamebuster19901/ExciteBot/pull/71/files>\n" + 
+			" * Changed `9801` lines of code in `96` files :woozy_face: <https://github.com/Gamebuster19901/ExciteBot/pull/71/files>\n" + 
 			"\n" + 
 			" * Migrated the bot database to MYSQL\n" + 
 			" \n" + 
