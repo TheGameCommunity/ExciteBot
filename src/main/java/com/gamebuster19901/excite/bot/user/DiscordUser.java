@@ -362,9 +362,10 @@ public class DiscordUser implements Banee {
 					privateChannel.sendMessage(message).complete();
 				}
 				catch(ErrorResponseException e) {
+					System.out.println(this.toDetailedString());
 					e.printStackTrace();
 				}
-			}
+			//}
 		}
 	}
 	
@@ -594,12 +595,14 @@ public class DiscordUser implements Banee {
 						if(!result.getBoolean(NOTIFY_CONTINUOUSLY)) {
 							user.setDippedBelowThreshold(false);
 						}
-						for(Player player : Wiimmfi.getOnlinePlayers()) {
-							if(player.getDiscord() == result.getLong(DISCORD_ID)) {
-								return;
+						if(threshold != -1) {
+							for(Player player : Wiimmfi.getOnlinePlayers()) {
+								if(player.getDiscord() == result.getLong(DISCORD_ID)) {
+									return;
+								}
+								user.sendMessage("Players Online" + Wiimmfi.getOnlinePlayerList(false));
+								user.setLastNotification();
 							}
-							user.sendMessage("Players Online" + Wiimmfi.getOnlinePlayerList(false));
-							user.setLastNotification();
 						}
 					}
 				}
