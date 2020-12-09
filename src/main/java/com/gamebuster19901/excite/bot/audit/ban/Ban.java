@@ -146,6 +146,7 @@ public class Ban extends Audit{
 	public static Ban getBanByAuditId(MessageContext context, long id) throws IllegalArgumentException {
 		Result results = Table.selectAllFromJoinedUsingWhere(context, AUDITS, AUDIT_BANS, AUDIT_ID, new Comparison(AUDIT_ID, EQUALS, id));
 		if(results.hasNext()) {
+			results.next();
 			return new Ban(results.getRow());
 		}
 		return null;
