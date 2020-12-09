@@ -96,7 +96,7 @@ public class Player implements Banee {
 		if(isBot()) {
 			suffix += BOT;
 		}
-		if(discordID != -1) {
+		if(discordID != 0) {
 			MessageContext context = new MessageContext(DiscordUser.getDiscordUserIncludingUnknown(ConsoleContext.INSTANCE, discordID));
 			if(context.isOperator()) {
 				suffix = suffix + Emote.getEmote(BOT_OPERATOR);
@@ -140,7 +140,7 @@ public class Player implements Banee {
 		if(isBot()) {
 			suffix += BOT;
 		}
-		if(discordID != -1) {
+		if(discordID != 0) {
 			MessageContext context = new MessageContext(DiscordUser.getDiscordUserIncludingUnknown(ConsoleContext.INSTANCE, discordID));
 			if(context.isOperator()) {
 				suffix = suffix + Emote.getEmote(BOT_OPERATOR);
@@ -269,7 +269,7 @@ public class Player implements Banee {
 	}
 	
 	public boolean isVerified() {
-		return getDiscord() != -1;
+		return getDiscord() != 0;
 	}
 	
 	@SuppressWarnings("deprecation")
@@ -343,7 +343,7 @@ public class Player implements Banee {
 				if(ret != 0) {
 					return ret;
 				}
-				return -1;
+				return 0;
 			}
 			throw new AssertionError("Could not find player with pid " + playerID);
 		} catch (SQLException e) {
