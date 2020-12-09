@@ -8,6 +8,8 @@ import java.util.logging.Logger;
 import com.gamebuster19901.excite.bot.command.ConsoleContext;
 import com.gamebuster19901.excite.bot.server.DiscordServer;
 
+import net.dv8tion.jda.api.entities.Guild;
+
 public class Emote {
 	
 	private static final Logger LOGGER = Logger.getLogger(Emote.class.getName());
@@ -43,10 +45,13 @@ public class Emote {
 		
 		String ret = "";
 		for(DiscordServer server : DiscordServer.getKnownDiscordServers()) {
-			List<net.dv8tion.jda.api.entities.Emote> emotes = server.getGuild().getEmotesByName(name, false);
-			if(emotes.size() > 0) {
-				LOGGER.info("Found emote :" + name + ": " + " in " + server);
-				return new Emote(name, server.getId(), emotes.get(0).getAsMention());
+			Guild guild = server.getGuild();
+			if(guild != null) {
+				List<net.dv8tion.jda.api.entities.Emote> emotes = server.getGuild().getEmotesByName(name, false);
+				if(emotes.size() > 0) {
+					LOGGER.info("Found emote :" + name + ": " + " in " + server);
+					return new Emote(name, server.getId(), emotes.get(0).getAsMention());
+				}
 			}
 		}
 		LOGGER.log(Level.WARNING, "Unable to find emote :" + name + ":");
