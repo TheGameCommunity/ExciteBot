@@ -7,21 +7,11 @@ public class ChangelogCommand {
 	private static final String changelog = 
 			"@everyone\n" + 
 			"\n" + 
-			"If you're here, you've been added as a beta tester for <@&778524349992927252>!\n" + 
-			"\n" + 
-			"The bot has been migrated to a new database. Please help me test it out by using the <@&778524349992927252> bot rather than the <@&718906591633604638> bot. \n" + 
-			"\n" + 
-			"The <@&718906591633604638> bot is still available for use just in case there are major issue with <@&778524349992927252>, but I have cleared your settings in it so you don't receive notifications from both bots. You should now be receiving notifications from <@&778524349992927252>.\n" + 
-			"\n" + 
-			"If you wish to use <@&718906591633604638> again, you will have to use `notify threshold` and `notify frequency` again.\n" + 
-			"\n" + 
-			"Any settings you make in <@&718906591633604638> will not be saved after the beta is over, and <@&778524349992927252> will become <@&718906591633604638> after the beta.\n" + 
-			"\n" + 
-			"All of your excitebots profiles will remain registered, you don't need to re-register.\n" + 
+			"I've been updated!" +
 			"\n" + 
 			"Here is a summary of the changes:\n" + 
 			"\n" + 
-			" * Changed `9043` lines of code in `92` files :woozy_face: <https://github.com/Gamebuster19901/ExciteBot/pull/67/files>\n" + 
+			" * Changed `9043` lines of code in `92` files :woozy_face: <https://github.com/Gamebuster19901/ExciteBot/pull/71/files>\n" + 
 			"\n" + 
 			" * Migrated the bot database to MYSQL\n" + 
 			" \n" + 
@@ -58,7 +48,6 @@ public class ChangelogCommand {
 			"\n" + 
 			" * `!online` has the old behavior which shows friend codes and player ids\n" + 
 			"     \n" + 
-			"<@&700212709257642005> and <@&752643456022741136> I will send you instructions on how to access the database tomorrow.\n" + 
 			"\n" + 
 			"If there are bugs, please create a bug report at <https://github.com/Gamebuster19901/ExciteBot/issues> or ping <@138454176718913536>\n" + 
 			"\n" + 
