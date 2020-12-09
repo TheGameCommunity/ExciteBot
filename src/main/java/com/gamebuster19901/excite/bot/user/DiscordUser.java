@@ -365,7 +365,7 @@ public class DiscordUser implements Banee {
 					System.out.println(this.toDetailedString());
 					e.printStackTrace();
 				}
-			//}
+			}
 		}
 	}
 	
