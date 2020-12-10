@@ -2,6 +2,8 @@ package com.gamebuster19901.excite.util;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.Month;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
@@ -12,7 +14,7 @@ import java.util.Locale;
 public final class TimeUtils {
 	public static final DateTimeFormatter DB_DATE_FORMATTER = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM).withLocale(Locale.US).withZone(ZoneId.of("UTC"));
 	public static final Duration FOREVER = ChronoUnit.FOREVER.getDuration();
-	
+	public static final Instant PLAYER_EPOCH = Instant.parse("2020-11-01T07:00:00Z"); //The second 2:00 am EST that occurs due do daylight savings
 	public static String readableDuration(Duration duration) {
 		String time = "";
 		
@@ -91,8 +93,19 @@ public final class TimeUtils {
 		return duration;
 	}
 	
+	public static Instant parseInstant(String instant) {
+		if(instant == null) {
+			return Instant.MIN;
+		}
+		return Instant.parse(instant);
+	}
+	
 	public static String getDate(TemporalAccessor temporal) {
 		return DB_DATE_FORMATTER.format(temporal);
+	}
+	
+	public static Month getMonth(LocalDate date) {
+		return date.getMonth();
 	}
 	
 	private static boolean isSeconds(String timeUnit) {

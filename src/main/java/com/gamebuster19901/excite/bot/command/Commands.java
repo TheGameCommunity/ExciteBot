@@ -1,10 +1,12 @@
 package com.gamebuster19901.excite.bot.command;
 
-import com.gamebuster19901.excite.bot.audit.Audit;
+import org.apache.commons.lang3.StringUtils;
+
+import com.gamebuster19901.excite.Main;
 import com.gamebuster19901.excite.bot.audit.CommandAudit;
-import com.gamebuster19901.excite.bot.user.ConsoleUser;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
 import com.gamebuster19901.excite.util.StacktraceUtil;
+
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
@@ -18,6 +20,7 @@ import net.dv8tion.jda.api.events.message.priv.PrivateMessageReceivedEvent;
 public class Commands {
 	private final CommandDispatcher<MessageContext> dispatcher = new CommandDispatcher<>();
 	public static final Commands DISPATCHER = new Commands();
+	public static final String DEFAULT_PREFIX = "!";
 	
 	public Commands() {
 		OnlineCommand.register(dispatcher);
@@ -28,21 +31,21 @@ public class Commands {
 		NotifyCommand.register(dispatcher);
 		StopCommand.register(dispatcher);
 		HelpCommand.register(dispatcher);
-		BackupCommand.register(dispatcher);
-		BanlistCommand.register(dispatcher);
+//		BanlistCommand.register(dispatcher);
 		RestartCommand.register(dispatcher);
-		BanInfoCommand.register(dispatcher);
 		PlayersCommand.register(dispatcher);
 		IconDumpCommand.register(dispatcher);
-		VideoCommand.register(dispatcher);
+//		VideoCommand.register(dispatcher);
 		GameDataCommand.register(dispatcher);
 		RankCommand.register(dispatcher);
+		PrefixCommand.register(dispatcher);
+		ChangelogCommand.register(dispatcher);
 	}
 	
 	public void handleCommand(String command) {
-		MessageContext context = new MessageContext(ConsoleUser.INSTANCE);
+		MessageContext context = new MessageContext(Main.CONSOLE);
 		try {
-			Audit.addAudit(new CommandAudit(context, command));
+			CommandAudit.addCommandAudit(context, command);
 			this.dispatcher.execute(command, context);
 		}
 		catch (CommandSyntaxException e) {
@@ -62,13 +65,15 @@ public class Commands {
 	public void handleCommand(GuildMessageReceivedEvent e) {
 		MessageContext<GuildMessageReceivedEvent> context = new MessageContext<GuildMessageReceivedEvent>(e);
 		try {
-			if(e.getMessage().getContentRaw().startsWith("!")) {
-				DiscordUser sender = DiscordUser.getDiscordUser(e.getAuthor().getIdLong());
+			String message = e.getMessage().getContentRaw();
+			String prefix = context.getServer().getPrefix();
+			if(message.startsWith(prefix)) {
+				message = StringUtils.replaceOnce(message, prefix, "");
+				DiscordUser sender = DiscordUser.getDiscordUser(ConsoleContext.INSTANCE, e.getAuthor().getIdLong());
 				if(!sender.isBanned()) {
-					sender.sentCommand(context);
 					if(!sender.isBanned()) {
-						Audit.addAudit(new CommandAudit(context, e.getMessage().getContentRaw()));
-						this.dispatcher.execute(e.getMessage().getContentRaw(), context);
+						CommandAudit.addCommandAudit(context, message);
+						this.dispatcher.execute(message, context);
 					}
 				}
 			}
@@ -79,6 +84,10 @@ public class Commands {
 			}
 		}
 		catch(Throwable t) {
+			if(t instanceof StackOverflowError) {
+				context.sendMessage(t.getClass().getCanonicalName());
+				throw t;
+			}
 			context.sendMessage(StacktraceUtil.getStackTrace(t));
 			if(!context.isConsoleMessage()) {
 				t.printStackTrace();
@@ -91,13 +100,13 @@ public class Commands {
 	
 	public void handleCommand(PrivateMessageReceivedEvent e) {
 		MessageContext<PrivateMessageReceivedEvent> context = new MessageContext<PrivateMessageReceivedEvent>(e);
+		String message = e.getMessage().getContentRaw();
 		try {
-			DiscordUser sender = DiscordUser.getDiscordUser(e.getAuthor().getIdLong());
+			DiscordUser sender = DiscordUser.getDiscordUser(ConsoleContext.INSTANCE, e.getAuthor().getIdLong());
 			if(!sender.isBanned()) {
-				sender.sentCommand(context);
 				if(!sender.isBanned()) {
-					Audit.addAudit(new CommandAudit(context, e.getMessage().getContentRaw()));
-					this.dispatcher.execute(e.getMessage().getContentRaw(), context);
+					CommandAudit.addCommandAudit(context, message);
+					this.dispatcher.execute(message, context);
 				}
 			}
 		}
@@ -125,6 +134,33 @@ public class Commands {
 	
 	public CommandDispatcher<MessageContext> getDispatcher() {
 		return this.dispatcher;
+	}
+	
+	public boolean setPrefix(MessageContext context, String prefix) {
+		if(context.isAdmin() && context.isGuildMessage() && isValidPrefix(prefix)) {
+			context.getServer().setPrefix(prefix);
+			return true;
+		}
+		return false;
+	}
+	
+	public String getPrefix(MessageContext context) {
+		if(context.isGuildMessage()) {
+			return context.getServer().getPrefix();
+		}
+		return DEFAULT_PREFIX;
+	}
+	
+	public static boolean isValidPrefix(String prefix) {
+		if(prefix == null || prefix.isEmpty()) {
+			return false;
+		}
+		for(int c : prefix.toCharArray()) {
+			if(Character.isWhitespace(c) || Character.isSupplementaryCodePoint(c) || Character.isISOControl(c) || c == '@' || c == '#' || c == '`') {
+				return false;
+			}
+		}
+		return true;
 	}
 	
 }

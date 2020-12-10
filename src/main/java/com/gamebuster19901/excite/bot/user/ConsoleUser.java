@@ -1,22 +1,48 @@
 package com.gamebuster19901.excite.bot.user;
 
+import java.io.IOError;
+import java.io.IOException;
+import java.sql.SQLException;
 import java.time.Duration;
 import java.util.Set;
 
+import com.gamebuster19901.excite.Main;
 import com.gamebuster19901.excite.Player;
-import com.gamebuster19901.excite.bot.audit.ban.DiscordBan;
 import com.gamebuster19901.excite.bot.command.MessageContext;
+import com.gamebuster19901.excite.bot.database.sql.DatabaseConnection;
 
 import net.dv8tion.jda.api.entities.User;
 
-public class ConsoleUser extends UnloadedDiscordUser{
-
-	public static final ConsoleUser INSTANCE = new ConsoleUser();
+public class ConsoleUser extends UnloadedDiscordUser {
+	
+	public static final long CONSOLE_USER_ID = 0;
 	
 	private final String name = "CONSOLE";
 	
-	private ConsoleUser() {
-		super(-1);
+	public ConsoleUser() {
+		super(CONSOLE_USER_ID);
+	}
+	
+	@Override
+	public void initConnection() {
+		try {
+			connection = new DatabaseConnection();
+		} catch (IOException | SQLException e) {
+			Main.discordBot.setNoDB();
+			if(connection != null) {
+				try {
+					connection.close();
+				} catch (SQLException e1) {
+					e1.printStackTrace();
+				}
+			}
+			throw new IOError(e);
+		}
+	}
+	
+	@Override
+	public String getName() {
+		return toDetailedString();
 	}
 	
 	@Override
@@ -26,35 +52,10 @@ public class ConsoleUser extends UnloadedDiscordUser{
 	
 	@Override
 	@SuppressWarnings("rawtypes")
-	public DiscordBan ban(MessageContext context, Duration duration, String reason) {
+	public Set<Player> getProfiles(MessageContext context) {
 		throw new AssertionError();
 	}
-	
-	@Override
-	public String toCSV() {
-		throw new AssertionError();
-	}
-	
-	@Override
-	public Set<Player> getProfiles() {
-		throw new AssertionError();
-	}
-	
-	@Override
-	public boolean isBanned() {
-		return false;
-	}
-	
-	@Override
-	public int getUnpardonedBanCount() {
-		throw new AssertionError();
-	}
-	
-	@Override
-	public int getTotalBanCount() {
-		throw new AssertionError();
-	}
-	
+
 	@Override
 	public void setNotifyThreshold(int threshold) {
 		throw new AssertionError();
@@ -80,9 +81,6 @@ public class ConsoleUser extends UnloadedDiscordUser{
 		throw new AssertionError();
 	}
 	
-	@SuppressWarnings("rawtypes")
-	public void sentCommand(MessageContext context) {}
-	
 	@Override
 	public void sendMessage(String message) {
 		System.out.println(message);
@@ -96,7 +94,7 @@ public class ConsoleUser extends UnloadedDiscordUser{
 	
 	@Override
 	public String toString() {
-		return name + "(" + getId() + ")"; 
+		return name + "(" + getID() + ")"; 
 	}
 	
 	@Override
@@ -104,4 +102,8 @@ public class ConsoleUser extends UnloadedDiscordUser{
 		return toString();
 	}
 
+	public static final ConsoleUser getConsoleUser() {
+		return Main.CONSOLE;
+	}
+	
 }

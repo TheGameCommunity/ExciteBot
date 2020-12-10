@@ -3,7 +3,9 @@ package com.gamebuster19901.excite.bot;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.io.IOError;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
@@ -12,6 +14,8 @@ import java.util.logging.Logger;
 import javax.security.auth.login.LoginException;
 
 import com.gamebuster19901.excite.Wiimmfi;
+import com.gamebuster19901.excite.bot.user.ConsoleUser;
+
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.OnlineStatus;
@@ -76,19 +80,32 @@ public class DiscordBot {
 		presence.setPresence(OnlineStatus.IDLE, Activity.of(ActivityType.DEFAULT, "Loading..."));
 	}
 	
+	public void setNoDB() {
+		Presence presence = jda.getPresence();
+		presence.setPresence(OnlineStatus.DO_NOT_DISTURB, Activity.of(ActivityType.DEFAULT, "No Database!"));
+	}
+	
 	public void updatePresence() {
+		try {
+			ConsoleUser user = ConsoleUser.getConsoleUser();
+			user.initConnection();
+			user.getConnection().close();
+		}
+		catch(IOError | SQLException e) {
+			setNoDB();
+			return;
+		}
+		
 		Presence presence = jda.getPresence();
 		if(wiimmfi.getError() == null) {
 			int playerCount = Wiimmfi.getAcknowledgedPlayerCount();
 			if (presence.getStatus() != OnlineStatus.ONLINE || presence.getActivity() == null || presence.getActivity().getType() != ActivityType.WATCHING || !presence.getActivity().getName().equals(playerCount + " racers online")) {
 				presence.setPresence(OnlineStatus.ONLINE, Activity.of(ActivityType.WATCHING, playerCount + " racers online"));
-				System.out.println("set presence");
 			}
 		}
 		else {
 			if(presence.getStatus() != OnlineStatus.DO_NOT_DISTURB || presence.getActivity().getType() != ActivityType.DEFAULT) {
 				presence.setPresence(OnlineStatus.DO_NOT_DISTURB, Activity.of(ActivityType.DEFAULT, "Bot offline"));
-				System.out.println("set presence");
 			}
 		}
 	}

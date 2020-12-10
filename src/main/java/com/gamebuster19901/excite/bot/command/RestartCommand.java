@@ -1,12 +1,13 @@
 package com.gamebuster19901.excite.bot.command;
 
 import com.gamebuster19901.excite.bot.user.DiscordUser;
+import com.gamebuster19901.excite.util.ThreadService;
 import com.mojang.brigadier.CommandDispatcher;
 
 public class RestartCommand {
 	@SuppressWarnings("rawtypes")
 	public static void register(CommandDispatcher<MessageContext> dispatcher) {
-		dispatcher.register(Commands.literal("!restart").executes((context) -> {
+		dispatcher.register(Commands.literal("restart").executes((context) -> {
 			return stop(context.getSource());
 		}));
 	}
@@ -16,13 +17,13 @@ public class RestartCommand {
 		if(context.isAdmin()) {
 			try {
 				context.sendMessage("Restarting!");
-				DiscordUser.messageAllAdmins(context.getAuthor().toDetailedString() + " is restarting the bot!");
+				DiscordUser.messageAllAdmins(context.getDiscordAuthor().toDetailedString() + " is restarting the bot!");
 			}
 			catch (Throwable t) {
 				t.printStackTrace();
 			}
 			finally {
-				System.exit(-1);
+				ThreadService.shutdown(context);
 			}
 		}
 		else {

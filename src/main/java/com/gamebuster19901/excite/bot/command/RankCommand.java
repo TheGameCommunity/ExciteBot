@@ -1,6 +1,5 @@
 package com.gamebuster19901.excite.bot.command;
 
-import com.gamebuster19901.excite.Main;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
 import com.gamebuster19901.excite.bot.user.UnknownDiscordUser;
 import com.mojang.brigadier.CommandDispatcher;
@@ -10,7 +9,7 @@ public class RankCommand {
 
 	@SuppressWarnings("rawtypes")
 	public static void register(CommandDispatcher<MessageContext> dispatcher) {
-		dispatcher.register(Commands.literal("!rank")
+		dispatcher.register(Commands.literal("rank")
 				.then(Commands.literal("add")
 						.then(Commands.argument("rank", StringArgumentType.word())
 								.then(Commands.argument("user", StringArgumentType.greedyString())
@@ -67,10 +66,10 @@ public class RankCommand {
 	private static int addAdmin(MessageContext context, String user) {
 		DiscordUser discordUser;
 		try {
-			discordUser = DiscordUser.getDiscordUserIncludingUnknown(Long.parseLong(user));
+			discordUser = DiscordUser.getDiscordUserIncludingUnknown(ConsoleContext.INSTANCE, Long.parseLong(user));
 		}
 		catch(NumberFormatException e) {
-			discordUser = DiscordUser.getDiscordUserIncludingUnknown(user);
+			discordUser = DiscordUser.getDiscordUserIncludingUnknown(ConsoleContext.INSTANCE, user);
 		}
 		
 		if(discordUser instanceof UnknownDiscordUser) {
@@ -83,7 +82,6 @@ public class RankCommand {
 		}
 		else {
 			discordUser.setAdmin(context, true);
-			context.sendMessage(discordUser.toDetailedString() + " is now a bot administrator for " + Main.discordBot.getSelfUser().getAsTag());
 		}
 		return 1;
 	}
@@ -92,10 +90,10 @@ public class RankCommand {
 	private static int removeAdmin(MessageContext context, String user) {
 		DiscordUser discordUser;
 		try {
-			discordUser = DiscordUser.getDiscordUserIncludingUnknown(Long.parseLong(user));
+			discordUser = DiscordUser.getDiscordUserIncludingUnknown(ConsoleContext.INSTANCE, Long.parseLong(user));
 		}
 		catch(NumberFormatException e) {
-			discordUser = DiscordUser.getDiscordUser(user);
+			discordUser = DiscordUser.getDiscordUser(ConsoleContext.INSTANCE, user);
 		}
 		
 		if(discordUser instanceof UnknownDiscordUser) {
@@ -107,11 +105,7 @@ public class RankCommand {
 			context.sendMessage(user + " is already not an admin");
 		}
 		else {
-			if(discordUser.isOperator()) {
-				removeOperator(context, user);
-			}
 			discordUser.setAdmin(context, false);
-			context.sendMessage(discordUser.toDetailedString() + " is no longer a bot administrator for " + Main.discordBot.getSelfUser().getAsTag());
 		}
 		return 1;
 	}
@@ -120,10 +114,10 @@ public class RankCommand {
 	private static int addOperator(MessageContext context, String user) {
 		DiscordUser discordUser;
 		try {
-			discordUser = DiscordUser.getDiscordUserIncludingUnknown(Long.parseLong(user));
+			discordUser = DiscordUser.getDiscordUserIncludingUnknown(ConsoleContext.INSTANCE, Long.parseLong(user));
 		}
 		catch(NumberFormatException e) {
-			discordUser = DiscordUser.getDiscordUser(user);
+			discordUser = DiscordUser.getDiscordUserIncludingUnknown(ConsoleContext.INSTANCE, user);
 		}
 		
 		if(discordUser instanceof UnknownDiscordUser) {
@@ -136,7 +130,6 @@ public class RankCommand {
 		}
 		else {
 			discordUser.setOperator(context, true);
-			context.sendMessage(discordUser.toDetailedString() + " is now a bot operator for " + Main.discordBot.getSelfUser().getAsTag());
 		}
 		return 1;
 	}
@@ -145,10 +138,10 @@ public class RankCommand {
 	private static int removeOperator(MessageContext context, String user) {
 		DiscordUser discordUser;
 		try {
-			discordUser = DiscordUser.getDiscordUserIncludingUnknown(Long.parseLong(user));
+			discordUser = DiscordUser.getDiscordUserIncludingUnknown(ConsoleContext.INSTANCE, Long.parseLong(user));
 		}
 		catch(NumberFormatException e) {
-			discordUser = DiscordUser.getDiscordUser(user);
+			discordUser = DiscordUser.getDiscordUserIncludingUnknown(ConsoleContext.INSTANCE, user);
 		}
 		
 		if(discordUser instanceof UnknownDiscordUser) {
@@ -161,7 +154,6 @@ public class RankCommand {
 		}
 		else {
 			discordUser.setOperator(context, false);
-			context.sendMessage(discordUser.toDetailedString() + " is no longer a bot operator for " + Main.discordBot.getSelfUser().getAsTag());
 		}
 		return 1;
 	}

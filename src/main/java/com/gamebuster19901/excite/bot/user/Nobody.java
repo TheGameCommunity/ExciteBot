@@ -9,6 +9,9 @@ public class Nobody extends UnloadedDiscordUser {
 	}
 
 	@Override
+	public void initConnection() {};
+	
+	@Override
 	public String toString() {
 		return "nobody";
 	}

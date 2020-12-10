@@ -1,13 +1,14 @@
 package com.gamebuster19901.excite.bot.command;
 
 import com.gamebuster19901.excite.bot.user.DiscordUser;
+import com.gamebuster19901.excite.util.ThreadService;
 import com.mojang.brigadier.CommandDispatcher;
 
 public class StopCommand {
 
 	@SuppressWarnings("rawtypes")
 	public static void register(CommandDispatcher<MessageContext> dispatcher) {
-		dispatcher.register(Commands.literal("!stop").executes((context) -> {
+		dispatcher.register(Commands.literal("stop").executes((context) -> {
 			return stop(context.getSource());
 		}));
 	}
@@ -17,13 +18,13 @@ public class StopCommand {
 		if(context.isAdmin()) {
 			try {
 				context.sendMessage("Stopping!");
-				DiscordUser.messageAllAdmins(context.getAuthor().toDetailedString() + " Stopped the bot!");
+				DiscordUser.messageAllAdmins(context.getDiscordAuthor().toDetailedString() + " Stopped the bot!");
 			}
 			catch (Throwable t) {
 				t.printStackTrace();
 			}
 			finally {
-				System.exit(0);
+				ThreadService.shutdown(context);
 			}
 		}
 		else {

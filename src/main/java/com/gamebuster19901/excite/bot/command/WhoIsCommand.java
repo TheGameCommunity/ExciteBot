@@ -1,8 +1,12 @@
 package com.gamebuster19901.excite.bot.command;
 
+import java.util.Arrays;
+import java.util.HashSet;
+
 import com.gamebuster19901.excite.Main;
 import com.gamebuster19901.excite.Player;
 import com.gamebuster19901.excite.Wiimmfi;
+import com.gamebuster19901.excite.bot.user.DiscordUser;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.tree.LiteralCommandNode;
@@ -11,39 +15,38 @@ import com.mojang.brigadier.tree.LiteralCommandNode;
 public class WhoIsCommand {
 
 	public static void register(CommandDispatcher<MessageContext> dispatcher) {
-		LiteralCommandNode<MessageContext> builder = dispatcher.register(Commands.literal("!whois")
+		LiteralCommandNode<MessageContext> builder = dispatcher.register(Commands.literal("whois")
 			.then(Commands.argument("player", StringArgumentType.greedyString()).executes((command) -> {
 				return sendResponse(command.getSource(), command.getArgument("player", String.class));
 			}
 		)));
 		
-		dispatcher.register(Commands.literal("!wi").redirect(builder));
+		dispatcher.register(Commands.literal("wi").redirect(builder));
 	}
 	
-	@SuppressWarnings("static-access")
 	public static int sendResponse(MessageContext context, String lookingFor) {
 		Wiimmfi wiimmfi = Main.discordBot.getWiimmfi();
 		String response = "";
 		if(wiimmfi.getError() == null) {
-			Player[] players = wiimmfi.getKnownPlayers();
-			
 			if(!lookingFor.isEmpty()) {
-				for(Player p : players) {
-					if(p.getName().equalsIgnoreCase(lookingFor)) {
-						response = response + p + "\n";
+				DiscordUser[] users = DiscordUser.getDiscordUsersWithUsernameOrID(context, lookingFor);
+				HashSet<Player> claimedPlayers = new HashSet<Player>();
+				HashSet<Player> unclaimedPlayers = new HashSet<Player>();
+				for(DiscordUser user : users) {
+					response = response + user.toDetailedString() + "\n";
+					for(Player player : user.getProfiles(context)) {
+						response = response + player.toFullString() + "\n";
+						claimedPlayers.add(player);
 					}
-					else if (p.getPrettyDiscord().toLowerCase().startsWith(lookingFor.toLowerCase())) {
-						response = response + p + "\n";
-					}
-					else if (p.getFriendCode().equals(lookingFor)) {
-						response = response + p + "\n";
-					}
-					else if (lookingFor.equals("" + p.getPlayerID())) {
-						response = response + p + "\n";
-					}
-					else if (lookingFor.equals("" + p.getDiscord())) {
-						response = response + p + "\n";
-					}
+				}
+				
+				unclaimedPlayers.addAll(Arrays.asList(Player.getPlayersByAnyIdentifier(context, lookingFor)));
+				unclaimedPlayers.removeAll(claimedPlayers);
+				if(response != null && unclaimedPlayers.size() > 0 && claimedPlayers.size() > 0) {
+					response = response + "\nUnclaimed Profiles :\n";
+				}
+				for(Player player : unclaimedPlayers) {
+					response = response + player.toFullString() + "\n";
 				}
 				if(response.isEmpty()) {
 					response = "No players found.";
