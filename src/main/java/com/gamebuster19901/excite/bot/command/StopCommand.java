@@ -24,7 +24,7 @@ public class StopCommand {
 				t.printStackTrace();
 			}
 			finally {
-				ThreadService.shutdown(context, -1);
+				ThreadService.shutdown(context, 0);
 			}
 		}
 		else {
