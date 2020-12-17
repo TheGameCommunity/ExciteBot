@@ -29,7 +29,7 @@ public class WhoIsCommand {
 		String response = "";
 		if(wiimmfi.getError() == null) {
 			if(!lookingFor.isEmpty()) {
-				DiscordUser[] users = DiscordUser.getDiscordUsersWithUsernameOrID(context, lookingFor);
+				DiscordUser[] users = DiscordUser.getDiscordUsersWithUsernameOrID(ConsoleContext.INSTANCE, lookingFor);
 				HashSet<Player> claimedPlayers = new HashSet<Player>();
 				HashSet<Player> unclaimedPlayers = new HashSet<Player>();
 				for(DiscordUser user : users) {
@@ -40,7 +40,7 @@ public class WhoIsCommand {
 					}
 				}
 				
-				unclaimedPlayers.addAll(Arrays.asList(Player.getPlayersByAnyIdentifier(context, lookingFor)));
+				unclaimedPlayers.addAll(Arrays.asList(Player.getPlayersByAnyIdentifier(ConsoleContext.INSTANCE, lookingFor)));
 				unclaimedPlayers.removeAll(claimedPlayers);
 				if(response != null && unclaimedPlayers.size() > 0 && claimedPlayers.size() > 0) {
 					response = response + "\nUnclaimed Profiles :\n";
