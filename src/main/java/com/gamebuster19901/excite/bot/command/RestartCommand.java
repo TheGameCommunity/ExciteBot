@@ -23,7 +23,7 @@ public class RestartCommand {
 				t.printStackTrace();
 			}
 			finally {
-				ThreadService.shutdown(context);
+				ThreadService.shutdown(context, 0);
 			}
 		}
 		else {

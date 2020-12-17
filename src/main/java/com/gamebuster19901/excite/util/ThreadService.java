@@ -48,7 +48,7 @@ public class ThreadService {
 	}
 	
 	@SuppressWarnings("rawtypes")
-	public static void shutdown(MessageContext context) {
+	public static void shutdown(MessageContext context, int ExitCode) {
 		Thread shutdownHandler = new Thread() {
 			@Override
 			public void run() {
