@@ -6,6 +6,7 @@ import java.sql.SQLException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -538,7 +539,10 @@ public class DiscordUser implements Banee {
 	}
 	
 	public static final void messageAllAdmins(String message) {
-		for(DiscordUser admin : getAllAdmins()) {
+		HashSet<DiscordUser> admins = new HashSet<DiscordUser>();
+		admins.addAll(Arrays.asList(getAllAdmins()));
+		admins.addAll(Arrays.asList(getAllOperators()));
+		for(DiscordUser admin : admins) {
 			admin.sendMessage(message);
 		}
 	}
