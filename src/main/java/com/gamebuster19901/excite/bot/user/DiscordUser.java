@@ -538,7 +538,9 @@ public class DiscordUser implements Banee {
 	}
 	
 	public static final void messageAllAdmins(String message) {
-		
+		for(DiscordUser admin : getAllAdmins()) {
+			admin.sendMessage(message);
+		}
 	}
 	
 	public static final void messageAllOperators(String message) {
