@@ -606,9 +606,9 @@ public class DiscordUser implements Banee {
 								if(player.getDiscord() == result.getLong(DISCORD_ID)) {
 									return;
 								}
-								user.sendMessage("Players Online" + Wiimmfi.getOnlinePlayerList(false));
-								user.setLastNotification();
 							}
+							user.sendMessage("Players Online" + Wiimmfi.getOnlinePlayerList(false));
+							user.setLastNotification();
 						}
 					}
 				}
