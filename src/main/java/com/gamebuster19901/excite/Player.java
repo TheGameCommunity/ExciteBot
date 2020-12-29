@@ -192,15 +192,18 @@ public class Player implements Banee {
 				}
 			}
 			else if (isPrivate()){
+				if(isFriendsList()) {
+					prefix = prefix + Emote.getEmote(FRIENDS_LIST);
+				}
 				if(isHosting()) {
 					prefix = prefix + Emote.getEmote(HOSTING_PRIVATE);
 				}
-				else if (!isBanned()){
+				else{
 					prefix = prefix + Emote.getEmote(ONLINE_PRIVATE);
 				}
 			}
 			else {
-				prefix = prefix + Emote.getEmote(FRIENDS_LIST);
+				prefix = prefix + "?";
 			}
 		}
 		else {
@@ -319,11 +322,15 @@ public class Player implements Banee {
 	}
 	
 	public boolean isPrivate() {
-		return !isGlobal() && !onlineStatus.equals("o");
+		return !isGlobal();
 	}
 	
 	public boolean isSearching() {
 		return onlineStatus.contains("S") && !isHosting() ;
+	}
+	
+	public boolean isFriendsList() {
+		return onlineStatus.equals("o") && connectionStatus == 1;
 	}
 	
 	public void setHost(int host) {
