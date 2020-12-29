@@ -319,7 +319,7 @@ public class Player implements Banee {
 	}
 	
 	public boolean isPrivate() {
-		return onlineStatus.contains("g");
+		return !isGlobal() && !onlineStatus.equals("o");
 	}
 	
 	public boolean isSearching() {
