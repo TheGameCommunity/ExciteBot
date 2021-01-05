@@ -23,7 +23,10 @@ public class NotifyCommand {
 		})))
 		.then(Commands.literal("disable").executes((context) -> {
 			return setThreshold(context.getSource(), -1);
-		})));
+		}))
+		.then(Commands.literal("detailed").then(Commands.argument("detailed", BoolArgumentType.bool()).executes((context) -> {
+			return setDetailed(context.getSource(), context.getArgument("detailed", Boolean.class));
+		}))));
 	}
 	
 	@SuppressWarnings("rawtypes")
@@ -76,6 +79,17 @@ public class NotifyCommand {
 		if(!context.isConsoleMessage()) {
 			context.getDiscordAuthor().setNotifyContinuously(continuous);
 			context.sendMessage(context.getDiscordAuthor().getJDAUser().getAsMention() + ", you have set continuous notifications to " + continuous);
+		}
+		else {
+			context.sendMessage("This command must be executed from discord");
+		}
+		return 1;
+	}
+	
+	private static int setDetailed(MessageContext context, boolean detailed) {
+		if(!context.isConsoleMessage()) {
+			context.getDiscordAuthor().setSendDetailedPM(detailed);
+			context.sendMessage(context.getDiscordAuthor().getJDAUser().getAsMention() + ", you have set detailed PM messages to " + detailed);
 		}
 		else {
 			context.sendMessage("This command must be executed from discord");

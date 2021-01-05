@@ -64,6 +64,7 @@ public enum Column {
 	LAST_NOTIFICATION("lastNotification", DISCORD_USERS),
 	BELOW_THRESHOLD("dippedBelowThreshold", DISCORD_USERS),
 	NOTIFY_CONTINUOUSLY("notifyContinuously", DISCORD_USERS),
+	DETAILED_PM("detailedPM", DISCORD_USERS),
 	
 	// OPERATOR
 	

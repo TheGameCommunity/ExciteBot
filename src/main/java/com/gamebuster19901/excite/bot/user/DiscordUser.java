@@ -322,6 +322,26 @@ public class DiscordUser implements Banee {
 		}
 	}
 	
+	public boolean sendDetailedPM() {
+		try {
+			Result result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, DETAILED_PM, DISCORD_USERS, new Comparison(DISCORD_ID, EQUALS, getID()));
+			if(result.next()) {
+				return result.getBoolean(DETAILED_PM);
+			}
+			throw new AssertionError("Could not get desired PM output of " + discordId);
+		} catch (SQLException e) {
+			throw new IOError(e);
+		}
+	}
+	
+	public void setSendDetailedPM(boolean sendFullPM) {
+		try {
+			Table.updateWhere(ConsoleContext.INSTANCE, DISCORD_USERS, DETAILED_PM, sendFullPM, new Comparison(DISCORD_ID, EQUALS, getID()));
+		} catch(SQLException e) {
+			throw new IOError(e);
+		}
+	}
+	
 	public String requestRegistration(Player profile) {
 		DesiredProfile desiredProfile = new DesiredProfile(this, profile);
 		if(desiredProfiles.contains(desiredProfile)) {
@@ -607,7 +627,7 @@ public class DiscordUser implements Banee {
 									return;
 								}
 							}
-							user.sendMessage("Players Online" + Wiimmfi.getOnlinePlayerList(false));
+							user.sendMessage("Players Online" + Wiimmfi.getOnlinePlayerList(user.sendDetailedPM()));
 							user.setLastNotification();
 						}
 					}
