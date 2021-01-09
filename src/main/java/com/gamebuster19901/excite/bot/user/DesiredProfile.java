@@ -19,7 +19,7 @@ public class DesiredProfile {
 	public DesiredProfile(DiscordUser requester, Player player) {
 		this.requester = requester;
 		this.desiredProfile = player;
-		if(player.getDiscord() != -1) {
+		if(player.getDiscord() != 0) {
 			throw new IllegalArgumentException(player.toString() + " is already registered!");
 		}
 	}
