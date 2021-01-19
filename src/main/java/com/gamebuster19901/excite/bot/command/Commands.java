@@ -44,7 +44,7 @@ public class Commands {
 	}
 	
 	public void handleCommand(String command) {
-		MessageContext context = new MessageContext(Main.CONSOLE);
+		MessageContext context = new MessageContext(Main.CONSOLE, command);
 		try {
 			CommandAudit.addCommandAudit(context, command);
 			this.dispatcher.execute(command, context);
