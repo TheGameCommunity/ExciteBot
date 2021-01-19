@@ -29,7 +29,7 @@ public class InsertCommand {
 						name = name.replace("\"", "");
 						Player.addPlayer(context, false, pid, fc, name);
 						Player player = Player.getPlayerByID(context, pid);
-						context.sendMessage(player.toString() + " inserted");
+						context.sendMessage("Inserted" + player.toFullString());
 						return 1;
 					}
 					else {
