@@ -108,7 +108,7 @@ public class Wiimmfi {
 					Player player = Player.getPlayerByID(ConsoleContext.INSTANCE, playerId);
 					if(player instanceof UnknownPlayer) {
 						String friendCode = parseLine(e.html(), 2);
-						player = Player.addPlayer(ConsoleContext.INSTANCE, playerId, friendCode, name);
+						player = Player.addPlayer(ConsoleContext.INSTANCE, true, playerId, friendCode, name);
 					}
 					else {
 						player.setName(name);

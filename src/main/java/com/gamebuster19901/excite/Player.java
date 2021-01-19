@@ -31,6 +31,8 @@ import net.dv8tion.jda.api.entities.User;
 public class Player implements Banee {
 	private static final Logger LOGGER = Logger.getLogger(Player.class.getName());
 	
+	public static final String validFCChars = "1234567890";
+	
 	protected static final String LEGACY = new String("legacy");
 	protected static final String VERIFIED = new String("verified");
 	protected static final String BANNED = new String("banned");
@@ -70,7 +72,7 @@ public class Player implements Banee {
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public static Player addPlayer(MessageContext context, int playerID, String friendCode, String name) throws SQLException {
+	public static Player addPlayer(MessageContext context, boolean automatic, int playerID, String friendCode, String name) throws SQLException {
 		PreparedStatement ps = Insertion.insertInto(PLAYERS)
 		.setColumns(PLAYER_ID, FRIEND_CODE, PLAYER_NAME)
 		.to(playerID, friendCode, name)
@@ -79,7 +81,7 @@ public class Player implements Banee {
 		ps.execute();
 
 		Player ret = getPlayerByID(context, playerID);
-		DiscoveryAudit.addProfileDiscovery(new MessageContext(ret));
+		DiscoveryAudit.addProfileDiscovery(context, automatic, ret);
 		
 		return ret;
 	}
@@ -481,5 +483,24 @@ public class Player implements Banee {
 			throw new IOError(e);
 		}
 		return players.toArray(new Player[]{});
+	}
+	
+	public static boolean isValidFriendCode(String fc) {
+		if(fc.length() == 14) {
+			for(int i = 0; i < 14; i++) {
+				if(i == 4 || i == 9) {
+					if(fc.charAt(i) != '-') {
+						return false;
+					}
+				}
+				else {
+					if(validFCChars.indexOf(fc.charAt(i)) == -1) {
+						return false;
+					}
+				}
+			}
+			return true;
+		}
+		return false;
 	}
 }

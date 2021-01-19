@@ -3,6 +3,7 @@ package com.gamebuster19901.excite.bot.audit;
 import java.io.IOError;
 import java.sql.SQLException;
 
+import com.gamebuster19901.excite.Player;
 import com.gamebuster19901.excite.bot.command.ConsoleContext;
 import com.gamebuster19901.excite.bot.command.MessageContext;
 import com.gamebuster19901.excite.bot.database.Comparison;
@@ -24,20 +25,20 @@ public class DiscoveryAudit extends Audit {
 	}
 	
 	@SuppressWarnings("rawtypes")
-	public static DiscoveryAudit addProfileDiscovery(MessageContext context) {
-		Audit parent = Audit.addAudit(context,  AuditType.DISCOVERY_AUDIT, getMessage(context));
+	public static DiscoveryAudit addProfileDiscovery(MessageContext context, boolean automatic, Player player) {
+		Audit parent = Audit.addAudit(context,  AuditType.DISCOVERY_AUDIT, getMessage(context, automatic, player));
 		
 		PreparedStatement st;
 		
 		try {
 			st = Insertion.insertInto(Table.AUDIT_PROFILE_DISCOVERIES)
 			.setColumns(AUDIT_ID, PLAYER_ID)
-			.to(parent.getID(), context.getSenderId())
+			.to(parent.getID(), player.getID())
 			.prepare(context, true);
 			
 			st.execute();
 			
-			DiscoveryAudit ret = getProfileDiscoveryByDiscoveredID(ConsoleContext.INSTANCE, context.getSenderId());
+			DiscoveryAudit ret = getProfileDiscoveryByDiscoveredID(ConsoleContext.INSTANCE, player.getID());
 			ret.parentData = parent;
 			return ret;
 		}
@@ -57,8 +58,11 @@ public class DiscoveryAudit extends Audit {
 	}
 	
 	@SuppressWarnings("rawtypes")
-	private static String getMessage(MessageContext context) {
-		return context.getAuthor().getIdentifierName();
+	private static String getMessage(MessageContext context, boolean automatic, Player player) {
+		if(context.isConsoleMessage() && automatic) {
+			return player.getIdentifierName();
+		}
+		return context.getAuthor().getIdentifierName() + " added " + player.getIdentifierName();
 	}
 	
 }
