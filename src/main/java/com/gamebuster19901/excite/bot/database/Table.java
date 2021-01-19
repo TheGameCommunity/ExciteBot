@@ -77,16 +77,10 @@ public enum Table {
 	
 	@SuppressWarnings({ "rawtypes" })
 	public static boolean existsWhere(MessageContext context, Table table, Comparison comparison) {
-		PreparedStatement st = null;
 		try {
-			st = context.getConnection().prepareStatement("SELECT EXISTS(SELECT 1 FROM " + table + " WHERE " + comparison);
-			comparison.insertValues(st);
-			Result result = st.query();
+			Result result = selectColumnsFromWhere(context, (Column) comparison.getColumn(), table, comparison);
 			return result.getRowCount() > 0;
 		} catch (SQLException e) {
-			if(st != null) {
-				System.out.println(st);
-			}
 			throw new IOError(e);
 		}
 	}

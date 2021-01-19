@@ -83,6 +83,11 @@ public class DatabaseConnection implements Connection {
 		rs.next();
 		return rs.getBoolean(1);
 	}
+	
+	@Deprecated
+	public Connection getRealDBConnection() {
+		return parent;
+	}
 
 	@Override
 	public <T> T unwrap(Class<T> iface) throws SQLException {
