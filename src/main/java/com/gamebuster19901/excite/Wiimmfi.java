@@ -125,6 +125,9 @@ public class Wiimmfi {
 		
 		for(Player player : onlinePlayers) {
 			if(PREV_ONLINE_PLAYERS.contains(player)) {
+				if(!(player.isPrivate() || player.isSearching() || player.isFriendsList())) {
+					player.updateSecondsPlayed();
+				}
 				player.updateLastOnline();
 			}
 			else {

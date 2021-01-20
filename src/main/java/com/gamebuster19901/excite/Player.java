@@ -344,6 +344,30 @@ public class Player implements Banee {
 		return onlineStatus;
 	}
 	
+	public void updateSecondsPlayed() {
+		try {
+			if(!isOnline() || !Wiimmfi.getOnlinePlayers().contains(this)) {
+				throw new IllegalStateException();
+			}
+			Table.updateWhere(ConsoleContext.INSTANCE, PLAYERS, SECONDS_PLAYED, Duration.between(getLastOnline(), Instant.now()).plus(getOnlineDuration()), new Comparison(PLAYER_ID, EQUALS, this.getID()));
+		} catch (SQLException e) {
+			throw new IOError(e);
+		}
+	}
+	
+	public Duration getOnlineDuration() {
+		try {
+			Result result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, SECONDS_PLAYED, PLAYERS, new Comparison(PLAYER_ID, EQUALS, this.getID()));
+			if(result.next()) {
+				return Duration.parse(result.getString(SECONDS_PLAYED));
+			}
+			else {
+				throw new IllegalStateException("No result for player " + this.getIdentifierName());
+			}
+		} catch (SQLException e) {
+			throw new IOError(e);
+		}
+	}
 	
 	public Instant getLastOnline() {
 		try {
