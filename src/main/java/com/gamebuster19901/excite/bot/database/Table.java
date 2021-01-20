@@ -20,6 +20,8 @@ public enum Table {
 	AUDIT_NAME_CHANGES,
 	AUDIT_PARDONS,
 	AUDIT_PROFILE_DISCOVERIES,
+	AUDIT_PROFILE_LOGINS,
+	AUDIT_PROFILE_LOGOUTS,
 	AUDIT_RANK_CHANGES,
 	AUDITS,
 	DISCORD_SERVERS,
@@ -28,6 +30,7 @@ public enum Table {
 	PLAYERS;
 	
 	public static final String HOST = "@'localhost'";
+	public static final String LOCK = "lock table TABLENAME in exclusive mode";
 	
 	@Override
 	public String toString() {
