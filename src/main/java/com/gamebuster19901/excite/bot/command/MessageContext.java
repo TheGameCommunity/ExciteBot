@@ -2,6 +2,8 @@ package com.gamebuster19901.excite.bot.command;
 
 import java.sql.SQLException;
 
+import javax.annotation.Nullable;
+
 import com.gamebuster19901.excite.Main;
 import com.gamebuster19901.excite.Player;
 import com.gamebuster19901.excite.bot.database.sql.DatabaseConnection;
@@ -11,6 +13,7 @@ import com.gamebuster19901.excite.bot.user.DiscordUser;
 import com.gamebuster19901.excite.util.MessageUtil;
 import com.gamebuster19901.excite.util.Named;
 
+import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.events.message.priv.PrivateMessageReceivedEvent;
@@ -18,6 +21,7 @@ import net.dv8tion.jda.api.events.message.priv.PrivateMessageReceivedEvent;
 public class MessageContext<E>{
 	
 	private E event;
+	private AbnormalMessage message;
 	
 	public MessageContext(E e) {
 		if(e instanceof GuildMessageReceivedEvent || e instanceof PrivateMessageReceivedEvent || e instanceof DiscordUser || e instanceof Player) {
@@ -26,6 +30,18 @@ public class MessageContext<E>{
 		else {
 			throw new IllegalArgumentException(e.toString());
 		}
+	}
+	
+	public MessageContext(E e, String message) {
+		this(e);
+		long id = 0;
+		if(e instanceof GuildMessageReceivedEvent) {
+			id = ((GuildMessageReceivedEvent) e).getMessageIdLong();
+		}
+		if(e instanceof PrivateMessageReceivedEvent) {
+			id = ((PrivateMessageReceivedEvent) e).getMessageIdLong();
+		}
+		this.message = new AbnormalMessage(message, id);
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -177,5 +193,18 @@ public class MessageContext<E>{
 			return ConsoleContext.INSTANCE.getConnection();
 		}
 		return getDiscordAuthor().getConnection();
+	}
+	
+	@Nullable
+	public Message getMessage() {
+		if(event instanceof GuildMessageReceivedEvent) {
+			return ((GuildMessageReceivedEvent) event).getMessage();
+		}
+		if(event instanceof PrivateMessageReceivedEvent) {
+			return ((PrivateMessageReceivedEvent) event).getMessage();
+		}
+		
+		return message;
+		
 	}
 }

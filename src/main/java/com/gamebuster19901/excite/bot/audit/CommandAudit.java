@@ -35,6 +35,7 @@ public class CommandAudit extends Audit {
 			long serverID = 0;
 			String channelName = null;
 			long channelID = 0;
+			long messageID = 0;
 			boolean isGuildMessage = context.isGuildMessage();
 			boolean isPrivateMessage = context.isPrivateMessage();
 			boolean isConsoleMessage = context.isConsoleMessage();
@@ -50,11 +51,12 @@ public class CommandAudit extends Audit {
 				serverID = context.getServer().getId();
 				channelName = context.getChannel().getName();
 				channelID = context.getChannel().getIdLong();
+				messageID = context.getMessage().getIdLong();
 			}
 			
 			st = Insertion.insertInto(AUDIT_COMMANDS)
-			.setColumns(AUDIT_ID, SERVER_NAME, SERVER_ID, CHANNEL_NAME, CHANNEL_ID, IS_GUILD_MESSAGE, IS_PRIVATE_MESSAGE, IS_CONSOLE_MESSAGE, IS_ADMIN, IS_OPERATOR)
-			.to(parent.getID(), serverName, serverID, channelName, channelID, isGuildMessage, isPrivateMessage, isConsoleMessage, isAdmin, isOperator)
+			.setColumns(AUDIT_ID, SERVER_NAME, SERVER_ID, CHANNEL_NAME, CHANNEL_ID, MESSAGE_ID, IS_GUILD_MESSAGE, IS_PRIVATE_MESSAGE, IS_CONSOLE_MESSAGE, IS_ADMIN, IS_OPERATOR)
+			.to(parent.getID(), serverName, serverID, channelName, channelID, messageID, isGuildMessage, isPrivateMessage, isConsoleMessage, isAdmin, isOperator)
 			.prepare(ConsoleContext.INSTANCE, true);
 			
 			st.execute();
