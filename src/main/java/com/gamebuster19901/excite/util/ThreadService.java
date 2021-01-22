@@ -17,6 +17,13 @@ public class ThreadService {
 							threads.remove(t);
 						}
 					}
+					try {
+						Thread.sleep(1000);
+					} catch (InterruptedException e) {
+						for(Thread t : threads) {
+							threads.remove(t);
+						}
+					}
 				}
 			}
 		};
