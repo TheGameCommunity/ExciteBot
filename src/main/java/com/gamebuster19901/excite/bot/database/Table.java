@@ -30,7 +30,6 @@ public enum Table {
 	PLAYERS;
 	
 	public static final String HOST = "@'localhost'";
-	public static final String LOCK = "lock table TABLENAME in exclusive mode";
 	
 	@Override
 	public String toString() {

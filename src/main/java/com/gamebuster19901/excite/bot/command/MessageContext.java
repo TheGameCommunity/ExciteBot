@@ -189,10 +189,7 @@ public class MessageContext<E>{
 	}
 	
 	public DatabaseConnection getConnection() throws SQLException {
-		if(getDiscordAuthor() == null) {
-			return ConsoleContext.INSTANCE.getConnection();
-		}
-		return getDiscordAuthor().getConnection();
+		return DatabaseConnection.INSTANCE;
 	}
 	
 	@Nullable

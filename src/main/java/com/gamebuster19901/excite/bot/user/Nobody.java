@@ -7,9 +7,6 @@ public class Nobody extends UnloadedDiscordUser {
 	private Nobody() {
 		super(-1);
 	}
-
-	@Override
-	public void initConnection() {};
 	
 	@Override
 	public String toString() {
