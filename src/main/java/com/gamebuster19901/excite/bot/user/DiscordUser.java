@@ -1,7 +1,6 @@
 package com.gamebuster19901.excite.bot.user;
 
 import java.io.IOError;
-import java.io.IOException;
 import java.sql.SQLException;
 import java.time.Duration;
 import java.time.Instant;
@@ -51,12 +50,10 @@ public class DiscordUser implements Banee {
 	
 	public DiscordUser(Result results) throws SQLException {
 		this.discordId = results.getLong(DISCORD_ID);
-		initConnection();
 	}
 	
 	protected DiscordUser(long userId) {
 		this.discordId = userId;
-		initConnection();
 	}
 	
 	
@@ -87,21 +84,6 @@ public class DiscordUser implements Banee {
 			throw new IOError(e);
 		}
 		return getDiscordUser(context, discordID);
-	}
-	
-	public DatabaseConnection getConnection() throws SQLException {
-		if(!connection.isValid(0)) {
-			initConnection();
-		}
-		return connection;
-	}
-	
-	protected void initConnection() {
-		try {
-			connection = new DatabaseConnection(this);
-		} catch (IOException | SQLException e) {
-			throw new IOError(e);
-		}
 	}
 	
 	@Nullable
@@ -187,6 +169,7 @@ public class DiscordUser implements Banee {
 	@SuppressWarnings("rawtypes")
 	public void setOperator(MessageContext promoter, boolean operator) {
 		if(operator) {
+			setAdmin(promoter, operator);
 			Table.addOperator(promoter, this);
 		}
 		else {

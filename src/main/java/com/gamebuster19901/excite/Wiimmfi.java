@@ -13,6 +13,8 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import com.gamebuster19901.excite.bot.audit.LogInAudit;
+import com.gamebuster19901.excite.bot.audit.LogOutAudit;
 import com.gamebuster19901.excite.bot.command.ConsoleContext;
 
 public class Wiimmfi {
@@ -21,6 +23,7 @@ public class Wiimmfi {
 	
 	private static final URL EXCITEBOTS;
 	private static Document document;
+	private static HashSet<Player> PREV_ONLINE_PLAYERS = new HashSet<Player>();
 	private static HashSet<Player> ONLINE_PLAYERS = new HashSet<Player>();
 	private static HashSet<Player> HOSTING_PLAYERS = new HashSet<Player>();
 	static {
@@ -119,8 +122,28 @@ public class Wiimmfi {
 				}
 			}
 		}
+		
+		for(Player player : onlinePlayers) {
+			if(PREV_ONLINE_PLAYERS.contains(player)) {
+				if(!(player.isPrivate() || player.isSearching() || player.isFriendsList())) {
+					player.updateSecondsPlayed();
+				}
+				player.updateLastOnline();
+			}
+			else {
+				LogInAudit.addLoginAudit(ConsoleContext.INSTANCE, player);
+				player.updateLastOnline();
+			}
+			PREV_ONLINE_PLAYERS.remove(player);
+		}
+		for(Player player : PREV_ONLINE_PLAYERS) {
+			LogOutAudit.addLogOutAudit(ConsoleContext.INSTANCE, player);
+		}
+		
 		ONLINE_PLAYERS = onlinePlayers;
 		HOSTING_PLAYERS = hostingPlayers;
+		PREV_ONLINE_PLAYERS = ONLINE_PLAYERS;
+		
 		return onlinePlayers.toArray(new Player[]{});
 	}
 	

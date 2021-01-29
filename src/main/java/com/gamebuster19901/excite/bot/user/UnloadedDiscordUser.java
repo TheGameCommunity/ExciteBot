@@ -7,9 +7,6 @@ public class UnloadedDiscordUser extends DiscordUser{
 	UnloadedDiscordUser(long userId) {
 		super(userId);
 	}
-	
-	@Override
-	public void initConnection() {}
 
 	@Override
 	public void sendMessage(String message) {}

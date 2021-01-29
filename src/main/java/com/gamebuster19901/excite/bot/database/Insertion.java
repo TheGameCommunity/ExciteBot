@@ -35,13 +35,13 @@ public class Insertion {
 		this.statementString = "INSERT INTO " + table + " (" + columnString + ") VALUES(" + parameterString + ");";
 	}
 	
-	public PreparedStatement prepare(DatabaseConnection connection, boolean returnGeneratedKeys) throws SQLException {
+	public PreparedStatement prepare(boolean returnGeneratedKeys) throws SQLException {
 		PreparedStatement ps;
 		if(!returnGeneratedKeys) {
-			ps = connection.prepareStatement(statementString);
+			ps = DatabaseConnection.INSTANCE.prepareStatement(statementString);
 		}
 		else {
-			ps = connection.prepareStatement(statementString, Statement.RETURN_GENERATED_KEYS);
+			ps = DatabaseConnection.INSTANCE.prepareStatement(statementString, Statement.RETURN_GENERATED_KEYS);
 		}
 		
 		if(values != null && values.length > 0) {
@@ -51,25 +51,25 @@ public class Insertion {
 	}
 	
 	public PreparedStatement prepare(DiscordUser user, boolean returnGeneratedKeys) throws SQLException {
-		return prepare(user.getConnection(), returnGeneratedKeys);
+		return prepare(returnGeneratedKeys);
 	}
 	
 	@SuppressWarnings("rawtypes")
 	public PreparedStatement prepare(MessageContext context, boolean returnGeneratedKeys) throws SQLException {
-		return prepare(context.getConnection(), returnGeneratedKeys);
+		return prepare(returnGeneratedKeys);
 	}
 	
 	public PreparedStatement prepare(DatabaseConnection connection) throws SQLException {
-		return prepare(connection, false);
+		return prepare(false);
 	}
 	
 	public PreparedStatement prepare(DiscordUser user) throws SQLException {
-		return prepare(user.getConnection(), false);
+		return prepare(false);
 	}
 	
 	@SuppressWarnings("rawtypes")
 	public PreparedStatement prepare(MessageContext context) throws SQLException {
-		return prepare(context.getConnection(), false);
+		return prepare(false);
 	}
 	
 	public Insertion to(Object... values) {

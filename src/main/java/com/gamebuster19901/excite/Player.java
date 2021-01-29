@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOError;
 import java.sql.SQLException;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.HashSet;
 import java.util.logging.Logger;
 
@@ -341,6 +342,57 @@ public class Player implements Banee {
 	
 	public String getStatus() {
 		return onlineStatus;
+	}
+	
+	public void updateSecondsPlayed() {
+		try {
+			if(!isOnline() || !Wiimmfi.getOnlinePlayers().contains(this)) {
+				throw new IllegalStateException();
+			}
+			Table.updateWhere(ConsoleContext.INSTANCE, PLAYERS, SECONDS_PLAYED, Duration.between(getLastOnline(), Instant.now()).plus(getOnlineDuration()), new Comparison(PLAYER_ID, EQUALS, this.getID()));
+		} catch (SQLException e) {
+			throw new IOError(e);
+		}
+	}
+	
+	public Duration getOnlineDuration() {
+		try {
+			Result result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, SECONDS_PLAYED, PLAYERS, new Comparison(PLAYER_ID, EQUALS, this.getID()));
+			if(result.next()) {
+				return Duration.parse(result.getString(SECONDS_PLAYED));
+			}
+			else {
+				throw new IllegalStateException("No result for player " + this.getIdentifierName());
+			}
+		} catch (SQLException e) {
+			throw new IOError(e);
+		}
+	}
+	
+	public Instant getLastOnline() {
+		try {
+			Result result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, LAST_ONLINE, PLAYERS, new Comparison(PLAYER_ID, EQUALS, this.getID()));
+			if(result.next()) {
+				return Instant.parse(result.getString(LAST_ONLINE));
+			}
+			else {
+				throw new IllegalStateException("No result for player " + this.getIdentifierName());
+			}
+		} catch (SQLException e) {
+			throw new IOError(e);
+		}
+	}
+	
+	public void updateLastOnline() {
+		setLastOnline(Instant.now());
+	}
+	
+	public void setLastOnline(Instant instant) {
+		try {
+			Table.updateWhere(ConsoleContext.INSTANCE, PLAYERS, LAST_ONLINE, instant, new Comparison(PLAYER_ID, EQUALS, this.getID()));
+		} catch (SQLException e) {
+			throw new IOError(e);
+		}
 	}
 	
 	@SuppressWarnings("deprecation")

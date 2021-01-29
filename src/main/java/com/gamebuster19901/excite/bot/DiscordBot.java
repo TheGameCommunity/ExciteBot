@@ -14,6 +14,7 @@ import java.util.logging.Logger;
 import javax.security.auth.login.LoginException;
 
 import com.gamebuster19901.excite.Wiimmfi;
+import com.gamebuster19901.excite.bot.database.sql.DatabaseConnection;
 import com.gamebuster19901.excite.bot.user.ConsoleUser;
 
 import net.dv8tion.jda.api.JDA;
@@ -88,8 +89,7 @@ public class DiscordBot {
 	public void updatePresence() {
 		try {
 			ConsoleUser user = ConsoleUser.getConsoleUser();
-			user.initConnection();
-			user.getConnection().close();
+			DatabaseConnection.INSTANCE.isClosed();
 		}
 		catch(IOError | SQLException e) {
 			setNoDB();

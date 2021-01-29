@@ -22,48 +22,27 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Executor;
 
-import com.gamebuster19901.excite.Main;
-import com.gamebuster19901.excite.bot.command.ConsoleContext;
-import com.gamebuster19901.excite.bot.database.Table;
-import com.gamebuster19901.excite.bot.user.DiscordUser;
 import com.gamebuster19901.excite.util.file.File;
 
 public class DatabaseConnection implements Connection {
 
-	private final DiscordUser user;
+	public static String SCHEMA;
+	
+	public static final DatabaseConnection INSTANCE;
+	static {
+		try {
+			INSTANCE = new DatabaseConnection();
+		} catch (IOException | SQLException e) {
+			throw new Error(e);
+		}
+	}
 	private final Connection parent;
 	
 	public DatabaseConnection() throws IOException, SQLException {
-		user = null;
 		File file = new File("./mysql.secret");
 		if(file.isSecret()) {
 			List<String> lines = Files.readAllLines(file.toPath());
-			this.parent = DriverManager.getConnection(lines.get(0), lines.get(1), lines.get(2));
-		}
-		else {
-			throw new IOException(file.getAbsolutePath() + " is not secret!");
-		}
-	}
-	
-	public DatabaseConnection(DiscordUser discord) throws IOException, SQLException {
-		String username = discord.getMySQLUsername();
-		this.user = discord;
-		if(!MySQLUserExists(username)) {
-			PreparedStatement createUser = Main.CONSOLE.getConnection().prepareStatement("CREATE USER ?@localhost IDENTIFIED BY ?");
-			createUser.setString(1, username);
-			createUser.setString(2, username);
-			createUser.execute();
-			
-			Table.grantUserDBPermissions(ConsoleContext.INSTANCE, username);
-			
-			PreparedStatement setDefaultRole = Main.CONSOLE.getConnection().prepareStatement("SET DEFAULT ROLE User TO ?@localhost;");
-			setDefaultRole.setString(1, username);
-			setDefaultRole.execute();
-		}
-		File file = new File("./mysql.secret");
-		if(file.isSecret()) {
-			List<String> lines = Files.readAllLines(file.toPath());
-			this.parent = DriverManager.getConnection(lines.get(0), username, username);
+			parent = DriverManager.getConnection(lines.get(0), lines.get(1), lines.get(2));
 		}
 		else {
 			throw new IOException(file.getAbsolutePath() + " is not secret!");
@@ -71,13 +50,13 @@ public class DatabaseConnection implements Connection {
 	}
 		
 	public DatabaseConnection(String connectionInfo) throws SQLException {
-		this.user = null;
+
 		this.parent = DriverManager.getConnection(connectionInfo);
 	}
 	
 	@SuppressWarnings("deprecation")
 	public static boolean MySQLUserExists(String username) throws SQLException {
-		PreparedStatement st = Main.CONSOLE.getConnection().prepareStatement("SELECT EXISTS(SELECT 1 FROM mysql.user WHERE user = ?);");
+		PreparedStatement st = INSTANCE.prepareStatement("SELECT EXISTS(SELECT 1 FROM mysql.user WHERE user = ?);");
 		st.setString(1, username);
 		java.sql.ResultSet rs = st.getParent().executeQuery(); //There is no table called "SELECT EXISTS(SELECT ...) so we must use java.sql.ResultSet
 		rs.next();

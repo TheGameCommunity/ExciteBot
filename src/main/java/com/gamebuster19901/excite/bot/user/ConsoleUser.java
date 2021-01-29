@@ -1,15 +1,11 @@
 package com.gamebuster19901.excite.bot.user;
 
-import java.io.IOError;
-import java.io.IOException;
-import java.sql.SQLException;
 import java.time.Duration;
 import java.util.Set;
 
 import com.gamebuster19901.excite.Main;
 import com.gamebuster19901.excite.Player;
 import com.gamebuster19901.excite.bot.command.MessageContext;
-import com.gamebuster19901.excite.bot.database.sql.DatabaseConnection;
 
 import net.dv8tion.jda.api.entities.User;
 
@@ -21,23 +17,6 @@ public class ConsoleUser extends UnloadedDiscordUser {
 	
 	public ConsoleUser() {
 		super(CONSOLE_USER_ID);
-	}
-	
-	@Override
-	public void initConnection() {
-		try {
-			connection = new DatabaseConnection();
-		} catch (IOException | SQLException e) {
-			Main.discordBot.setNoDB();
-			if(connection != null) {
-				try {
-					connection.close();
-				} catch (SQLException e1) {
-					e1.printStackTrace();
-				}
-			}
-			throw new IOError(e);
-		}
 	}
 	
 	@Override
