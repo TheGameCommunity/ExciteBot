@@ -237,7 +237,7 @@ public class Player implements Banee {
 		String oldName = getName();
 		if(oldName != null && !oldName.equals(name)) {
 			NameChangeAudit.addNameChange(new MessageContext(this), this, name);
-			Table.updateWhere(ConsoleContext.INSTANCE, PLAYERS, PLAYER_NAME, name, new Comparison(PLAYER_NAME, EQUALS, getName()));
+			Table.updateWhere(ConsoleContext.INSTANCE, PLAYERS, PLAYER_NAME, name, new Comparison(PLAYER_ID, EQUALS, getID()));
 		}
 	}
 	
