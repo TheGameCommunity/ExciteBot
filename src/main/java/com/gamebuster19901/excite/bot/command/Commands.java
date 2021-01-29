@@ -31,7 +31,6 @@ public class Commands {
 		NotifyCommand.register(dispatcher);
 		StopCommand.register(dispatcher);
 		HelpCommand.register(dispatcher);
-		BackupCommand.register(dispatcher);
 //		BanlistCommand.register(dispatcher);
 		RestartCommand.register(dispatcher);
 		PlayersCommand.register(dispatcher);
