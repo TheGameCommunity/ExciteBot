@@ -12,6 +12,7 @@ import java.sql.DriverManager;
 import java.sql.NClob;
 import java.sql.SQLClientInfoException;
 import java.sql.SQLException;
+import java.sql.SQLNonTransientConnectionException;
 import java.sql.SQLWarning;
 import java.sql.SQLXML;
 import java.sql.Savepoint;
@@ -23,12 +24,14 @@ import java.util.Properties;
 import java.util.concurrent.Executor;
 
 import com.gamebuster19901.excite.util.file.File;
+import com.mysql.cj.exceptions.CJCommunicationsException;
+import com.mysql.cj.exceptions.ConnectionIsClosedException;
 
 public class DatabaseConnection implements Connection {
 
 	public static String SCHEMA;
 	
-	public static final DatabaseConnection INSTANCE;
+	public static DatabaseConnection INSTANCE;
 	static {
 		try {
 			INSTANCE = new DatabaseConnection();
@@ -85,7 +88,26 @@ public class DatabaseConnection implements Connection {
 
 	@Override
 	public PreparedStatement prepareStatement(String sql) throws SQLException {
-		return new PreparedStatement(parent.prepareStatement(sql, ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_READ_ONLY));
+		try {
+			return new PreparedStatement(parent.prepareStatement(sql, ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_READ_ONLY));
+		}
+		catch(SQLException e) {
+			if(e instanceof SQLNonTransientConnectionException) {
+				Throwable t = e.getCause();
+				if(t != null && (t instanceof ConnectionIsClosedException || t instanceof CJCommunicationsException || (t.getCause() != null && t.getCause() instanceof IOException))) {
+					e.printStackTrace();
+					System.err.println("Attempting to recover from database connection failure...");
+					INSTANCE.close();
+					try {
+						INSTANCE = new DatabaseConnection();
+						return new PreparedStatement(parent.prepareStatement(sql, ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_READ_ONLY));
+					} catch (IOException | SQLException e1) {
+						throw new Error(e1);
+					}
+				}
+			}
+			throw e;
+		}
 	}
 
 	@Override

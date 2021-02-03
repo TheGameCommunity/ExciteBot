@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOError;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.sql.SQLNonTransientConnectionException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Scanner;
@@ -22,6 +23,8 @@ import com.gamebuster19901.excite.bot.user.DiscordUser;
 import com.gamebuster19901.excite.bot.user.UnknownDiscordUser;
 import com.gamebuster19901.excite.util.StacktraceUtil;
 import com.gamebuster19901.excite.util.ThreadService;
+import com.mysql.cj.exceptions.CJCommunicationsException;
+import com.mysql.cj.exceptions.ConnectionIsClosedException;
 
 import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.entities.Activity;
@@ -133,6 +136,22 @@ public class Main {
 				catch(ErrorResponseException e) {
 					CONSOLE.sendMessage(StacktraceUtil.getStackTrace(e));
 					CONSOLE.sendMessage("An ErrorResponseException occurred... waiting 10 seconds");
+				}
+				catch(SQLException e) {
+					if(e instanceof SQLNonTransientConnectionException) {
+						Throwable t = e.getCause();
+						if(t != null && (t instanceof ConnectionIsClosedException || t instanceof CJCommunicationsException || (t.getCause() != null && t.getCause() instanceof IOException))) {
+							e.printStackTrace();
+							System.err.println("Attempting to recover from database connection failure...");
+							DatabaseConnection.INSTANCE.close();
+							try {
+								DatabaseConnection.INSTANCE = new DatabaseConnection();
+							} catch (IOException | SQLException e1) {
+								throw new Error(e1);
+							}
+						}
+					}
+					throw e;
 				}
 				Thread.sleep(1000);
 			}
