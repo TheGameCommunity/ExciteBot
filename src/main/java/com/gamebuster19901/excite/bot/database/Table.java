@@ -48,12 +48,7 @@ public enum Table {
 		st = context.getConnection().prepareStatement("SELECT " + columns + " FROM " + table + " WHERE " + comparison);
 		comparison.insertValues(st);
 
-		try {
-			return st.query();
-		}
-		catch(SQLException e) {
-			throw new SQLException(e);
-		}
+		return st.query();
 	}
 	
 	@SuppressWarnings("rawtypes")
