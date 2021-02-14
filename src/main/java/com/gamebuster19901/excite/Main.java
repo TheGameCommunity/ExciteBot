@@ -25,6 +25,7 @@ import com.gamebuster19901.excite.util.StacktraceUtil;
 import com.gamebuster19901.excite.util.ThreadService;
 import com.mysql.cj.exceptions.CJCommunicationsException;
 import com.mysql.cj.exceptions.ConnectionIsClosedException;
+import com.mysql.cj.jdbc.exceptions.CommunicationsException;
 
 import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.entities.Activity;
@@ -87,6 +88,18 @@ public class Main {
 			}
 		}
 		
+		do {
+			try {
+				DatabaseConnection.INSTANCE = new DatabaseConnection();
+			}
+			catch(Throwable t) {
+				System.out.println(t);
+				discordBot.setNoDB();
+				Thread.sleep(5000);
+			}
+		}
+		while(DatabaseConnection.INSTANCE == null);
+		
 		Throwable prevError = null;
 		Instant nextWiimmfiPing = Instant.now();
 		Instant nextDiscordPing = Instant.now();
@@ -137,21 +150,26 @@ public class Main {
 					CONSOLE.sendMessage(StacktraceUtil.getStackTrace(e));
 					CONSOLE.sendMessage("An ErrorResponseException occurred... waiting 10 seconds");
 				}
-				catch(SQLException e) {
-					if(e instanceof SQLNonTransientConnectionException) {
-						Throwable t = e.getCause();
-						if(t != null && (t instanceof ConnectionIsClosedException || t instanceof CJCommunicationsException || (t.getCause() != null && t.getCause() instanceof IOException))) {
-							e.printStackTrace();
-							System.err.println("Attempting to recover from database connection failure...");
-							DatabaseConnection.INSTANCE.close();
+				catch(Throwable t) {
+					if(t != null && (t instanceof ConnectionIsClosedException || t instanceof CommunicationsException || t instanceof CJCommunicationsException || t instanceof SQLNonTransientConnectionException || (t.getCause() != null && (t.getCause() instanceof IOException || t.getCause() instanceof SQLException || t.getCause() instanceof IOError)))) {
+						System.err.println("Attempting to recover from database connection failure...");
+						DatabaseConnection.INSTANCE.close();
+						DatabaseConnection.INSTANCE = null;
+						while(DatabaseConnection.INSTANCE == null) {
+							discordBot.setNoDB();
 							try {
 								DatabaseConnection.INSTANCE = new DatabaseConnection();
-							} catch (IOException | SQLException e1) {
-								throw new Error(e1);
 							}
+							catch(Throwable t2) {
+								System.err.println("Attempting to recover from database connection failure...");
+								t2.printStackTrace(System.err);
+								DatabaseConnection.INSTANCE = null;
+							}
+							Thread.sleep(5000);
 						}
+						continue;
 					}
-					throw e;
+					throw t;
 				}
 				Thread.sleep(1000);
 			}

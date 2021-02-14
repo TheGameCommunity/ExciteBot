@@ -36,7 +36,7 @@ public class DatabaseConnection implements Connection {
 		try {
 			INSTANCE = new DatabaseConnection();
 		} catch (IOException | SQLException e) {
-			throw new Error(e);
+			e.printStackTrace();
 		}
 	}
 	private final Connection parent;
