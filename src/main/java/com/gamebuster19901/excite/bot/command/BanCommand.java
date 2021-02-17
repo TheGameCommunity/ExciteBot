@@ -218,7 +218,7 @@ public class BanCommand {
 	@SuppressWarnings("rawtypes")
 	private static int banProfile(MessageContext context, Player profile, Duration duration, String reason) {
 		if(context.isAdmin()) {
-			Ban ban = profile.ban(new MessageContext(), duration, reason);
+			Ban ban = profile.ban(context, duration, reason);
 			String message = "Banned profile " + profile.getPrettyDiscord() + ": \n\n" + ban;
 			if(context.isConsoleMessage()) {
 				context.sendMessage(message);

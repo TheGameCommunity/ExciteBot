@@ -1,14 +1,16 @@
 package com.gamebuster19901.excite;
 
 public class UnknownPlayer extends Player {
-
-	public static final UnknownPlayer INSTANCE = new UnknownPlayer();
 	
-	private String name = "UNKNOWN_PLAYER";
-	private String friendCode = "NOT REAL";
+	public String name = "UNKNOWN_PLAYER";
+	public String friendCode = "NOT REAL";
 	
 	public UnknownPlayer() {
 		super(-1);
+	}
+	
+	public UnknownPlayer(int id) {
+		super(id);
 	}
 	
 	public UnknownPlayer(String name) {

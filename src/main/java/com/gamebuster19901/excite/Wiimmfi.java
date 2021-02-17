@@ -16,6 +16,7 @@ import org.jsoup.select.Elements;
 import com.gamebuster19901.excite.bot.audit.LogInAudit;
 import com.gamebuster19901.excite.bot.audit.LogOutAudit;
 import com.gamebuster19901.excite.bot.command.ConsoleContext;
+import com.gamebuster19901.excite.bot.command.MessageContext;
 
 public class Wiimmfi {
 	
@@ -111,7 +112,7 @@ public class Wiimmfi {
 					Player player = Player.getPlayerByID(ConsoleContext.INSTANCE, playerId);
 					if(player instanceof UnknownPlayer) {
 						String friendCode = parseLine(e.html(), 2);
-						player = Player.addPlayer(ConsoleContext.INSTANCE, true, playerId, friendCode, name);
+						player = Player.addPlayer(new MessageContext(player), true, playerId, friendCode, name);
 					}
 					else {
 						player.setName(name);
@@ -131,13 +132,13 @@ public class Wiimmfi {
 				player.updateLastOnline();
 			}
 			else {
-				LogInAudit.addLoginAudit(ConsoleContext.INSTANCE, player);
+				LogInAudit.addLoginAudit(new MessageContext(player), player);
 				player.updateLastOnline();
 			}
 			PREV_ONLINE_PLAYERS.remove(player);
 		}
 		for(Player player : PREV_ONLINE_PLAYERS) {
-			LogOutAudit.addLogOutAudit(ConsoleContext.INSTANCE, player);
+			LogOutAudit.addLogOutAudit(new MessageContext(player), player);
 		}
 		
 		ONLINE_PLAYERS = onlinePlayers;

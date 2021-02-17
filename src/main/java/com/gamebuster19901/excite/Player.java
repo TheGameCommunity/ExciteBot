@@ -74,6 +74,13 @@ public class Player implements Banee {
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public static Player addPlayer(MessageContext context, boolean automatic, int playerID, String friendCode, String name) throws SQLException {
+		
+		if(context.getEvent() instanceof UnknownPlayer) {
+			UnknownPlayer player = (UnknownPlayer) context.getEvent();
+			player.name = name;
+			player.friendCode = friendCode;
+		}
+		
 		PreparedStatement ps = Insertion.insertInto(PLAYERS)
 		.setColumns(PLAYER_ID, FRIEND_CODE, PLAYER_NAME)
 		.to(playerID, friendCode, name)
@@ -465,7 +472,7 @@ public class Player implements Banee {
 		} catch (SQLException e) {
 			throw new IOError(e);
 		}
-		return UnknownPlayer.INSTANCE;
+		return new UnknownPlayer(pid);
 	}
 	
 	@Deprecated
