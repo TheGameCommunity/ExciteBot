@@ -8,8 +8,3 @@
  */
 
 rootProject.name = 'ExciteBot'
-sourceControl {
-	gitRepository("https://github.com/DV8FromTheWorld/JDA.git") {
-		producesModule("net.dv8tion:JDA")
-	}
-}
