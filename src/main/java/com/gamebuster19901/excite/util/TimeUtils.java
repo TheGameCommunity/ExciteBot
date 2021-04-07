@@ -1,5 +1,6 @@
 package com.gamebuster19901.excite.util;
 
+import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -16,7 +17,7 @@ public final class TimeUtils {
 	public static final Duration FOREVER = ChronoUnit.FOREVER.getDuration();
 	public static final Instant PLAYER_EPOCH = Instant.parse("2020-11-01T07:00:00Z"); //The second 2:00 am EST that occurs due do daylight savings
 	public static String readableDuration(Duration duration) {
-		String time = "";
+		String time = " ";
 		
 		if(duration.equals(ChronoUnit.FOREVER.getDuration())) {
 			return " forever";
@@ -36,7 +37,8 @@ public final class TimeUtils {
 		}
 		if (duration.toDays() / 7 > 0) {
 			time += duration.toDays() / 7 + " weeks#";
-			duration = duration.minus(Duration.ofDays((duration.toDays() / 7) * 30));
+			duration = duration.minus(Duration.ofDays((duration.toDays() / 7) * 7));
+			System.out.println(duration.toDays());
 		}
 		if(duration.toDays() > 0) {
 			time += duration.toDays() + " days#";
@@ -55,7 +57,19 @@ public final class TimeUtils {
 			duration = duration.minus(Duration.ofSeconds(duration.getSeconds()));
 		}
 		
-		return time.replaceAll("#", " ");
+		time = time.replaceAll("#", " ");
+		time = time.replaceAll(" 1 years", " 1 year");
+		time = time.replaceAll(" 1 months", " 1 month");
+		time = time.replaceAll(" 1 weeks", " 1 week");
+		time = time.replaceAll(" 1 days", " 1 day");
+		time = time.replaceAll(" 1 hours", " 1 hour");
+		time = time.replaceAll(" 1 minutes", " 1 minute");
+		time = time.replaceAll(" 1 seconds", " 1 second");
+		time = time.trim();
+		if(time.isEmpty()) {
+			return "0 seconds";
+		}
+		return time;
 	}
 	
 	public static Instant fromNow(Duration duration) {
@@ -65,6 +79,10 @@ public final class TimeUtils {
 		catch(ArithmeticException e) {
 			return Instant.MAX;
 		}
+	}
+	
+	public static Duration since(Instant instant) {
+		return Duration.between(instant, Instant.now());
 	}
 	
 	public static Duration computeDuration(int amount, String timeUnit) {
@@ -98,6 +116,15 @@ public final class TimeUtils {
 			return Instant.MIN;
 		}
 		return Instant.parse(instant);
+	}
+	
+	public static String parsePlayerInstant(Instant instant) {
+		SimpleDateFormat date = new SimpleDateFormat("yyyy/MM/dd HH:mm", Locale.ENGLISH);
+		String ret = date.format(instant.toEpochMilli());
+		if(instant.compareTo(PLAYER_EPOCH) <= 0) {
+			ret = "Before " + ret;
+		}
+		return ret;
 	}
 	
 	public static String getDate(TemporalAccessor temporal) {

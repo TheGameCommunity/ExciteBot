@@ -25,12 +25,14 @@ import net.dv8tion.jda.api.entities.Activity.ActivityType;
 import net.dv8tion.jda.api.entities.SelfUser;
 import net.dv8tion.jda.api.managers.Presence;
 import net.dv8tion.jda.api.requests.GatewayIntent;
+import net.dv8tion.jda.api.utils.ChunkingFilter;
+import net.dv8tion.jda.api.utils.MemberCachePolicy;
 
 public class DiscordBot {
 
 	private static final Logger LOGGER = Logger.getLogger(DiscordBot.class.getName());
 	
-	private static final List<GatewayIntent> GATEWAYS = Arrays.asList(new GatewayIntent[] {GatewayIntent.GUILD_MESSAGES, GatewayIntent.DIRECT_MESSAGES, GatewayIntent.GUILD_EMOJIS});
+	private static final List<GatewayIntent> GATEWAYS = Arrays.asList(new GatewayIntent[] {GatewayIntent.GUILD_MEMBERS, GatewayIntent.GUILD_MESSAGES, GatewayIntent.DIRECT_MESSAGES, GatewayIntent.GUILD_EMOJIS});
 	private String botOwner;
 	public final JDA jda;
 	protected Wiimmfi wiimmfi;
@@ -57,7 +59,7 @@ public class DiscordBot {
 			}
 		}
 		
-		JDABuilder builder = JDABuilder.createDefault(secret);
+		JDABuilder builder = JDABuilder.createDefault(secret, GATEWAYS).setMemberCachePolicy(MemberCachePolicy.ALL).setChunkingFilter(ChunkingFilter.ALL);
 		this.jda = builder.build();
 		jda.addEventListener(new EventReceiver());
 		secret = null;

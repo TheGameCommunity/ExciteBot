@@ -22,6 +22,7 @@ import com.gamebuster19901.excite.bot.database.Table;
 import com.gamebuster19901.excite.bot.database.sql.PreparedStatement;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
 import com.gamebuster19901.excite.bot.user.UnknownDiscordUser;
+import com.gamebuster19901.excite.util.TimeUtils;
 
 import static com.gamebuster19901.excite.bot.database.Table.PLAYERS;
 import static com.gamebuster19901.excite.bot.database.Comparator.*;
@@ -136,6 +137,29 @@ public class Player implements Banee {
 			suffix = suffix + " ";
 		}
 		return String.format(prefix + " " + name + " " + suffix);
+	}
+	
+	public String toEmbedstring() {
+		String name = getName();
+		
+		String prefix = calculatePrefix();
+		String suffix = "";
+
+		if(isBot()) {
+			suffix += BOT;
+		}
+		if(isLegacy()) {
+			suffix += Emote.getEmote(LEGACY);
+		}
+		if(this.isBanned()) {
+			if(!isOnline()) {
+				suffix += Emote.getEmote(BANNED);
+			}
+		}
+		if(!suffix.isEmpty()) {
+			suffix = suffix + " ";
+		}
+		return String.format(prefix + " " + name + "(" + getID() + ") " + suffix);
 	}
 	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
@@ -399,6 +423,16 @@ public class Player implements Banee {
 			Table.updateWhere(ConsoleContext.INSTANCE, PLAYERS, LAST_ONLINE, instant, new Comparison(PLAYER_ID, EQUALS, this.getID()));
 		} catch (SQLException e) {
 			throw new IOError(e);
+		}
+	}
+	
+	public Instant getFirstSeen() {
+		try {
+			DiscoveryAudit discoveryAudit = DiscoveryAudit.getProfileDiscoveryByDiscoveredID(ConsoleContext.INSTANCE, playerID);
+			return discoveryAudit.getDateIssued();
+		}
+		catch(IndexOutOfBoundsException e) {
+			return TimeUtils.PLAYER_EPOCH; //profile may have been created before this was tracked
 		}
 	}
 	

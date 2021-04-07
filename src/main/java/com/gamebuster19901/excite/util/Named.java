@@ -8,4 +8,13 @@ public interface Named extends Identified {
 		return getName() + "(" + getID() + ")";
 	}
 	
+	public default String getLookingForMatch() {
+		return getName() + " " + getID();
+	}
+	
+	public default boolean matches(String lookingFor) {
+		return getName().equalsIgnoreCase(lookingFor) || lookingFor.equals(((Long)getID()).toString()) || getIdentifierName().equalsIgnoreCase(lookingFor) 
+				|| getLookingForMatch().equalsIgnoreCase(lookingFor);
+	}
+	
 }
