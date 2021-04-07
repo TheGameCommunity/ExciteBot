@@ -32,6 +32,10 @@ public class WhoIsCommand {
 			}
 		)));
 		
+		dispatcher.register(Commands.literal("me").executes((command) ->  {
+			return sendResponse(command.getSource(), "" + command.getSource().getAuthor().getID());
+		}));
+		
 		dispatcher.register(Commands.literal("wi").redirect(builder));
 	}
 	
