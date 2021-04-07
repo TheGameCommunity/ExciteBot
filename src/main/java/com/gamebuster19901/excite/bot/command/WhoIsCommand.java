@@ -1,15 +1,26 @@
 package com.gamebuster19901.excite.bot.command;
 
+import java.awt.Color;
+import java.text.SimpleDateFormat;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Locale;
+import java.util.Set;
 
 import com.gamebuster19901.excite.Main;
 import com.gamebuster19901.excite.Player;
 import com.gamebuster19901.excite.Wiimmfi;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
+import com.gamebuster19901.excite.util.Named;
+import com.gamebuster19901.excite.util.TimeUtils;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.tree.LiteralCommandNode;
+
+import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.entities.Member;
 
 @SuppressWarnings("rawtypes")
 public class WhoIsCommand {
@@ -24,43 +35,111 @@ public class WhoIsCommand {
 		dispatcher.register(Commands.literal("wi").redirect(builder));
 	}
 	
+	@SuppressWarnings("serial")
 	public static int sendResponse(MessageContext context, String lookingFor) {
 		Wiimmfi wiimmfi = Main.discordBot.getWiimmfi();
-		String response = "";
+		EmbedBuilder embed = new EmbedBuilder();
+		boolean hasMembers = context.isGuildMessage();
 		if(wiimmfi.getError() == null) {
 			if(!lookingFor.isEmpty()) {
-				DiscordUser[] users = DiscordUser.getDiscordUsersWithUsernameOrID(ConsoleContext.INSTANCE, lookingFor);
-				HashSet<Player> claimedPlayers = new HashSet<Player>();
-				HashSet<Player> unclaimedPlayers = new HashSet<Player>();
-				for(DiscordUser user : users) {
-					response = response + user.toDetailedString() + "\n";
-					for(Player player : user.getProfiles(context)) {
-						response = response + player.toFullString() + "\n";
-						claimedPlayers.add(player);
+				HashSet<DiscordUser> users = new HashSet<DiscordUser>() {{this.addAll(Arrays.asList(DiscordUser.getDiscordUsersWithUsernameOrID(context, lookingFor)));}};
+				HashSet<Player> players = new HashSet<Player>() {{this.addAll(Arrays.asList(Player.getPlayersByAnyIdentifier(context, lookingFor)));}};
+				HashSet<Named> matches = new HashSet<Named>();
+				matches.addAll(users);
+				matches.addAll(players);
+				SimpleDateFormat date = new SimpleDateFormat("yyyy/MM/dd HH:mm", Locale.ENGLISH);
+				
+				if(matches.size() == 1) {
+					Named match = matches.iterator().next();
+					embed.setTitle("Information about " + match.getIdentifierName());
+					if(match instanceof DiscordUser) {
+						DiscordUser user = (DiscordUser) match;
+						Member member;
+						embed.setColor(Color.WHITE);
+						Set<Player> profiles = user.getProfiles(context);
+						Duration timeOnline = Duration.ZERO;
+						Instant lastOnline = TimeUtils.PLAYER_EPOCH;
+						String profileList = "";
+						for(Player profile : profiles) {
+							profileList = profileList + profile.toEmbedstring() + "\n";
+							timeOnline = timeOnline.plus(profile.getOnlineDuration());
+							Instant profileLastOnline = profile.getLastOnline();
+							if(profileLastOnline.isAfter(lastOnline)) {
+								lastOnline = profileLastOnline;
+							}
+						}
+						if(hasMembers && (member = user.getMember(context.getServer())) != null) {
+							embed.setColor(member.getColor());
+							embed.setThumbnail(user.getJDAUser().getEffectiveAvatarUrl());
+							embed.addField("Username:", user.getJDAUser().getName(), false);
+							embed.addField("Discriminator", user.getJDAUser().getDiscriminator(), false);
+							//embed.addField("Badges:", "", false);
+							embed.addField("ID:", "" + user.getID(), false);
+							embed.addField("Nickname:", member.getNickname() != null ? member.getNickname() : "##Not Nicknamed##", false);
+							embed.addField("Joined Discord:", date.format(member.getTimeCreated().toInstant().toEpochMilli()), false);
+							embed.addField("Joined " + context.getServer().getName() + ":", date.format(member.getTimeJoined().toInstant().toEpochMilli()), false);
+							embed.addField("Member for:", TimeUtils.readableDuration(TimeUtils.since(member.getTimeJoined().toInstant())), false);
+							embed.addField("Time Online:", TimeUtils.readableDuration(timeOnline), false);
+							embed.addField(profiles.size() + " registered Profiles:", profileList, false);
+						}
+						else {
+							embed.setThumbnail(user.getJDAUser().getEffectiveAvatarUrl());
+							embed.addField("Username:", user.getJDAUser().getName(), false);
+							embed.addField("Discriminator", user.getJDAUser().getDiscriminator(), false);
+							embed.addField("ID:", "" + user.getID(), false);
+							embed.addField("Time Online:", TimeUtils.readableDuration(timeOnline), false);
+							embed.addField(profiles.size() + " registered Profiles:", profileList, false);
+							embed.appendDescription("For more information, execute this command in a server.");
+						}
+					}
+					else if (match instanceof Player) {
+						Player profile = (Player) match;
+						DiscordUser user = DiscordUser.getDiscordUserTreatingUnknownsAsNobody(context, profile.getDiscord());
+						embed.addField("Name:", profile.getName(), false);
+						embed.addField("ID:", profile.getID() + "", false);
+						embed.addField("FC:", profile.getFriendCode(), false);
+						embed.addField("Owner:", user.toDetailedString(), false);
+						embed.addField("Time Online:", TimeUtils.readableDuration(profile.getOnlineDuration()), false);
+						embed.addField("First Seen:", date.format(profile.getFirstSeen().toEpochMilli()), false);
+						embed.addField("Last Seen:", date.format(profile.getLastOnline().toEpochMilli()), false);
 					}
 				}
-				
-				unclaimedPlayers.addAll(Arrays.asList(Player.getPlayersByAnyIdentifier(ConsoleContext.INSTANCE, lookingFor)));
-				unclaimedPlayers.removeAll(claimedPlayers);
-				if(response != null && unclaimedPlayers.size() > 0 && claimedPlayers.size() > 0) {
-					response = response + "\nUnclaimed Profiles :\n";
+				else if (matches.size() == 0) {
+					embed.setColor(Color.RED);
+					embed.setTitle("Target not found");
+					embed.addField("Target:", lookingFor, true);
 				}
-				for(Player player : unclaimedPlayers) {
-					response = response + player.toFullString() + "\n";
+				else {
+					embed.setTitle("Ambigious target string, supply an ID");
+					embed.setColor(Color.RED);
+					embed.addField("Target", lookingFor, true);
+					embed.addField("Ambiguities", "" + matches.size(), true);
+					if(users.size() > 0) {
+						embed.appendDescription("Discord users:\n");
+						String userList = "";
+						for(DiscordUser user : users) {
+							Member member;
+							if(hasMembers && (member = user.getMember(context.getServer())) != null) {
+								userList = userList + embed.appendDescription(user.toDetailedString() + " AKA " + member.getEffectiveName() + "#" + member.getIdLong() + "\n");
+							}
+							else {
+								userList = userList + user.toDetailedString() + "\n";
+							}
+						}
+						embed.addField("Ambiguous Users:", userList, false);
+					}
+					if(players.size() > 0) {
+						String playerList = "";
+						for(Player player : players) {
+							playerList = playerList + player.toFullString() + "\n";
+						}
+						embed.addField("Ambiguous Profiles:", playerList, false);
+					}
 				}
-				if(response.isEmpty()) {
-					response = "No players found.";
-				}
-				
-			}
-			else  {
-				response = "Usage: !whois <Player>";
+				embed.setTimestamp(Instant.now());
+				context.sendMessage(embed.build());
 			}
 		}
-		else {
-			response = "Bot offline due to an error: " + wiimmfi.getError().getClass().getCanonicalName() + ": " + wiimmfi.getError().getMessage();
-		}
-		context.sendMessage(response);
 		return 1;
 	}
 	

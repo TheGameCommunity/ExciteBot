@@ -15,6 +15,7 @@ import com.gamebuster19901.excite.util.Named;
 
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageChannel;
+import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.events.message.priv.PrivateMessageReceivedEvent;
 
@@ -107,6 +108,26 @@ public class MessageContext<E>{
 	
 	public boolean isOperator() {
 		return isConsoleMessage() || getDiscordAuthor().isOperator();
+	}
+	
+	public void sendMessage(MessageEmbed message) {
+		if(!isConsoleMessage()) {
+			if(event instanceof GuildMessageReceivedEvent) {
+				((GuildMessageReceivedEvent)event).getChannel().sendMessage(message).complete();
+			}
+			else if (event instanceof PrivateMessageReceivedEvent) {
+				((PrivateMessageReceivedEvent)event).getChannel().sendMessage(message).complete();
+			}
+			else if (event instanceof DiscordUser) {
+				((DiscordUser) event).sendMessage(message);
+			}
+		}
+		else if (isConsoleMessage()) {
+			throw new UnsupportedOperationException();
+		}
+		if(isIngameEvent()) {
+			throw new UnsupportedOperationException();
+		}
 	}
 	
 	public void sendMessage(String message) {

@@ -26,6 +26,7 @@ import com.gamebuster19901.excite.bot.database.Comparison;
 import com.gamebuster19901.excite.bot.database.Result;
 import com.gamebuster19901.excite.bot.database.Table;
 import com.gamebuster19901.excite.bot.database.sql.PreparedStatement;
+import com.gamebuster19901.excite.bot.server.DiscordServer;
 import com.gamebuster19901.excite.util.StacktraceUtil;
 import com.gamebuster19901.excite.util.TimeUtils;
 
@@ -35,6 +36,8 @@ import static com.gamebuster19901.excite.bot.database.Table.PLAYERS;
 
 import static com.gamebuster19901.excite.bot.database.Column.*;
 
+import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.PrivateChannel;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
@@ -98,6 +101,10 @@ public class DiscordUser implements Banee {
 	@Override
 	public long getID() {
 		return discordId;
+	}
+	
+	public Member getMember(DiscordServer server) {
+		return getMember(this, server);
 	}
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
@@ -358,6 +365,21 @@ public class DiscordUser implements Banee {
 		
 	}
 	
+	public void sendMessage(MessageEmbed message) {
+		if(Main.discordBot != null && !getJDAUser().equals(Main.discordBot.jda.getSelfUser())) {
+			if(!getJDAUser().isBot()) {
+				PrivateChannel privateChannel = getJDAUser().openPrivateChannel().complete();
+				try {
+					privateChannel.sendMessage(message).complete();
+				}
+				catch(ErrorResponseException e) {
+					System.out.println(this.toDetailedString());
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+	
 	public void sendMessage(String message) {
 		if(Main.discordBot != null && !getJDAUser().equals(Main.discordBot.jda.getSelfUser())) {
 			if(!getJDAUser().isBot()) {
@@ -406,6 +428,11 @@ public class DiscordUser implements Banee {
 		return this.getJDAUser().getAsTag();
 	}
 	
+	@Override
+	public String getLookingForMatch() {
+		return toString();
+	}
+	
 	public String toDetailedString() {
 		return this + " (" + discordId + ")";
 	}
@@ -431,6 +458,22 @@ public class DiscordUser implements Banee {
 			return Main.discordBot.jda.getUserByTag(discriminator);
 		}
 		return null;
+	}
+	
+	public static final Member getMember(String name, long id, DiscordServer server) {
+		return server.getGuild().getMemberById(id);
+	}
+	
+	public static final Member getMember(String name, String discriminator, DiscordServer server) {
+		return server.getGuild().getMemberByTag(name, discriminator);
+	}
+	
+	public static final Member getMember(String discriminator, DiscordServer server) {
+		return server.getGuild().getMemberByTag(discriminator);
+	}
+	
+	public static final Member getMember(DiscordUser user, DiscordServer server) {
+		return server.getGuild().getMember(user.getJDAUser());
 	}
 	
 	@Deprecated
@@ -529,6 +572,17 @@ public class DiscordUser implements Banee {
 	@SuppressWarnings("rawtypes")
 	public static final DiscordUser[] getDiscordUsersWithUsernameOrID(MessageContext context, String usernameOrID) {
 		try {
+			if(usernameOrID.indexOf("#") != -1) {
+				if(usernameOrID.length() > usernameOrID.indexOf('#')) {
+					String name = usernameOrID.substring(0, usernameOrID.indexOf('#'));
+					String discriminator = usernameOrID.substring(usernameOrID.indexOf('#') + 1, usernameOrID.length());
+					DiscordUser user = getDiscordUser(context, name, discriminator);
+					if(user != null) {
+						return new DiscordUser[] {user};
+					}
+				}
+				return new DiscordUser[0];
+			}
 			ArrayList<DiscordUser> users = new ArrayList<DiscordUser>();
 			Result results = Table.selectAllFromWhere(context, DISCORD_USERS, new Comparison(DISCORD_NAME, LIKE, Table.makeSafe(usernameOrID) + "_____").or(new Comparison(DISCORD_ID, EQUALS, Table.makeSafe(usernameOrID))));
 			while(results.next()) {

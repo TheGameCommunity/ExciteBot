@@ -10,6 +10,6 @@ public class Nobody extends UnloadedDiscordUser {
 	
 	@Override
 	public String toString() {
-		return "nobody";
+		return "Nobody";
 	}
 }
