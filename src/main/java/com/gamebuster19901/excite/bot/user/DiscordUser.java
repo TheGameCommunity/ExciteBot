@@ -487,7 +487,7 @@ public class DiscordUser implements Banee {
 	@SuppressWarnings("rawtypes")
 	public static final DiscordUser getDiscordUser(MessageContext context, String username) {
 		try {
-			Result results = Table.selectAllFromWhere(context, DISCORD_USERS, new Comparison(DISCORD_NAME, EQUALS, username));
+			Result results = Table.selectAllFromWhere(context, DISCORD_USERS, new Comparison(DISCORD_NAME, EQUALS, Table.makeSafe(username)));
 			if(results.next()) {
 				return new DiscordUser(results.getLong(DISCORD_ID));
 			}
@@ -500,7 +500,7 @@ public class DiscordUser implements Banee {
 	@SuppressWarnings("rawtypes")
 	public static final DiscordUser getDiscordUser(MessageContext context, String username, String discriminator) {
 		try {
-			Result results = Table.selectAllFromWhere(context, DISCORD_USERS, new Comparison(DISCORD_NAME, EQUALS, username + "#" + discriminator));
+			Result results = Table.selectAllFromWhere(context, DISCORD_USERS, new Comparison(DISCORD_NAME, EQUALS, Table.makeSafe(username) + "#" + Table.makeSafe(discriminator)));
 			if(results.next()) {
 				return new DiscordUser(results.getLong(DISCORD_ID));
 			}
@@ -530,7 +530,7 @@ public class DiscordUser implements Banee {
 	public static final DiscordUser[] getDiscordUsersWithUsernameOrID(MessageContext context, String usernameOrID) {
 		try {
 			ArrayList<DiscordUser> users = new ArrayList<DiscordUser>();
-			Result results = Table.selectAllFromWhere(context, DISCORD_USERS, new Comparison(DISCORD_NAME, LIKE, Table.makeSafe(usernameOrID) + "_____").or(new Comparison(DISCORD_ID, EQUALS, usernameOrID)));
+			Result results = Table.selectAllFromWhere(context, DISCORD_USERS, new Comparison(DISCORD_NAME, LIKE, Table.makeSafe(usernameOrID) + "_____").or(new Comparison(DISCORD_ID, EQUALS, Table.makeSafe(usernameOrID))));
 			while(results.next()) {
 				users.add(new DiscordUser(results));
 			}
