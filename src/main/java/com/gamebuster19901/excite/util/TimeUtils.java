@@ -66,7 +66,7 @@ public final class TimeUtils {
 		time = time.replaceAll(" 1 minutes", " 1 minute");
 		time = time.replaceAll(" 1 seconds", " 1 second");
 		time = time.trim();
-		if(time.isBlank()) {
+		if(time.isEmpty()) {
 			return "0 seconds";
 		}
 		return time;
