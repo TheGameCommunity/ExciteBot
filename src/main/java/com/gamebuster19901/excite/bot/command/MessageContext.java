@@ -123,7 +123,7 @@ public class MessageContext<E>{
 			}
 		}
 		else if (isConsoleMessage()) {
-			throw new UnsupportedOperationException();
+			throw new UnsupportedOperationException("Cannot send an embed to the console");
 		}
 		if(isIngameEvent()) {
 			throw new UnsupportedOperationException();
