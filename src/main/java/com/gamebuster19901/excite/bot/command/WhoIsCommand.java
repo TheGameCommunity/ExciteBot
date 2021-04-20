@@ -25,6 +25,14 @@ import net.dv8tion.jda.api.entities.Member;
 @SuppressWarnings("rawtypes")
 public class WhoIsCommand {
 
+	private static final boolean [] UNDER_ONE_DAY = new boolean[]      {true, true, true, true, true, true, true};
+	private static final boolean [] BETWEEN_DAY_WEEK = new boolean[]   {true, true, true, true, true, true, false};
+	private static final boolean [] BETWEEN_WEEK_MONTH = new boolean[] {true, true, true, true, true, false, false};
+	private static final boolean [] BETWEEN_MONTH_YEAR = new boolean[] {true, true, true, true, false, false, false};
+	private static final boolean [] OVER_ONE_YEAR = new boolean[]      {true, true, true, false, false, false, false};
+	
+	private static final boolean [] HOURS_ONLY = new boolean[]         {false, false, false, false, true, false, false};
+	
 	public static void register(CommandDispatcher<MessageContext> dispatcher) {
 		LiteralCommandNode<MessageContext> builder = dispatcher.register(Commands.literal("whois")
 			.then(Commands.argument("player", StringArgumentType.greedyString()).executes((command) -> {
@@ -86,8 +94,8 @@ public class WhoIsCommand {
 							embed.addField("Nickname:", member.getNickname() != null ? member.getNickname() : "##Not Nicknamed##", false);
 							embed.addField("Joined Discord:", date.format(member.getTimeCreated().toInstant().toEpochMilli()), false);
 							embed.addField("Joined " + context.getServer().getName() + ":", date.format(member.getTimeJoined().toInstant().toEpochMilli()), false);
-							embed.addField("Member for:", TimeUtils.readableDuration(TimeUtils.since(member.getTimeJoined().toInstant())), false);
-							embed.addField("Time Online:", TimeUtils.readableDuration(timeOnline), false);
+							embed.addField("Member for:", readableDuration(TimeUtils.since(member.getTimeJoined().toInstant()), false), false);
+							embed.addField("Time Online:", readableDuration(timeOnline, true), false);
 							embed.addField(profiles.size() + " registered Profiles:", profileList, false);
 						}
 						else {
@@ -95,9 +103,9 @@ public class WhoIsCommand {
 							embed.addField("Username:", user.getJDAUser().getName(), false);
 							embed.addField("Discriminator", user.getJDAUser().getDiscriminator(), false);
 							embed.addField("ID:", "" + user.getID(), false);
-							embed.addField("Time Online:", TimeUtils.readableDuration(timeOnline), false);
+							embed.addField("Time Online:", readableDuration(timeOnline, true), false);
 							embed.addField(profiles.size() + " registered Profiles:", profileList, false);
-							embed.appendDescription("For more information, execute this command in a server.");
+							embed.appendDescription("For more information, execute this command in a server the user is in.");
 						}
 					}
 					else if (match instanceof Player) {
@@ -107,7 +115,7 @@ public class WhoIsCommand {
 						embed.addField("ID:", profile.getID() + "", false);
 						embed.addField("FC:", profile.getFriendCode(), false);
 						embed.addField("Owner:", user.toDetailedString(), false);
-						embed.addField("Time Online:", TimeUtils.readableDuration(profile.getOnlineDuration()), false);
+						embed.addField("Time Online:", readableDuration(profile.getOnlineDuration(), true), false);
 						embed.addField("First Seen:", date.format(profile.getFirstSeen().toEpochMilli()), false);
 						embed.addField("Last Seen:", date.format(profile.getLastOnline().toEpochMilli()), false);
 					}
@@ -149,6 +157,26 @@ public class WhoIsCommand {
 			}
 		}
 		return 1;
+	}
+	
+	public static final String readableDuration(Duration duration, boolean includeHours) {
+		String suffix = "";
+		if(includeHours) {
+			suffix = " (" + TimeUtils.readableDuration(duration, HOURS_ONLY) + ")";
+		}
+		if(duration.compareTo(Duration.ofDays(1)) < 0) {
+			return TimeUtils.readableDuration(duration, UNDER_ONE_DAY) + suffix;
+		}
+		if(duration.compareTo(Duration.ofDays(7)) < 0) {
+			return TimeUtils.readableDuration(duration, BETWEEN_DAY_WEEK) + suffix;
+		}
+		if(duration.compareTo(Duration.ofDays(30)) < 0) {
+			return TimeUtils.readableDuration(duration, BETWEEN_WEEK_MONTH) + suffix;
+		}
+		if(duration.compareTo(Duration.ofDays(365)) < 0) {
+			return TimeUtils.readableDuration(duration, BETWEEN_MONTH_YEAR) + suffix;
+		}
+		return TimeUtils.readableDuration(duration, OVER_ONE_YEAR) + suffix;
 	}
 	
 }

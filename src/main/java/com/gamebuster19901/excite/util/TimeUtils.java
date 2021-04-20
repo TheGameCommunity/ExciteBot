@@ -10,14 +10,64 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalAccessor;
+import java.util.Arrays;
 import java.util.Locale;
 
 public final class TimeUtils {
 	public static final DateTimeFormatter DB_DATE_FORMATTER = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM).withLocale(Locale.US).withZone(ZoneId.of("UTC"));
 	public static final Duration FOREVER = ChronoUnit.FOREVER.getDuration();
 	public static final Instant PLAYER_EPOCH = Instant.parse("2020-11-01T07:00:00Z"); //The second 2:00 am EST that occurs due do daylight savings
-	public static String readableDuration(Duration duration) {
+	public static String readableDuration(Duration duration, boolean... units) {
+		
+		if(units.length == 0) {
+			units = new boolean[] {true, true, true, true, true, true, true};
+		}
+		else if (units.length != 7) {
+			units = Arrays.copyOf(units, 7);
+		}
+		if(units.length != 7) {
+			throw new IllegalArgumentException(Arrays.toString(units));
+		}
+		
+		int j = -1;
+		for(int i = 0; i < units.length; i++) {
+			if(units[i]) {
+				j = i;
+			}
+			if(i == units.length && j == -1) {
+				throw new IllegalArgumentException("Units must contain at least one true value");
+			}
+		}
+		
+		String smallestUnit;
+		switch(j) {
+			case 0:
+				smallestUnit = "years";
+				break;
+			case 1:
+				smallestUnit = "months";
+				break;
+			case 2:
+				smallestUnit = "weeks";
+				break;
+			case 3:
+				smallestUnit = "days";
+				break;
+			case 4:
+				smallestUnit = "hours";
+				break;
+			case 5:
+				smallestUnit = "minutes";
+				break;
+			case 6:
+				smallestUnit = "seconds";
+				break;
+			default:
+				throw new AssertionError();
+		}
+		
 		String time = " ";
+		int k = 0;
 		
 		if(duration.equals(ChronoUnit.FOREVER.getDuration())) {
 			return " forever";
@@ -27,32 +77,32 @@ public final class TimeUtils {
 			time = "-";
 			duration = duration.abs();
 		}
-		if(duration.toDays() / 365 > 0) {
+		if(units[k++] && duration.toDays() / 365 > 0) {
 			time += duration.toDays() / 365 + " years#";
 			duration = duration.minus(Duration.ofDays((duration.toDays() / 365) * 365));
 		}
-		if(duration.toDays() / 30 > 0) {
+		if(units[k++] && duration.toDays() / 30 > 0) {
 			time += duration.toDays() / 30 + " months#";
 			duration = duration.minus(Duration.ofDays((duration.toDays() / 30) * 30));
 		}
-		if (duration.toDays() / 7 > 0) {
+		if (units[k++] && duration.toDays() / 7 > 0) {
 			time += duration.toDays() / 7 + " weeks#";
 			duration = duration.minus(Duration.ofDays((duration.toDays() / 7) * 7));
 			System.out.println(duration.toDays());
 		}
-		if(duration.toDays() > 0) {
+		if(units[k++] && duration.toDays() > 0) {
 			time += duration.toDays() + " days#";
 			duration = duration.minus(Duration.ofDays(duration.toDays()));
 		}
-		if(duration.toHours() > 0) {
+		if(units[k++] && duration.toHours() > 0) {
 			time += duration.toHours() + " hours#";
 			duration = duration.minus(Duration.ofHours(duration.toHours()));
 		}
-		if(duration.toMinutes() > 0) {
+		if(units[k++] && duration.toMinutes() > 0) {
 			time += duration.toMinutes() + " minutes#";
 			duration = duration.minus(Duration.ofMinutes(duration.toMinutes()));
 		}
-		if(duration.getSeconds() > 0) {
+		if(units[k++] && duration.getSeconds() > 0) {
 			time += duration.getSeconds() + " seconds";
 			duration = duration.minus(Duration.ofSeconds(duration.getSeconds()));
 		}
@@ -67,7 +117,7 @@ public final class TimeUtils {
 		time = time.replaceAll(" 1 seconds", " 1 second");
 		time = time.trim();
 		if(time.isEmpty()) {
-			return "0 seconds";
+			return "0 " + smallestUnit;
 		}
 		return time;
 	}
