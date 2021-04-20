@@ -41,6 +41,10 @@ public class WhoIsCommand {
 	
 	@SuppressWarnings("serial")
 	public static int sendResponse(MessageContext context, String lookingFor) {
+		if(context.isConsoleMessage() || context.isIngameEvent()) {
+			context.sendMessage("You cannot execute this command as " + context.getEvent().getClass().getSimpleName());
+			return 1;
+		}
 		Wiimmfi wiimmfi = Main.discordBot.getWiimmfi();
 		EmbedBuilder embed = new EmbedBuilder();
 		boolean hasMembers = context.isGuildMessage();
