@@ -51,7 +51,7 @@ public class WhoIsCommand {
 				HashSet<Named> matches = new HashSet<Named>();
 				matches.addAll(users);
 				matches.addAll(players);
-				SimpleDateFormat date = new SimpleDateFormat("yyyy/MM/dd HH:mm", Locale.ENGLISH);
+				SimpleDateFormat date = new SimpleDateFormat("yyyy/MM/dd HH:mm z", Locale.ENGLISH);
 				
 				if(matches.size() == 1) {
 					Named match = matches.iterator().next();
