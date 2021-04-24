@@ -34,16 +34,17 @@ public class ThreadService {
 	
 	private static ConcurrentLinkedDeque<Thread> threads = new ConcurrentLinkedDeque<Thread>();
 	
-	public static void run(Runnable runnable) {
+	public static Thread run(Runnable runnable) {
 		Thread thread = new Thread(runnable);
-		run(thread);
+		return run(thread);
 	}
 	
-	public static void run(Thread thread) {
+	public static Thread run(Thread thread) {
 		if(!thread.isAlive()) {
 			thread.start();
 			threads.add(thread);
 		}
+		return thread;
 	}
 	
 	public static void add(Thread thread) {

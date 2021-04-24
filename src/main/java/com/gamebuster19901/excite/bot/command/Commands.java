@@ -40,6 +40,7 @@ public class Commands {
 		PrefixCommand.register(dispatcher);
 		ChangelogCommand.register(dispatcher);
 		InsertCommand.register(dispatcher);
+		ArchiveCommand.register(dispatcher);
 	}
 	
 	public void handleCommand(String command) {
