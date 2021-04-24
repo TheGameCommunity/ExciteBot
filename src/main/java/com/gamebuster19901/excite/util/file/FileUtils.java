@@ -61,4 +61,12 @@ public class FileUtils {
 		return f.isFile() && f.getCanonicalPath().endsWith(".secret");
 	}
 	
+	public static String humanReadableByteCount(long bytes) {
+	    int unit = 1024;
+	    if (bytes < unit) return bytes + " bytes";
+	    int exp = (int) (Math.log(bytes) / Math.log(unit));
+	    String pre = new String[] {"kilo", "mega", "giga", "tera", "peta", "exa"}[exp-1];
+	    return String.format("%.1f %sbytes", bytes / Math.pow(unit, exp), pre);
+	}
+	
 }

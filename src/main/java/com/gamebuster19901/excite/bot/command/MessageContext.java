@@ -110,16 +110,16 @@ public class MessageContext<E>{
 		return isConsoleMessage() || getDiscordAuthor().isOperator();
 	}
 	
-	public void sendMessage(MessageEmbed message) {
+	public Message sendMessage(MessageEmbed message) {
 		if(!isConsoleMessage()) {
 			if(event instanceof GuildMessageReceivedEvent) {
-				((GuildMessageReceivedEvent)event).getChannel().sendMessage(message).complete();
+				return ((GuildMessageReceivedEvent)event).getChannel().sendMessage(message).complete();
 			}
 			else if (event instanceof PrivateMessageReceivedEvent) {
-				((PrivateMessageReceivedEvent)event).getChannel().sendMessage(message).complete();
+				return ((PrivateMessageReceivedEvent)event).getChannel().sendMessage(message).complete();
 			}
 			else if (event instanceof DiscordUser) {
-				((DiscordUser) event).sendMessage(message);
+				return ((DiscordUser) event).sendMessage(message);
 			}
 		}
 		else if (isConsoleMessage()) {
@@ -128,6 +128,7 @@ public class MessageContext<E>{
 		if(isIngameEvent()) {
 			throw new UnsupportedOperationException();
 		}
+		return null;
 	}
 	
 	public void sendMessage(String message) {

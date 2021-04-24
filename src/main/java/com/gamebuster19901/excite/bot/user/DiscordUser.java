@@ -37,6 +37,7 @@ import static com.gamebuster19901.excite.bot.database.Table.PLAYERS;
 import static com.gamebuster19901.excite.bot.database.Column.*;
 
 import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.PrivateChannel;
 import net.dv8tion.jda.api.entities.User;
@@ -365,12 +366,12 @@ public class DiscordUser implements Banee {
 		
 	}
 	
-	public void sendMessage(MessageEmbed message) {
+	public Message sendMessage(MessageEmbed message) {
 		if(Main.discordBot != null && !getJDAUser().equals(Main.discordBot.jda.getSelfUser())) {
 			if(!getJDAUser().isBot()) {
 				PrivateChannel privateChannel = getJDAUser().openPrivateChannel().complete();
 				try {
-					privateChannel.sendMessage(message).complete();
+					return privateChannel.sendMessage(message).complete();
 				}
 				catch(ErrorResponseException e) {
 					System.out.println(this.toDetailedString());
@@ -378,6 +379,7 @@ public class DiscordUser implements Banee {
 				}
 			}
 		}
+		return null;
 	}
 	
 	public void sendMessage(String message) {
