@@ -156,6 +156,7 @@ public class ArchiveCommand {
 													File attachmentFile = new File(file.getParentFile().getPath() + "/attach" + attachment.getIdLong() + attachment.getFileName());
 													attachment.downloadToFile(attachmentFile);
 													write(fileWriter, attachment.getId() + attachmentFile.getName());
+													estimatedSize += attachment.getSize();
 													attachmentsArchived++;
 												}
 											}
