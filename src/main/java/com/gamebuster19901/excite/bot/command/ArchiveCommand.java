@@ -148,7 +148,7 @@ public class ArchiveCommand {
 									action.forEach((message) -> {
 										try {
 											List<Attachment> attachments = message.getAttachments();
-											write(fileWriter, "==========START " + message.getIdLong());
+											write(fileWriter, "==========START " + message.getIdLong() + " USER:" + message.getAuthor().getAsTag());
 											write(fileWriter, message.getContentRaw());
 											if(!attachments.isEmpty()) {
 												write(fileWriter, "==========ATTACHMENTS " + message.getIdLong());
