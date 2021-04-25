@@ -183,13 +183,13 @@ public class ArchiveCommand {
 										}
 									});
 									fileWriter.close();
-									status = COMPLETE;
 								}
 								catch(Throwable t) {
 									source.sendMessage("Could not back up channel " + channel.getAsMention());
 									throw t;
 								}
 							}
+							status = COMPLETE;
 						} catch (Throwable t) {
 							source.sendMessage(StacktraceUtil.getStackTrace(t));
 							status = ERRORED;
