@@ -45,23 +45,22 @@ public class DiscordBot {
 		try {
 			reader = new BufferedReader(new FileReader(secretFile));
 			secret = reader.readLine();
-			secretFile = null;
+			JDABuilder builder = JDABuilder.createDefault(secret, GATEWAYS).setMemberCachePolicy(MemberCachePolicy.ALL).setChunkingFilter(ChunkingFilter.ALL);
+			this.jda = builder.build();
+			jda.addEventListener(new EventReceiver());
 		} 
 		catch (IOException e) {
-			secret = null;
-			secretFile = null;
 			LOGGER.log(Level.SEVERE, e, () -> e.getMessage());
 			throw e;
 		}
 		finally {
+			secret = null;
+			secretFile = null;
 			if(reader != null) {
 				reader.close();
 			}
 		}
 		
-		JDABuilder builder = JDABuilder.createDefault(secret, GATEWAYS).setMemberCachePolicy(MemberCachePolicy.ALL).setChunkingFilter(ChunkingFilter.ALL);
-		this.jda = builder.build();
-		jda.addEventListener(new EventReceiver());
 		secret = null;
 		secretFile = null;
 	}

@@ -5,12 +5,13 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 import com.gamebuster19901.excite.bot.server.DiscordServer;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
@@ -154,7 +155,22 @@ public class ArchiveCommand {
 												write(fileWriter, "==========ATTACHMENTS " + message.getIdLong());
 												for(Attachment attachment : attachments) {
 													File attachmentFile = new File(file.getParentFile().getPath() + "/attach" + attachment.getIdLong() + attachment.getFileName());
-													attachment.downloadToFile(attachmentFile);
+													CompletableFuture<File> future = attachment.downloadToFile(attachmentFile);
+													future.exceptionally(error -> {
+														int i = 0;
+														source.sendMessage("Encountered " + error.getClass().getSimpleName() + " while downloading " + attachmentFile + " retrying... (" + i++ + "/4)");
+														while(i < 4) {
+															try {
+																future.get();
+																i++;
+															} catch (Throwable t) {
+																if(i < 4) {
+																	source.sendMessage("Encountered " + t.getClass().getSimpleName() + " while downloading " + attachmentFile + " retrying... (" + i + "/4)");
+																}
+															}
+														}
+														return null;
+													}).get();
 													write(fileWriter, attachment.getId() + attachmentFile.getName());
 													estimatedSize += attachment.getSize();
 													attachmentsArchived++;
@@ -162,18 +178,18 @@ public class ArchiveCommand {
 											}
 											write(fileWriter, "==========END " + message.getIdLong());
 											messagesArchived++;
-										} catch (IOException e) {
-											throw new UncheckedIOException(e);
+										} catch (IOException | InterruptedException | ExecutionException e) {
+											throw new RuntimeException(e);
 										}
 									});
 									fileWriter.close();
-									status = COMPLETE;
 								}
 								catch(Throwable t) {
 									source.sendMessage("Could not back up channel " + channel.getAsMention());
 									throw t;
 								}
 							}
+							status = COMPLETE;
 						} catch (Throwable t) {
 							source.sendMessage(StacktraceUtil.getStackTrace(t));
 							status = ERRORED;
