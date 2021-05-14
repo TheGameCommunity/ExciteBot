@@ -2,12 +2,30 @@ package com.gamebuster19901.excite.bot.user;
 
 import java.util.regex.Pattern;
 
+import javax.annotation.Nullable;
+
 public class Wii {
 
 	private static final Pattern PATTERN = Pattern.compile("^\\d{16}$");
 	
+	@Nullable
 	public static WiiCode getWiiCode(String code) {
-		return new WiiCode(code);
+		WiiCode wiiCode = new WiiCode(code);
+		if(wiiCode.toString() != null) {
+			return wiiCode;
+		}
+		return null;
+	}
+	
+	@Nullable
+	public static WiiCode getWiiCodeFromEmail(String code) {
+		if(code == null) {
+			return null;
+		}
+		if(code.contains("@rc24.xyz")) {
+			return new WiiCode(code.replace("@rc24.xyz", ""));
+		}
+		return new WiiCode(null);
 	}
 	
 	@SuppressWarnings("rawtypes")
@@ -30,6 +48,7 @@ public class Wii {
 		}
 		
 		@Override
+		@Nullable
 		public String toString() {
 			return code;
 		}
