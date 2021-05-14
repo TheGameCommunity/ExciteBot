@@ -313,6 +313,27 @@ public class DiscordUser implements Banee {
 		}
 	}
 	
+	public void setWiiNumber(String number) {
+		try {
+			Table.updateWhere(ConsoleContext.INSTANCE, DISCORD_USERS, WII_NUMBER, number, new Comparison(DISCORD_ID, EQUALS, getID()));
+		} catch (SQLException e) {
+			throw new IOError(e);
+		}
+	}
+	
+	@Nullable
+	public String getWiiNumber() {
+		try {
+			Result result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, WII_NUMBER, DISCORD_USERS, new Comparison(DISCORD_ID, EQUALS, getID()));
+			if(result.next()) {
+				return result.getString(WII_NUMBER);
+			}
+			throw new AssertionError("Could not get wii number for " + discordId);
+		} catch(SQLException e) {
+			throw new IOError(e);
+		}
+	}
+	
 	public boolean sendDetailedPM() {
 		try {
 			Result result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, DETAILED_PM, DISCORD_USERS, new Comparison(DISCORD_ID, EQUALS, getID()));
