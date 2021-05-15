@@ -33,6 +33,7 @@ import com.gamebuster19901.excite.util.TimeUtils;
 import static com.gamebuster19901.excite.bot.database.Comparator.*;
 import static com.gamebuster19901.excite.bot.database.Table.DISCORD_USERS;
 import static com.gamebuster19901.excite.bot.database.Table.PLAYERS;
+import static com.gamebuster19901.excite.bot.database.Table.WIIS;
 
 import static com.gamebuster19901.excite.bot.database.Column.*;
 
@@ -313,20 +314,13 @@ public class DiscordUser implements Banee {
 		}
 	}
 	
-	public void setWiiNumber(String number) {
-		try {
-			Table.updateWhere(ConsoleContext.INSTANCE, DISCORD_USERS, WII_NUMBER, number, new Comparison(DISCORD_ID, EQUALS, getID()));
-		} catch (SQLException e) {
-			throw new IOError(e);
-		}
-	}
-	
 	@Nullable
-	public String getWiiNumber() {
+	public Wii[] getRegisteredWiis() {
 		try {
-			Result result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, WII_NUMBER, DISCORD_USERS, new Comparison(DISCORD_ID, EQUALS, getID()));
-			if(result.next()) {
-				return result.getString(WII_NUMBER);
+			HashSet<Wii> wiis = new HashSet<Wii>();
+			Result result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, WII_ID, WIIS, new Comparison(DISCORD_ID, EQUALS, getID()));
+			while(result.hasNext()) {
+				wiis.add(Wii.getWii(result.getString(WII_ID)));
 			}
 			throw new AssertionError("Could not get wii number for " + discordId);
 		} catch(SQLException e) {
