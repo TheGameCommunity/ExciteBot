@@ -93,7 +93,6 @@ public class WhoIsCommand {
 							//embed.addField("Badges:", "", false);
 							embed.addField("ID:", "" + user.getID(), false);
 							embed.addField("Nickname:", member.getNickname() != null ? member.getNickname() : "##Not Nicknamed##", false);
-							embed.addField("Console Friend Code:", consoleID != null ? consoleID : "##No Console Registered##", false);
 							embed.addField("Joined Discord:", date.format(member.getTimeCreated().toInstant().toEpochMilli()), false);
 							embed.addField("Joined " + context.getServer().getName() + ":", date.format(member.getTimeJoined().toInstant().toEpochMilli()), false);
 							embed.addField("Member for:", readableDuration(TimeUtils.since(member.getTimeJoined().toInstant()), false), false);
@@ -105,7 +104,6 @@ public class WhoIsCommand {
 							embed.addField("Username:", user.getJDAUser().getName(), false);
 							embed.addField("Discriminator", user.getJDAUser().getDiscriminator(), false);
 							embed.addField("ID:", "" + user.getID(), false);
-							embed.addField("Console Friend Code:", consoleID != null ? consoleID : "No Console Registered", false);
 							embed.addField("Time Online:", readableDuration(timeOnline, true), false);
 							embed.addField(profiles.size() + " registered Profiles:", profileList, false);
 							embed.appendDescription("For more information, execute this command in a server the user is in.");
