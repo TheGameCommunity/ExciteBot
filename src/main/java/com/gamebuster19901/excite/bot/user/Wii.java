@@ -48,6 +48,16 @@ public class Wii implements Named, Owned<DiscordUser> {
 	}
 	
 	@Override
+	public boolean isKnown() {
+		try {
+			Result result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, WII_ID, WIIS, new Comparison(WII_ID, EQUALS, wiiCode));
+			return result.hasNext();
+		} catch(SQLException e) {
+			throw new IOError(e);
+		}
+	}
+	
+	@Override
 	public long getID() {
 		try {
 			return Integer.parseInt(wiiCode.toString());
@@ -56,7 +66,6 @@ public class Wii implements Named, Owned<DiscordUser> {
 			return -1;
 		}
 	}
-	
 
 	@Override
 	public String getName() {
