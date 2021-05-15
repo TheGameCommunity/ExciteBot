@@ -66,7 +66,7 @@ public enum Column {
 	BELOW_THRESHOLD("dippedBelowThreshold", DISCORD_USERS),
 	NOTIFY_CONTINUOUSLY("notifyContinuously", DISCORD_USERS),
 	DETAILED_PM("detailedPM", DISCORD_USERS),
-	WII_NUMBER("wiiNumber", DISCORD_USERS),
+	STARS("stars", DISCORD_USERS),
 	
 	// OPERATOR
 	
