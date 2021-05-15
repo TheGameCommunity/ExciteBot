@@ -21,7 +21,9 @@ import com.gamebuster19901.excite.bot.database.Result;
 import com.gamebuster19901.excite.bot.database.Table;
 import com.gamebuster19901.excite.bot.database.sql.PreparedStatement;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
+import com.gamebuster19901.excite.bot.user.Nobody;
 import com.gamebuster19901.excite.bot.user.UnknownDiscordUser;
+import com.gamebuster19901.excite.util.Owned;
 import com.gamebuster19901.excite.util.TimeUtils;
 
 import static com.gamebuster19901.excite.bot.database.Table.PLAYERS;
@@ -30,7 +32,7 @@ import static com.gamebuster19901.excite.bot.database.Column.*;
 
 import net.dv8tion.jda.api.entities.User;
 
-public class Player implements Banee {
+public class Player implements Banee, Owned<DiscordUser> {
 	private static final Logger LOGGER = Logger.getLogger(Player.class.getName());
 	
 	public static final String validFCChars = "1234567890";
@@ -436,7 +438,19 @@ public class Player implements Banee {
 		}
 	}
 	
-	@SuppressWarnings("deprecation")
+	@Override
+	public DiscordUser getOwner() {
+		try {
+			Result result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, DISCORD_ID, PLAYERS, new Comparison(PLAYER_ID, EQUALS, getID()));
+			if(result.next()) {
+				return DiscordUser.getDiscordUserTreatingUnknownsAsNobody(ConsoleContext.INSTANCE, getDiscord());
+			}
+			return Nobody.INSTANCE;
+		} catch (SQLException e) {
+			throw new IOError(e);
+		}
+	}
+	
 	public long getDiscord() {
 		try {
 			Result result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, DISCORD_ID, PLAYERS, new Comparison(PLAYER_ID, EQUALS, getID()));
