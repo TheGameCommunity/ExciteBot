@@ -29,7 +29,7 @@ import com.gamebuster19901.excite.bot.user.Wii.InvalidWii;
 import com.gamebuster19901.excite.util.file.File;
 
 public class MailHandler {
-	private static final Logger LOGGER = Logger.getLogger(MailHandler.class.getName());
+	static final Logger LOGGER = Logger.getLogger(MailHandler.class.getName());
 	public static final String SERVER = "rc24.xyz";
 	public static final String APP_ID_HEADER = "X-Wii-AppId";
 	public static final String APP_ID = "1-52583345-0001";
@@ -104,7 +104,7 @@ public class MailHandler {
 	}
 	
 	private static void parseMail(String mailData) {
-		ArrayList<Mail> mail = new ArrayList<Mail>();
+		ArrayList<MailResponse> mail = new ArrayList<MailResponse>();
 		String delimiter = mailData.substring(0, mailData.indexOf('\r'));
 		LOGGER.log(Level.INFO, "Delimiter is: " + delimiter);
 		String[] emails = mailData.split(delimiter);
@@ -129,10 +129,13 @@ public class MailHandler {
 		Wii wii = Wii.getWii(message.getFrom()[0].toString());
 		if(wii instanceof InvalidWii) {
 			LOGGER.log(Level.INFO, "Ignoring non-wii mail");
-			return null;
+			return new NoResponse();
 		}
 		
 		if(wii.getOwner() instanceof Nobody) { //if wii is not registered
+			if(wii.isKnown()) {
+				
+			}
 			//if wii is already known
 				//message that old code is defunct
 				//send them a code on their wii and tell them to send it to @Excite#8562 to confirm registration
@@ -144,17 +147,18 @@ public class MailHandler {
 		String[] header = message.getHeader(APP_ID_HEADER);
 		
 		if(header.length > 0 && header[0].equals(APP_ID)) {
-			//if wii is registered
-			    //process mail
+			return analyzeIngameMail(session, message, wii);
 		}
-		else {
-			//excitebot is not currently accepting mail from anything other than Excitebots
+		else { //excitebot is not currently accepting mail from anything other than Excitebots
+			return new NoResponse();
 		}
-		
-		return null;
 	}
 	
-	public static void sendMail(Mail[] mail) throws IOException {
+	private static MailResponse analyzeIngameMail(Session session, MimeMessage message, Wii wii) {
+		
+	}
+	
+	public static void sendMail() throws IOException {
 		File secretFile = new File("./mail.secret");
 		String wiiID;
 		String password;
