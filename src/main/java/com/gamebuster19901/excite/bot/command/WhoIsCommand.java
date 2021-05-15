@@ -72,7 +72,6 @@ public class WhoIsCommand {
 						DiscordUser user = (DiscordUser) match;
 						Member member;
 						embed.setColor(Color.WHITE);
-						String consoleID = user.getWiiNumber();
 						Set<Player> profiles = user.getProfiles(context);
 						Duration timeOnline = Duration.ZERO;
 						Instant lastOnline = TimeUtils.PLAYER_EPOCH;
