@@ -79,7 +79,8 @@ public enum Column {
 	SECONDS_PLAYED("secondsPlayed", PLAYERS),
 	
 	//WIIS
-	WII_ID("wiiID", WIIS);
+	WII_ID("wiiID", WIIS),
+	REGISTRATION_CODE("registrationCode", WIIS),
 	
 	;
 	

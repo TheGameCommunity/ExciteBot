@@ -20,7 +20,7 @@ import static com.gamebuster19901.excite.bot.database.Table.WIIS;
 import static com.gamebuster19901.excite.bot.user.DesiredProfile.validPasswordChars;
 
 public class Wii implements Named, Owned<DiscordUser> {
-
+	
 	private static final String EMAIL_SUFFIX = "@rc24.xyz";
 	private static final Pattern PATTERN = Pattern.compile("^\\d{16}$");
 	private static final Random RANDOM = new Random();
@@ -80,12 +80,27 @@ public class Wii implements Named, Owned<DiscordUser> {
 		return getOwnershipString();
 	}
 	
-	private String generateRegistrationCode() {
+	public String generateRegistrationCode() {
 		char[] sequence = new char[16];
 		for(int i = 0; i < sequence.length; i++) {
 			sequence[i] = validPasswordChars.charAt(RANDOM.nextInt(validPasswordChars.length()));
 		}
-		return new String(sequence);
+		String code = new String(sequence);
+		try {
+			Table.updateWhere(ConsoleContext.INSTANCE, WIIS, REGISTRATION_CODE, code, new Comparison(WII_ID, EQUALS, wiiCode));
+			return getRegistrationCode();
+		} catch (SQLException e) {
+			throw new IOError(e);
+		}
+	}
+	
+	public String getRegistrationCode() {
+		try {
+			return Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, REGISTRATION_CODE, WIIS, new Comparison(WII_ID, EQUALS, wiiCode)).getString(REGISTRATION_CODE);
+		} catch (SQLException e) {
+			throw new IOError(e);
+		}
+		
 	}
 	
 	public static Wii getWii(String code) {
