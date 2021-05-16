@@ -1,21 +1,20 @@
 package com.gamebuster19901.excite.bot.challenge.mail;
 
-import com.gamebuster19901.excite.bot.user.Wii;
+import javax.mail.MessagingException;
+import javax.mail.internet.MimeMessage;
 
-public abstract class MailReplyResponse {
-
-	protected final Wii wii;
+public abstract class MailReplyResponse extends MailResponse {
 	
-	public MailReplyResponse(Wii wii) {
-		this.wii = wii;
+	public MailReplyResponse(MimeMessage message) {
+		super(message);
 	}
 	
 	@Override
-	public void respond() {
+	public void respond() throws MessagingException {
 		send();
 	}
 
-	protected final void send() {
+	protected final void send() throws MessagingException {
 		
 	}
 	

@@ -11,6 +11,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Properties;
 import java.util.logging.Level;
@@ -23,10 +24,17 @@ import javax.mail.internet.MimeMessage;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 
+import com.gamebuster19901.excite.bot.command.ConsoleContext;
+import com.gamebuster19901.excite.bot.database.Insertion;
 import com.gamebuster19901.excite.bot.user.Nobody;
 import com.gamebuster19901.excite.bot.user.Wii;
 import com.gamebuster19901.excite.bot.user.Wii.InvalidWii;
+import com.gamebuster19901.excite.game.challenge.InvalidChallenge;
+import com.gamebuster19901.excite.game.challenge.Rewardable;
 import com.gamebuster19901.excite.util.file.File;
+
+import static com.gamebuster19901.excite.bot.database.Table.*;
+import static com.gamebuster19901.excite.bot.database.Column.*;
 
 public class MailHandler {
 	static final Logger LOGGER = Logger.getLogger(MailHandler.class.getName());
@@ -129,33 +137,45 @@ public class MailHandler {
 		Wii wii = Wii.getWii(message.getFrom()[0].toString());
 		if(wii instanceof InvalidWii) {
 			LOGGER.log(Level.INFO, "Ignoring non-wii mail");
-			return new NoResponse();
+			return new NoResponse(message);
+		}
+		
+		if(!wii.isKnown()) {
+			try {
+				Insertion.insertInto(WIIS).setColumns(WII_ID).to(wii.getWiiCode().toString()).prepare(ConsoleContext.INSTANCE).execute();
+			} catch (SQLException e) {
+				throw new MessagingException("Database error", e);
+			}
+		}
+		
+		String[] appheaders = message.getHeader(APP_ID_HEADER);
+		String app = "";
+		if(appheaders.length > 0) {
+			app = appheaders[0];
+		}
+		Rewardable attachment = InvalidChallenge.INSTANCE;
+		if(app.equals(APP_ID)) {
+			attachment = analyzeIngameMail(message, wii);
 		}
 		
 		if(wii.getOwner() instanceof Nobody) { //if wii is not registered
-			if(wii.isKnown()) {
-				
+			MailResponse response = new DiscordCodeResponse(wii, message);
+			
+			if(attachment.getReward() > 0) {
+				MultiResponse multiResponse = new MultiResponse(message);
+				multiResponse.addResponse(new RefundResponse(message, attachment));
+				multiResponse.addResponse(response);
 			}
-			//if wii is already known
-				//message that old code is defunct
-				//send them a code on their wii and tell them to send it to @Excite#8562 to confirm registration
-			//else
-				//send them a code on their wii and tell them to send it to @Excite#8562 to confirm registration
-			//refund if challenge
-			return null;
-		}
-		String[] header = message.getHeader(APP_ID_HEADER);
-		
-		if(header.length > 0 && header[0].equals(APP_ID)) {
-			return analyzeIngameMail(session, message, wii);
+			return response;
 		}
 		else { //excitebot is not currently accepting mail from anything other than Excitebots
-			return new NoResponse();
+			return new NoResponse(message);
 		}
 	}
 	
-	private static MailResponse analyzeIngameMail(Session session, MimeMessage message, Wii wii) {
+	public static Rewardable analyzeIngameMail(MimeMessage message, Wii wii) {
 		
+		return InvalidChallenge.INSTANCE;
 	}
 	
 	public static void sendMail() throws IOException {
