@@ -14,10 +14,4 @@ public abstract class MailResponse {
 	
 	public abstract void respond() throws MessagingException;
 	
-	protected MimeMessage getResponseTemplate() throws MessagingException {
-		Session session = message.getSession();
-		MimeMessage response = new MimeMessage(session);
-		return response;
-	}
-	
 }

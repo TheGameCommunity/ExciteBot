@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 
 import javax.mail.MessagingException;
 import javax.mail.Session;
@@ -37,6 +38,7 @@ import static com.gamebuster19901.excite.bot.database.Table.*;
 import static com.gamebuster19901.excite.bot.database.Column.*;
 
 public class MailHandler {
+	private static final Pattern CONTENT_TYPE_PATTERN = Pattern.compile("Content-Type:.*");
 	static final Logger LOGGER = Logger.getLogger(MailHandler.class.getName());
 	public static final String SERVER = "rc24.xyz";
 	public static final String APP_ID_HEADER = "X-Wii-AppId";
@@ -73,7 +75,7 @@ public class MailHandler {
 					content.append(data);
 				}
 				LOGGER.log(Level.INFO, content.toString());
-				parseMail(content.toString());
+				//parseMail(content.toString());
 			}
 			else {
 				LOGGER.log(Level.INFO, "Response was null");
@@ -118,7 +120,6 @@ public class MailHandler {
 		String[] emails = mailData.split(delimiter);
 		for(String content : emails) {
 			try {
-				content = content.substring(30);
 				mail.add(analyzeMail(content));
 			}
 			catch(Exception e) {
