@@ -1,4 +1,4 @@
-package com.gamebuster19901.excite.bot.challenge.mail;
+package com.gamebuster19901.excite.bot.mail;
 
 import java.util.Collections;
 import java.util.Set;

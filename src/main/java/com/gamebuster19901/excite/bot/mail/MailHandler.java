@@ -1,4 +1,4 @@
-package com.gamebuster19901.excite.bot.challenge.mail;
+package com.gamebuster19901.excite.bot.mail;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
