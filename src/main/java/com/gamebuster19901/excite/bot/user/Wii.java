@@ -100,7 +100,11 @@ public class Wii implements Named, Owned<DiscordUser> {
 	
 	public String getRegistrationCode() {
 		try {
-			return Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, REGISTRATION_CODE, WIIS, new Comparison(WII_ID, EQUALS, wiiCode)).getString(REGISTRATION_CODE);
+			Result result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, REGISTRATION_CODE, WIIS, new Comparison(WII_ID, EQUALS, wiiCode));
+			if(result.next()) {
+				return result.getString(REGISTRATION_CODE);
+			}
+			throw new AssertionError();
 		} catch (SQLException e) {
 			throw new IOError(e);
 		}
