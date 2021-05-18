@@ -3,7 +3,6 @@ package com.gamebuster19901.excite.bot.mail;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -29,7 +28,7 @@ import org.apache.http.impl.client.HttpClients;
 
 import com.gamebuster19901.excite.bot.command.ConsoleContext;
 import com.gamebuster19901.excite.bot.database.Insertion;
-import com.gamebuster19901.excite.bot.user.Nobody;
+import com.gamebuster19901.excite.bot.user.UnknownDiscordUser;
 import com.gamebuster19901.excite.bot.user.Wii;
 import com.gamebuster19901.excite.bot.user.Wii.InvalidWii;
 import com.gamebuster19901.excite.game.challenge.InvalidChallenge;
@@ -148,7 +147,7 @@ public class MailHandler {
 		MimeMessage message = new MimeMessage(session, data);
 		
 		Address[] from = message.getFrom();
-		LOGGER.log(Level.INFO, "Analyzing mail from: " + from);
+		LOGGER.log(Level.INFO, "Analyzing mail from: " + (from != null ? from[0] : from));
 		if(from == null) {
 			return new NoResponse(message);
 		}
@@ -177,7 +176,7 @@ public class MailHandler {
 			attachment = analyzeIngameMail(message, sender);
 		}
 		
-		if(sender.getOwner() instanceof Nobody) { //if wii is not registered
+		if(sender.getOwner() instanceof UnknownDiscordUser) { //if wii is not registered
 			MailResponse response = new DiscordCodeResponse(responder, sender, message);
 			
 			if(attachment.getReward() > 0) {
@@ -188,7 +187,7 @@ public class MailHandler {
 			return response;
 		}
 		else { //excitebot is not currently accepting mail from anything other than Excitebots
-			LOGGER.log(Level.INFO, "Excitebots is not currently accepting mail from anything other than Excitebots");
+			LOGGER.log(Level.INFO, "Excitebot is not currently accepting mail from anything other than Excitebots");
 			return new NoResponse(message);
 		}
 	}
