@@ -148,7 +148,7 @@ public class MailHandler {
 		MimeMessage message = new MimeMessage(session, data);
 		
 		Address[] from = message.getFrom();
-		LOGGER.log(Level.INFO, "Analyzing mail from: " + message);
+		LOGGER.log(Level.INFO, "Analyzing mail from: " + from);
 		if(from == null) {
 			return new NoResponse(message);
 		}
