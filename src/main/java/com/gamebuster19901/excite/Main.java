@@ -18,6 +18,7 @@ import com.gamebuster19901.excite.bot.DiscordBot;
 import com.gamebuster19901.excite.bot.command.Commands;
 import com.gamebuster19901.excite.bot.command.ConsoleContext;
 import com.gamebuster19901.excite.bot.database.sql.DatabaseConnection;
+import com.gamebuster19901.excite.bot.mail.MailHandler;
 import com.gamebuster19901.excite.bot.user.ConsoleUser;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
 import com.gamebuster19901.excite.bot.user.UnknownDiscordUser;
@@ -105,7 +106,7 @@ public class Main {
 		Instant nextDiscordPing = Instant.now();
 		Instant sendDiscordNotifications = Instant.now();
 		startConsole();
-		
+		startMailThread();
 		try {
 			while(true) {
 				try {
@@ -246,6 +247,29 @@ public class Main {
 		consoleThread.setName("consoleReader");
 		consoleThread.setDaemon(true);
 		consoleThread.start();
+	}
+	
+	private static void startMailThread() {
+		Thread mailThread = new Thread() {
+			@Override
+			public void run() {
+				while(true) {
+					try {
+						MailHandler.receive();
+						Thread.sleep(5000);
+					}
+					catch(InterruptedException e) {
+						
+					}
+					catch(Throwable t) {
+						t.printStackTrace();
+					}
+				}
+			}
+		};
+		mailThread.setName("mailThread");
+		mailThread.setDaemon(false);
+		ThreadService.run(mailThread);
 	}
 	
 	public static Thread updateLists(boolean start, boolean join) throws InterruptedException {
