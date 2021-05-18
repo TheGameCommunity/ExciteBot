@@ -80,6 +80,10 @@ public class Wii implements Named, Owned<DiscordUser> {
 		return getOwnershipString();
 	}
 	
+	public String getEmail() {
+		return "w" + wiiCode + EMAIL_SUFFIX;
+	}
+	
 	public String generateRegistrationCode() {
 		char[] sequence = new char[16];
 		for(int i = 0; i < sequence.length; i++) {
