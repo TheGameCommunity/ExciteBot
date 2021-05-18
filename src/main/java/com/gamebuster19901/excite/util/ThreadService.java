@@ -64,11 +64,19 @@ public class ThreadService {
 				int threadCount;
 				int waitTime = 0;
 				do {
+					for(Thread t : threads) {
+						t.interrupt();
+					}
 					threadCount = threads.size();
 					if(threadCount == 0) {
 						break;
 					}
-					context.sendMessage("Waiting for " + threadCount + " threads to finish...");
+					String message = "==========\nWaiting for " + threadCount + " thread(s) to finish:\n\n";
+					for(Thread t : threads) {
+						message = message + t.getName() + " - " + t.getState() + "\n";
+					}
+					message = message + "==========";
+					context.sendMessage(message);
 					try {
 						Thread.sleep(1000);
 						waitTime = waitTime + 1000;
