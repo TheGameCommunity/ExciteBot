@@ -88,7 +88,7 @@ public class WhoIsCommand {
 							}
 						}
 						for(Wii wii : wiis) {
-							wiiList = wiiList + wii.getOwnershipString() + "\n";
+							wiiList = wiiList + wii.getName() + "\n";
 						}
 						if(hasMembers && (member = user.getMember(context.getServer())) != null) {
 							embed.setColor(member.getColor());
