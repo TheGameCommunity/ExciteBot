@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 
 import com.gamebuster19901.excite.bot.user.Wii;
@@ -20,6 +21,12 @@ public class DiscordCodeResponse extends MailReplyResponse {
 		hadOldCode = (wiiToRegister.getRegistrationCode() != null) ? true : false;
 		registrationCode = wiiToRegister.generateRegistrationCode();
 		desiredWiis.add(wiiToRegister);
+	}
+	
+	protected MimeMessage getResponseTemplate(Wii responder) throws MessagingException {
+		MimeMessage message = super.getResponseTemplate(responder);
+		message.setText(registrationCode);
+		return message;
 	}
 	
 }
