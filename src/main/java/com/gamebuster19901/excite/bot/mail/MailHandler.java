@@ -46,10 +46,6 @@ public class MailHandler {
 	public static final String APP_ID_HEADER = "X-Wii-AppId";
 	public static final String APP_ID = "1-52583345-0001";
 	
-	public static void main(String[] args) throws IOException {
-		receive();
-	}
-	
 	public static void receive() throws IOException {
 		File secretFile = new File("./mail.secret");
 		String wiiID;
