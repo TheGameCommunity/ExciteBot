@@ -38,7 +38,7 @@ public class Wii implements Named, Owned<DiscordUser> {
 	public DiscordUser getOwner() {
 		try {
 			Result result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, DISCORD_ID, WIIS, new Comparison(WII_ID, EQUALS, wiiCode));
-			if(result.hasNext()) {
+			if(result.next()) {
 				return DiscordUser.getDiscordUserIncludingUnknown(ConsoleContext.INSTANCE, result.getLong(DISCORD_ID));
 			}
 			return Nobody.INSTANCE;

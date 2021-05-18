@@ -319,10 +319,10 @@ public class DiscordUser implements Banee {
 		try {
 			HashSet<Wii> wiis = new HashSet<Wii>();
 			Result result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, WII_ID, WIIS, new Comparison(DISCORD_ID, EQUALS, getID()));
-			while(result.hasNext()) {
+			while(result.next()) {
 				wiis.add(Wii.getWii(result.getString(WII_ID)));
 			}
-			throw new AssertionError("Could not get wii number for " + discordId);
+			return (Wii[]) wiis.toArray(new Wii[] {});
 		} catch(SQLException e) {
 			throw new IOError(e);
 		}
