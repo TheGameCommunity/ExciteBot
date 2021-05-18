@@ -5,14 +5,15 @@ import java.util.logging.Level;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 
+import com.gamebuster19901.excite.bot.user.Wii;
 import com.gamebuster19901.excite.game.challenge.Rewardable;
 
 public class RefundResponse extends MailReplyResponse implements Rewardable {
 
 	private final Rewardable rewardable;
 	
-	public RefundResponse(MimeMessage message, Rewardable rewardable) {
-		super(message);
+	public RefundResponse(Wii responder, MimeMessage message, Rewardable rewardable) {
+		super(responder, message);
 		this.rewardable = rewardable;
 	}
 

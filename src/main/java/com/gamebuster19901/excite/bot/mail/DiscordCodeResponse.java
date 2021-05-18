@@ -15,11 +15,11 @@ public class DiscordCodeResponse extends MailReplyResponse {
 	final String registrationCode;
 	final boolean hadOldCode;
 	
-	public DiscordCodeResponse(Wii wii, MimeMessage message) {
-		super(message);
-		hadOldCode = (wii.getRegistrationCode() != null) ? true : false;
-		registrationCode = wii.generateRegistrationCode();
-		desiredWiis.add(wii);
+	public DiscordCodeResponse(Wii responder, Wii wiiToRegister, MimeMessage message) {
+		super(responder, message);
+		hadOldCode = (wiiToRegister.getRegistrationCode() != null) ? true : false;
+		registrationCode = wiiToRegister.generateRegistrationCode();
+		desiredWiis.add(wiiToRegister);
 	}
 	
 }

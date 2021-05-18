@@ -13,11 +13,13 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
+import javax.mail.Address;
 import javax.mail.MessagingException;
 import javax.mail.Session;
 import javax.mail.internet.MimeMessage;
@@ -75,7 +77,7 @@ public class MailHandler {
 					content.append(data);
 				}
 				LOGGER.log(Level.INFO, content.toString());
-				//parseMail(content.toString());
+				parseMail(Wii.getWii(wiiID), content.toString());
 			}
 			else {
 				LOGGER.log(Level.INFO, "Response was null");
@@ -113,37 +115,57 @@ public class MailHandler {
 		}
 	}
 	
-	private static void parseMail(String mailData) {
-		ArrayList<MailResponse> mail = new ArrayList<MailResponse>();
+	private static void parseMail(Wii responder, String mailData) {
 		String delimiter = mailData.substring(0, mailData.indexOf('\r'));
 		LOGGER.log(Level.INFO, "Delimiter is: " + delimiter);
-		String[] emails = mailData.split(delimiter);
+		ArrayList<String> emails = new ArrayList<String>();
+		emails.addAll(Arrays.asList(mailData.split(delimiter)));
+		emails.removeIf((predicate) -> {return predicate.isEmpty() || predicate.equals("--\r\n");});
 		for(String content : emails) {
+			content = CONTENT_TYPE_PATTERN.matcher(content).replaceFirst("");
+			content = content.trim();
+			MailResponse response = null;
 			try {
-				mail.add(analyzeMail(content));
+				response = analyzeMail(responder, content);
 			}
 			catch(Exception e) {
-				LOGGER.log(Level.WARNING, "Couldn't analayze a mail item: ", e);
+				LOGGER.log(Level.WARNING, "Couldn't analayze a mail item: \"" + content + "\"", e);
+				continue;
+			}
+			try {
+				response.respond();
+			}
+			catch(Throwable t) {
+				try {
+					MailResponse failureResponse = response.handleResponseFailure(t);
+					failureResponse.respond();
+				} catch (Throwable e) {
+					LOGGER.log(Level.SEVERE, "Could not respond to mail.", t);
+				}
 			}
 		}
 	}
 
-	private static MailResponse analyzeMail(String content) throws MessagingException {
+	private static MailResponse analyzeMail(Wii responder, String content) throws MessagingException {
 		Session session = Session.getInstance(new Properties());
 		InputStream data = new ByteArrayInputStream(content.getBytes());
 		MimeMessage message = new MimeMessage(session, data);
 		
-		LOGGER.log(Level.INFO, "Analyzing mail from: " + message.getFrom()[0]);
+		Address[] from = message.getFrom();
+		LOGGER.log(Level.INFO, "Analyzing mail from: " + message);
+		if(from == null) {
+			return new NoResponse(message);
+		}
 		
-		Wii wii = Wii.getWii(message.getFrom()[0].toString());
-		if(wii instanceof InvalidWii) {
+		Wii sender = Wii.getWii(message.getFrom()[0].toString());
+		if(sender instanceof InvalidWii) {
 			LOGGER.log(Level.INFO, "Ignoring non-wii mail");
 			return new NoResponse(message);
 		}
 		
-		if(!wii.isKnown()) {
+		if(!sender.isKnown()) {
 			try {
-				Insertion.insertInto(WIIS).setColumns(WII_ID).to(wii.getWiiCode().toString()).prepare(ConsoleContext.INSTANCE).execute();
+				Insertion.insertInto(WIIS).setColumns(WII_ID).to(sender.getWiiCode().toString()).prepare(ConsoleContext.INSTANCE).execute();
 			} catch (SQLException e) {
 				throw new MessagingException("Database error", e);
 			}
@@ -156,15 +178,15 @@ public class MailHandler {
 		}
 		Rewardable attachment = InvalidChallenge.INSTANCE;
 		if(app.equals(APP_ID)) {
-			attachment = analyzeIngameMail(message, wii);
+			attachment = analyzeIngameMail(message, sender);
 		}
 		
-		if(wii.getOwner() instanceof Nobody) { //if wii is not registered
-			MailResponse response = new DiscordCodeResponse(wii, message);
+		if(sender.getOwner() instanceof Nobody) { //if wii is not registered
+			MailResponse response = new DiscordCodeResponse(responder, sender, message);
 			
 			if(attachment.getReward() > 0) {
 				MultiResponse multiResponse = new MultiResponse(message);
-				multiResponse.addResponse(new RefundResponse(message, attachment));
+				multiResponse.addResponse(new RefundResponse(responder, message, attachment));
 				multiResponse.addResponse(response);
 			}
 			return response;

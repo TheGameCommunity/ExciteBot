@@ -1,18 +1,21 @@
 package com.gamebuster19901.excite.bot.mail;
 
-import java.io.InputStream;
-
 import javax.activation.DataHandler;
 import javax.mail.MessagingException;
 import javax.mail.Session;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
-import javax.mail.internet.MimeMultipart;
+import com.gamebuster19901.excite.bot.user.Wii;
 
 public abstract class MailReplyResponse extends MailResponse {
 	
-	public MailReplyResponse(MimeMessage message) {
+	public static final String US_ASCII = "us-ascii";
+	
+	protected Wii responder;
+	
+	public MailReplyResponse(Wii responder, MimeMessage message) {
 		super(message);
+		this.responder = responder;
 	}
 	
 	@Override
@@ -24,10 +27,10 @@ public abstract class MailReplyResponse extends MailResponse {
 		
 	}
 	
-	protected MimeMessage getResponseTemplate() throws MessagingException {
+	protected MimeMessage getResponseTemplate(Wii responder) throws MessagingException {
 		Session session = message.getSession();
 		MimeMessage response = new MimeMessage(session);
-		response.addFrom(session.get);
+		response.setFrom(responder.getEmail());
 		return response;
 	}
 	
@@ -35,19 +38,20 @@ public abstract class MailReplyResponse extends MailResponse {
 		return new MimeBodyPart();
 	}
 	
-	protected MimeBodyPart genEmptyTextPart() throws MessagingException {
-		return genEmptyTextPart("us-ascii");
+	protected MimeBodyPart genTextPart(String text) throws MessagingException {
+		return genTextPart(text, US_ASCII);
 	}
 	
-	protected MimeBodyPart genEmptyTextPart(String encoding) throws MessagingException {
+	protected MimeBodyPart genTextPart(String text, String encoding) throws MessagingException {
 		MimeBodyPart textPart = genEmptyPart();
-		textPart.setText("", encoding);
+		textPart.setText(text, encoding);
 		return textPart;
 	}
 	
 	protected MimeBodyPart genContentPart(DataHandler dataHandler) throws MessagingException {
 		MimeBodyPart contentPart = genEmptyPart();
 		contentPart.setDataHandler(dataHandler);
+		return contentPart;
 	}
 	
 }
