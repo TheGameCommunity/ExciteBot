@@ -193,4 +193,9 @@ public class MailHandler {
 		}
 	}
 	
+	public static Rewardable analyzeIngameMail(MimeMessage message, Wii wii) {
+		
+		return InvalidChallenge.INSTANCE;
+	}
+	
 }
