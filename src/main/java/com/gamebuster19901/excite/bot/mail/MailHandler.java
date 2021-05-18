@@ -188,6 +188,7 @@ public class MailHandler {
 			return response;
 		}
 		else { //excitebot is not currently accepting mail from anything other than Excitebots
+			LOGGER.log(Level.INFO, "Excitebots is not currently accepting mail from anything other than Excitebots");
 			return new NoResponse(message);
 		}
 	}
