@@ -192,31 +192,4 @@ public class MailHandler {
 		}
 	}
 	
-	public static Rewardable analyzeIngameMail(MimeMessage message, Wii wii) {
-		
-		return InvalidChallenge.INSTANCE;
-	}
-	
-	public static void sendMail() throws IOException {
-		File secretFile = new File("./mail.secret");
-		String wiiID;
-		String password;
-		HttpGet request;
-		BufferedReader fileReader = null;
-		InputStreamReader mailReader = null;
-		CloseableHttpClient client = null;
-		try {
-			fileReader = new BufferedReader(new FileReader(secretFile));
-			wiiID = fileReader.readLine();
-			password = fileReader.readLine();
-			HttpPost post = new HttpPost("https://mtw." + SERVER + "/cgi-bin/send.chi?mlid=w" + wiiID + "&passwd" + password);
-		}
-		catch (Throwable t){
-			
-		}
-		finally {
-			
-		}
-	}
-	
 }
