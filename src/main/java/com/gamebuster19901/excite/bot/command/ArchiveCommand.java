@@ -132,7 +132,7 @@ public class ArchiveCommand {
 							message.editMessage(embed.build()).complete();
 						});
 						
-						String date = TimeUtils.getDate(Instant.now());
+						String date = TimeUtils.getDBDate(Instant.now());
 						try {
 							status = WORKING;
 							for(TextChannel channel : channelsToArchive) {
