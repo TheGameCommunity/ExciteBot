@@ -1,55 +1,63 @@
 package com.gamebuster19901.excite.bot.mail;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
+import java.util.Date;
 import java.util.logging.Level;
 
-import javax.activation.DataHandler;
 import javax.mail.MessagingException;
-import javax.mail.Session;
-import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.InputStreamEntity;
+import org.apache.http.entity.mime.FormBodyPart;
+import org.apache.http.entity.mime.FormBodyPartBuilder;
+import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 
 import com.gamebuster19901.excite.bot.user.Wii;
-import com.gamebuster19901.excite.util.ThreadService;
+import com.gamebuster19901.excite.util.TimeUtils;
 import com.gamebuster19901.excite.util.file.File;
 
 public abstract class MailReplyResponse extends MailResponse {
 	
 	public static final String US_ASCII = "us-ascii";
+	public static final String UTF16BE = "utf-16be";
 	
 	protected Wii responder;
-	protected MimeMessage reply;
+	protected Wii respondee;
+	protected FormBodyPartBuilder replyBuilder;
+	protected FormBodyPart reply;
 	
-	public MailReplyResponse(Wii responder, MimeMessage message) {
+	public MailReplyResponse(Wii responder, Wii respondee, MimeMessage message) {
 		super(message);
 		this.responder = responder;
+		this.respondee = respondee;
+	}
+	
+	public MailReplyResponse(Wii responder, MimeMessage message) throws MessagingException {
+		this(responder, Wii.getWii(message.getFrom()[0].toString()), message);
 	}
 	
 	@Override
 	public void respond() throws MessagingException {
 		try {
-			this.reply = getResponseTemplate(responder);
+			setReply(getResponseTemplate(responder, false).build());
 			send();
 		} catch (IOException e) {
 			throw new MessagingException("An exception occured when sending the mail", e);
 		}
 	}
 
-	protected final void send() throws MessagingException, IOException{
+	protected final void send() throws MessagingException, IOException {
 		if(reply == null) {
 			throw new IllegalStateException("No reply set?!");
 		}
@@ -57,11 +65,10 @@ public abstract class MailReplyResponse extends MailResponse {
 		String wiiID;
 		String password;
 		HttpPost request;
+		HttpPost dupe;
 		BufferedReader fileReader = null;
 		InputStreamReader mailReader = null;
 		CloseableHttpClient client = null;
-		PipedOutputStream out = new PipedOutputStream();
-		PipedInputStream in= new PipedInputStream();
 		try {
 			client = HttpClients.createDefault();
 			fileReader = new BufferedReader(new FileReader(secretFile));
@@ -69,26 +76,26 @@ public abstract class MailReplyResponse extends MailResponse {
 			password = fileReader.readLine();
 			client = HttpClients.createDefault();
 			request = new HttpPost("https://mtw." + MailHandler.SERVER + "/cgi-bin/send.cgi?mlid=" + wiiID + "&passwd=" + password + "&maxsize=11534336");
-			in.connect(out);
-			Thread waitingThread = Thread.currentThread();
-			boolean waiting = true;
-			ThreadService.run(new Thread (() -> {
-				try {
-					reply.writeTo(out);
-					out.close();
-				} catch (IOException | MessagingException e) {
-					MailHandler.LOGGER.log(Level.SEVERE, "", e);
-				}
-			}));
-			HttpEntity entity = new InputStreamEntity(in);
-			request.setEntity(entity);
+			dupe = new HttpPost("https://mtw." + MailHandler.SERVER + "/cgi-bin/send.cgi?mlid=" + wiiID + "&passwd=" + password + "&maxsize=11534336");
+
+			MultipartEntityBuilder builder = MultipartEntityBuilder.create();
+			builder.addPart(reply);
+			
+			MultipartEntityBuilder dupePart = MultipartEntityBuilder.create();
+			dupePart.addPart(getResponseTemplate(responder, false).build());
+			
+			request.setEntity(builder.build());
+			dupe.setEntity(dupePart.build());
 			CloseableHttpResponse response = client.execute(request);
-			in.close();
 			HttpEntity responseEntity = response.getEntity();
 			if(responseEntity != null) {
 				InputStream stream = responseEntity.getContent();
 				String rawResponse = new String(stream.readAllBytes(), StandardCharsets.UTF_8);
+				ByteArrayOutputStream logStream = new ByteArrayOutputStream();
+				dupe.getEntity().writeTo(logStream);
+				MailHandler.LOGGER.log(Level.INFO, new String(logStream.toByteArray()));
 				MailHandler.LOGGER.log(Level.INFO, rawResponse);
+				logStream.close();
 			}
 		}
 		finally {
@@ -105,12 +112,6 @@ public abstract class MailReplyResponse extends MailResponse {
 							mailReader.close();
 						}
 					}
-				}
-				if(in != null) {
-					in.close();
-				}
-				if(out != null) {
-					out.close();
 				}
 			}
 			catch(Throwable t) {
@@ -129,35 +130,23 @@ public abstract class MailReplyResponse extends MailResponse {
 		}
 	}
 	
-	protected final void setReply(MimeMessage reply) {
+	protected final void setReply(FormBodyPart reply) {
 		this.reply = reply;
 	}
 	
-	protected MimeMessage getResponseTemplate(Wii responder) throws MessagingException {
-		Session session = message.getSession();
-		MimeMessage response = new MimeMessage(session);
-		response.setFrom(responder.getEmail());
-		return response;
-	}
-	
-	protected MimeBodyPart genEmptyPart() {
-		return new MimeBodyPart();
-	}
-	
-	protected MimeBodyPart genTextPart(String text) throws MessagingException {
-		return genTextPart(text, US_ASCII);
-	}
-	
-	protected MimeBodyPart genTextPart(String text, String encoding) throws MessagingException {
-		MimeBodyPart textPart = genEmptyPart();
-		textPart.setText(text, encoding);
-		return textPart;
-	}
-	
-	protected MimeBodyPart genContentPart(DataHandler dataHandler) throws MessagingException {
-		MimeBodyPart contentPart = genEmptyPart();
-		contentPart.setDataHandler(dataHandler);
-		return contentPart;
+	protected FormBodyPartBuilder getResponseTemplate(Wii responder, boolean overwrite) throws MessagingException {
+		if(replyBuilder == null) {
+			FormBodyPartBuilder builder = FormBodyPartBuilder.create();
+			if(overwrite) {
+				replyBuilder = builder;
+			}
+			builder.addField("Date", TimeUtils.getRC24Date(Date.from(Instant.now())));
+			builder.addField("From", responder.getRiiEmail());
+			builder.addField("To", respondee.getRiiEmail());
+			builder.setName("body");
+			return builder;
+		}
+		return replyBuilder;
 	}
 	
 }

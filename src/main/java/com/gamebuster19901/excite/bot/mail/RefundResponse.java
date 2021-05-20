@@ -12,7 +12,7 @@ public class RefundResponse extends MailReplyResponse implements Rewardable {
 
 	private final Rewardable rewardable;
 	
-	public RefundResponse(Wii responder, MimeMessage message, Rewardable rewardable) {
+	public RefundResponse(Wii responder, MimeMessage message, Rewardable rewardable) throws MessagingException {
 		super(responder, message);
 		this.rewardable = rewardable;
 	}

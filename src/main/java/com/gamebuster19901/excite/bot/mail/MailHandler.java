@@ -3,6 +3,8 @@ package com.gamebuster19901.excite.bot.mail;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.mime.MultipartEntityBuilder;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -10,6 +12,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -22,7 +25,6 @@ import javax.mail.Address;
 import javax.mail.MessagingException;
 import javax.mail.Session;
 import javax.mail.internet.MimeMessage;
-
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 
@@ -177,14 +179,17 @@ public class MailHandler {
 		}
 		
 		if(sender.getOwner() instanceof UnknownDiscordUser) { //if wii is not registered
+			MultiResponse multiResponse = new MultiResponse(message);
+			MailResponse friendResponse = new AddFriendResponse(responder, sender, message);
 			MailResponse response = new DiscordCodeResponse(responder, sender, message);
 			
+			multiResponse.addResponse(friendResponse);
+			
 			if(attachment.getReward() > 0) {
-				MultiResponse multiResponse = new MultiResponse(message);
 				multiResponse.addResponse(new RefundResponse(responder, message, attachment));
-				multiResponse.addResponse(response);
 			}
-			return response;
+			multiResponse.addResponse(response);
+			return multiResponse;
 		}
 		else { //excitebot is not currently accepting mail from anything other than Excitebots
 			LOGGER.log(Level.INFO, "Excitebot is not currently accepting mail from anything other than Excitebots");

@@ -9,24 +9,21 @@ import javax.mail.internet.MimeMessage;
 
 import com.gamebuster19901.excite.bot.user.Wii;
 
-public class DiscordCodeResponse extends MailReplyResponse {
+public class DiscordCodeResponse extends TextualMailResponse {
 
 	private static final Set<Wii> desiredWiis = Collections.newSetFromMap(new ConcurrentHashMap<Wii, Boolean>());
 	
 	final String registrationCode;
 	final boolean hadOldCode;
 	
-	public DiscordCodeResponse(Wii responder, Wii wiiToRegister, MimeMessage message) {
-		super(responder, message);
+	public DiscordCodeResponse(Wii responder, Wii wiiToRegister, MimeMessage message) throws MessagingException {
+		super(responder, wiiToRegister, message);
 		hadOldCode = (wiiToRegister.getRegistrationCode() != null) ? true : false;
 		registrationCode = wiiToRegister.generateRegistrationCode();
 		desiredWiis.add(wiiToRegister);
+		setText(registrationCode);
 	}
 	
-	protected MimeMessage getResponseTemplate(Wii responder) throws MessagingException {
-		MimeMessage message = super.getResponseTemplate(responder);
-		message.setText(registrationCode);
-		return message;
-	}
+	
 	
 }
