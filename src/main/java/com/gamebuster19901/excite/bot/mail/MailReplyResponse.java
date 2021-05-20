@@ -141,8 +141,8 @@ public abstract class MailReplyResponse extends MailResponse {
 				replyBuilder = builder;
 			}
 			builder.addField("Date", TimeUtils.getRC24Date(Date.from(Instant.now())));
-			builder.addField("From", responder.getRiiEmail());
-			builder.addField("To", respondee.getRiiEmail());
+			builder.addField("From", responder.getEmail());
+			builder.addField("To", respondee.getEmail());
 			builder.setName("body");
 			return builder;
 		}
