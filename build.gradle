@@ -1,36 +1,41 @@
 plugins {
-    id 'java-library'
+	id 'java-library'
 }
 
 repositories {
-    mavenCentral()
-    
-    maven {
+	mavenCentral()
+	
+	maven {
 		url 'https://m2.dv8tion.net/releases'
-    }
-    maven {
-    	url "https://libraries.minecraft.net"
+	}
+	maven {
+		url "https://libraries.minecraft.net"
 	}
 }
 
 dependencies {
-	compile group: 'org.apache.commons', name: 'commons-text', version: '1.9'
-	compile group: 'org.jsoup', name: 'jsoup', version: '1.13.1'
-    compile ('net.dv8tion:JDA:4.2.0_250') {
-        exclude module: 'opus-java'
-    }
-    compile 'com.mojang:brigadier:1.0.17'
-    compile group: 'mysql', name: 'mysql-connector-java', version: '8.0.22'
+	implementation group: 'com.sun.mail', name: 'javax.mail', version: '1.6.2'
+	implementation group: 'javax.activation', name: 'javax.activation-api', version: '1.2.0'
+	implementation group: 'org.apache.commons', name: 'commons-text', version: '1.9'
+	implementation group: 'commons-io', name: 'commons-io', version: '2.8.0'
+	implementation group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.13'
+	implementation group: 'org.apache.httpcomponents', name: 'httpmime', version: '4.5.13'
+	implementation group: 'org.jsoup', name: 'jsoup', version: '1.13.1'
+	implementation ('net.dv8tion:JDA:4.2.0_250') {
+		exclude module: 'opus-java'
+	}
+	implementation 'com.mojang:brigadier:1.0.17'
+	implementation group: 'mysql', name: 'mysql-connector-java', version: '8.0.22'
 }
 
 jar {
-    manifest {
-        attributes(
-            'Class-Path': configurations.compile.collect { it.getName() }.join(' '),
-            'Main-Class': 'com.gamebuster19901.excite.Main'
-        )
-    }
-    from {
-        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
-    }
+	manifest {
+		attributes(
+			'Class-Path': configurations.compile.collect { it.getName() }.join(' '),
+			'Main-Class': 'com.gamebuster19901.excite.Main'
+		)
+	}
+	from {
+		configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+	}
 }
