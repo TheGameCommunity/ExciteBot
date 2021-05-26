@@ -25,6 +25,7 @@ dependencies {
 		exclude module: 'opus-java'
 	}
 	implementation 'com.mojang:brigadier:1.0.17'
+	implementation 'net.minecraft:launchwrapper:1.12'
 	implementation group: 'mysql', name: 'mysql-connector-java', version: '8.0.22'
 }
 
