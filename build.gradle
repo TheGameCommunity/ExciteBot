@@ -11,6 +11,9 @@ repositories {
 	maven {
 		url "https://libraries.minecraft.net"
 	}
+	maven {
+		url "https://repo.spongepowered.org/maven-public/"
+	}
 }
 
 dependencies {
@@ -26,6 +29,7 @@ dependencies {
 	}
 	implementation 'com.mojang:brigadier:1.0.17'
 	implementation 'net.minecraft:launchwrapper:1.12'
+	implementation 'org.spongepowered:mixin:0.8.3-SNAPSHOT'
 	implementation group: 'mysql', name: 'mysql-connector-java', version: '8.0.22'
 }
 
