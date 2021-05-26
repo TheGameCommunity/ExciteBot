@@ -6,9 +6,13 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.logging.Level;
 
 import javax.mail.MessagingException;
@@ -17,9 +21,9 @@ import javax.mail.internet.MimeMessage;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.mime.FormBodyPart;
 import org.apache.http.entity.mime.FormBodyPartBuilder;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
+import org.apache.http.entity.mime.content.StringBody;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 
@@ -34,8 +38,6 @@ public abstract class MailReplyResponse extends MailResponse {
 	
 	protected Wii responder;
 	protected Wii respondee;
-	protected FormBodyPartBuilder replyBuilder;
-	protected FormBodyPart reply;
 	
 	public MailReplyResponse(Wii responder, Wii respondee, MimeMessage message) {
 		super(message);
@@ -50,7 +52,6 @@ public abstract class MailReplyResponse extends MailResponse {
 	@Override
 	public void respond() throws MessagingException {
 		try {
-			setReply(getResponseTemplate(responder, false).build());
 			send();
 		} catch (IOException e) {
 			throw new MessagingException("An exception occured when sending the mail", e);
@@ -58,9 +59,6 @@ public abstract class MailReplyResponse extends MailResponse {
 	}
 
 	protected final void send() throws MessagingException, IOException {
-		if(reply == null) {
-			throw new IllegalStateException("No reply set?!");
-		}
 		File secretFile = new File("./mail.secret");
 		String wiiID;
 		String password;
@@ -78,14 +76,21 @@ public abstract class MailReplyResponse extends MailResponse {
 			request = new HttpPost("https://mtw." + MailHandler.SERVER + "/cgi-bin/send.cgi?mlid=" + wiiID + "&passwd=" + password + "&maxsize=11534336");
 			dupe = new HttpPost("https://mtw." + MailHandler.SERVER + "/cgi-bin/send.cgi?mlid=" + wiiID + "&passwd=" + password + "&maxsize=11534336");
 
-			MultipartEntityBuilder builder = MultipartEntityBuilder.create();
-			builder.addPart(reply);
+			MailHandler.LOGGER.log(Level.INFO, this.getClass().getCanonicalName());
+			MailHandler.LOGGER.log(Level.INFO, getResponseTemplates(responder).size() + "");
 			
-			MultipartEntityBuilder dupePart = MultipartEntityBuilder.create();
-			dupePart.addPart(getResponseTemplate(responder, false).build());
+			MultipartEntityBuilder builder = MultipartEntityBuilder.create();
+			for(FormBodyPartBuilder reply : getResponseTemplates(responder)) {
+				builder.addPart(reply.build());
+			}
+			
+			MultipartEntityBuilder dupeMultiPart = MultipartEntityBuilder.create();
+			for (FormBodyPartBuilder dupeBuilder : getResponseTemplates(responder)) {
+				dupeMultiPart.addPart(dupeBuilder.build());
+			}
 			
 			request.setEntity(builder.build());
-			dupe.setEntity(dupePart.build());
+			dupe.setEntity(dupeMultiPart.build());
 			CloseableHttpResponse response = client.execute(request);
 			HttpEntity responseEntity = response.getEntity();
 			if(responseEntity != null) {
@@ -130,23 +135,25 @@ public abstract class MailReplyResponse extends MailResponse {
 		}
 	}
 	
-	protected final void setReply(FormBodyPart reply) {
-		this.reply = reply;
+	protected List<FormBodyPartBuilder> getResponseTemplates(Wii responder) throws MessagingException {
+		ArrayList<FormBodyPartBuilder> ret = new ArrayList<FormBodyPartBuilder>();
+		ret.add(getDefaultResponseTemplate(responder));
+		return ret;
 	}
 	
-	protected FormBodyPartBuilder getResponseTemplate(Wii responder, boolean overwrite) throws MessagingException {
-		if(replyBuilder == null) {
-			FormBodyPartBuilder builder = FormBodyPartBuilder.create();
-			if(overwrite) {
-				replyBuilder = builder;
-			}
-			builder.addField("Date", TimeUtils.getRC24Date(Date.from(Instant.now())));
-			builder.addField("From", responder.getEmail());
-			builder.addField("To", respondee.getEmail());
-			builder.setName("body");
-			return builder;
+	protected FormBodyPartBuilder getDefaultResponseTemplate(Wii responder) {
+		FormBodyPartBuilder builder = FormBodyPartBuilder.create();
+		builder.addField("Date", TimeUtils.getRC24Date(Date.from(Instant.now())));
+		builder.addField("From", responder.getEmail());
+		builder.addField("To", respondee.getEmail());
+		try {
+			builder.setBody(new StringBody("m", Charset.forName(US_ASCII)));
+		} catch (UnsupportedEncodingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
-		return replyBuilder;
+		builder.setName("body");
+		return builder;
 	}
 	
 }
