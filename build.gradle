@@ -31,16 +31,24 @@ dependencies {
 		exclude module: 'opus-java'
 	}
 	implementation 'com.mojang:brigadier:1.0.17'
-	implementation 'cpw.mods:modlauncher:8.0.9'
-	implementation 'org.spongepowered:mixin:0.8.3-SNAPSHOT'
+
 	implementation group: 'mysql', name: 'mysql-connector-java', version: '8.0.22'
+	
+	//mixin requirements:
+	implementation 'cpw.mods:modlauncher:8.0.9'
+	implementation 'cpw.mods:grossjava9hacks:1.1.+'
+	implementation 'org.spongepowered:mixin:0.8.3-SNAPSHOT'
+	implementation 'com.google.guava:guava:21.0'
+	implementation group: 'org.ow2.asm', name: 'asm', version: '6.2'
+	implementation group: 'org.ow2.asm', name: 'asm-util', version: '6.2'
 }
 
 jar {
 	manifest {
 		attributes(
 			'Class-Path': configurations.compile.collect { it.getName() }.join(' '),
-			'Main-Class': 'com.gamebuster19901.excite.Main'
+			'Main-Class': 'com.gamebuster19901.excite.Main',
+			'MixinConfigs':'mixins.json'
 		)
 	}
 	from {
