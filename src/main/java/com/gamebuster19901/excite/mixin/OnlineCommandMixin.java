@@ -10,7 +10,7 @@ import com.mojang.brigadier.context.CommandContext;
 @Mixin(OnlineCommand.class)
 public class OnlineCommandMixin extends OnlineCommand{
 	
-	@Overwrite
+	@Overwrite(remap = false)
 	@SuppressWarnings("rawtypes")
 	public static int sendResponse(MessageContext context, CommandContext<MessageContext> cmdContext) {
 		context.sendMessage("Overwrite test mixin successful!");

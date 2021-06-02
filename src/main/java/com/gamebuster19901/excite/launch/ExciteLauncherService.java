@@ -8,6 +8,7 @@ import java.util.concurrent.Callable;
 
 import cpw.mods.gross.Java9ClassLoaderUtil;
 import cpw.mods.modlauncher.api.ILaunchHandlerService;
+import cpw.mods.modlauncher.api.ITransformationService;
 import cpw.mods.modlauncher.api.ITransformingClassLoader;
 import cpw.mods.modlauncher.api.ITransformingClassLoaderBuilder;
 
@@ -15,6 +16,8 @@ public class ExciteLauncherService implements ILaunchHandlerService {
 
 	public ExciteLauncherService() {
 		System.out.println("ExciteLauncherService instantiated");
+		final Package pkg = ITransformationService.class.getPackage();
+		System.out.println(pkg.getSpecificationVersion());
 	}
 	
 	@Override
