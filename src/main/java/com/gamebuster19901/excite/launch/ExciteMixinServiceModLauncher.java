@@ -19,7 +19,7 @@ public class ExciteMixinServiceModLauncher extends MixinServiceModLauncher {
 		public ExciteHandleModLauncher(String name) {
 			super(name);
 			
-			this.setAttribute(Constants.ManifestAttributes.MIXINCONNECTOR, "com.gamebuster19901.excite.launch.ExciteMixinConector");
+			this.setAttribute(Constants.ManifestAttributes.MIXINCONNECTOR, "com.gamebuster19901.excite.launch.ExciteMixinConnector");
 		}
 		
 	}
