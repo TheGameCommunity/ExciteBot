@@ -7,7 +7,7 @@ public class ExciteMixinConnector implements IMixinConnector {
 
 	@Override
 	public void connect() {
-		for(int i = 0; i < 1000; i++) {
+		for(int i = 0; i < 50; i++) {
 			System.out.println("x");
 		}
 		Mixins.addConfiguration("mixins.json");

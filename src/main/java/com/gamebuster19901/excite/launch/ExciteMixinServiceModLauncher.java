@@ -8,7 +8,7 @@ public class ExciteMixinServiceModLauncher extends MixinServiceModLauncher {
 
 	@Override
 	public ContainerHandleModLauncher getPrimaryContainer() {
-		for(int i = 0; i < 1000; i++) {
+		for(int i = 0; i < 5; i++) {
 			System.out.println("y");
 		}
 		return new ExciteHandleModLauncher(this.getName());

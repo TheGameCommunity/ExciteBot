@@ -1,8 +1,10 @@
 package com.gamebuster19901.excite;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOError;
 import java.io.IOException;
+import java.io.InputStream;
 import java.sql.SQLException;
 import java.sql.SQLNonTransientConnectionException;
 import java.time.Duration;
@@ -13,6 +15,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.security.auth.login.LoginException;
+
+import org.apache.commons.io.output.NullWriter;
+import org.apache.commons.io.serialization.ValidatingObjectInputStream;
 
 import com.gamebuster19901.excite.bot.DiscordBot;
 import com.gamebuster19901.excite.bot.command.Commands;
@@ -47,7 +52,9 @@ public class Main {
 	
 	@SuppressWarnings("rawtypes")
 	public static void main(String[] args) throws InterruptedException, ClassNotFoundException, IOException, SQLException {
-	
+		for(int i = 0; i < 1000; i++) {
+			NullWriter.NULL_WRITER.write("lol");
+		}
 		if(args.length % 2 != 0) {
 			throw new IllegalArgumentException("Must be started with an even number of arguments!");
 		}

@@ -1,14 +1,14 @@
 package com.gamebuster19901.excite.launch;
 
+import java.io.File;
 import java.io.IOError;
 import java.lang.reflect.Method;
 import java.net.URL;
-import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.util.concurrent.Callable;
 
 import cpw.mods.gross.Java9ClassLoaderUtil;
 import cpw.mods.modlauncher.api.ILaunchHandlerService;
-import cpw.mods.modlauncher.api.ITransformationService;
 import cpw.mods.modlauncher.api.ITransformingClassLoader;
 import cpw.mods.modlauncher.api.ITransformingClassLoaderBuilder;
 
@@ -16,8 +16,6 @@ public class ExciteLauncherService implements ILaunchHandlerService {
 
 	public ExciteLauncherService() {
 		System.out.println("ExciteLauncherService instantiated");
-		final Package pkg = ITransformationService.class.getPackage();
-		System.out.println(pkg.getSpecificationVersion());
 	}
 	
 	@Override
@@ -29,8 +27,10 @@ public class ExciteLauncherService implements ILaunchHandlerService {
 	public void configureTransformationClassLoader(ITransformingClassLoaderBuilder builder) {
 		for (final URL url : Java9ClassLoaderUtil.getSystemClassPathURLs()) {
 			try {
-				System.out.println(url);
-				builder.addTransformationPath(Paths.get(url.toURI()));
+				if(new File(url.toURI()).isDirectory()) {
+					continue;
+				}
+				builder.addTransformationPath(Path.of(url.toURI()));
 			} catch (Throwable t) {
 				throw new IOError(new Error("Could not start ExciteLauncher service!", t));
 			}
@@ -40,8 +40,10 @@ public class ExciteLauncherService implements ILaunchHandlerService {
 	@Override
 	public Callable<Void> launchService(String[] arguments, ITransformingClassLoader launchClassLoader) {
 		return () -> {
-			final Class<?> mainClass = Class.forName("com.gamebuster19901.excite.Main", true, launchClassLoader.getInstance());
+			Class<?> mainClass = launchClassLoader.getInstance().loadClass("com.gamebuster19901.excite.Main");
+			System.out.println("Obtained Main.class with " + launchClassLoader.getInstance());
 			final Method mainMethod = mainClass.getMethod("main", String[].class);
+			System.out.println("Launching main with classloader " + mainClass.getClassLoader());
 			mainMethod.invoke(null, new Object[] {arguments});
 			return null;
 		};
