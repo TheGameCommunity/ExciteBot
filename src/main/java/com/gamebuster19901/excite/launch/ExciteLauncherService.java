@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.IOError;
 import java.lang.reflect.Method;
 import java.net.URL;
-import java.nio.file.Path;
 import java.util.concurrent.Callable;
 
 import cpw.mods.gross.Java9ClassLoaderUtil;
@@ -30,7 +29,7 @@ public class ExciteLauncherService implements ILaunchHandlerService {
 				if(new File(url.toURI()).isDirectory()) {
 					continue;
 				}
-				builder.addTransformationPath(Path.of(url.toURI()));
+				builder.addTransformationPath(new File(url.toURI()).toPath());
 			} catch (Throwable t) {
 				throw new IOError(new Error("Could not start ExciteLauncher service!", t));
 			}
