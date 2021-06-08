@@ -58,7 +58,7 @@ public enum Column {
 	SERVER_PREFIX("prefix", DISCORD_SERVERS),
 	
 	//DISCORD_USER
-	DISCORD_ID("discordID", ADMINS, DISCORD_USERS, OPERATORS, PLAYERS),
+	DISCORD_ID("discordID", ADMINS, DISCORD_USERS, OPERATORS, PLAYERS, WIIS),
 	DISCORD_NAME("discord_name", DISCORD_USERS),
 	THRESHOLD("threshold", DISCORD_USERS),
 	FREQUENCY("frequency", DISCORD_USERS),
@@ -76,7 +76,11 @@ public enum Column {
 	PLAYER_NAME("name", PLAYERS),
 	REDACTED("redacted", PLAYERS),
 	LAST_ONLINE("lastOnline", PLAYERS),
-	SECONDS_PLAYED("secondsPlayed", PLAYERS);
+	SECONDS_PLAYED("secondsPlayed", PLAYERS),
+	
+	//WIIS
+	WII_ID("wiiID", WIIS),
+	REGISTRATION_CODE("registrationCode", WIIS),
 	
 	;
 	

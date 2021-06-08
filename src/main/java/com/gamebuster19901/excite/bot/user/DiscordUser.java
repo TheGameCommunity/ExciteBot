@@ -33,6 +33,7 @@ import com.gamebuster19901.excite.util.TimeUtils;
 import static com.gamebuster19901.excite.bot.database.Comparator.*;
 import static com.gamebuster19901.excite.bot.database.Table.DISCORD_USERS;
 import static com.gamebuster19901.excite.bot.database.Table.PLAYERS;
+import static com.gamebuster19901.excite.bot.database.Table.WIIS;
 
 import static com.gamebuster19901.excite.bot.database.Column.*;
 
@@ -309,6 +310,20 @@ public class DiscordUser implements Banee {
 		try {
 			Table.updateWhere(ConsoleContext.INSTANCE, DISCORD_USERS, BELOW_THRESHOLD, dippedBelow, new Comparison(DISCORD_ID, EQUALS, getID()));
 		} catch (SQLException e) {
+			throw new IOError(e);
+		}
+	}
+	
+	@Nullable
+	public Wii[] getRegisteredWiis() {
+		try {
+			HashSet<Wii> wiis = new HashSet<Wii>();
+			Result result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, WII_ID, WIIS, new Comparison(DISCORD_ID, EQUALS, getID()));
+			while(result.next()) {
+				wiis.add(Wii.getWii(result.getString(WII_ID)));
+			}
+			return (Wii[]) wiis.toArray(new Wii[] {});
+		} catch(SQLException e) {
 			throw new IOError(e);
 		}
 	}

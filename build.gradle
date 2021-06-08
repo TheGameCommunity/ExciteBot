@@ -45,7 +45,6 @@ dependencies {
 	implementation group: 'org.ow2.asm', name: 'asm-util', version: '7.2'
 }
 
-
 shadowJar {
 	mergeServiceFiles()
 }

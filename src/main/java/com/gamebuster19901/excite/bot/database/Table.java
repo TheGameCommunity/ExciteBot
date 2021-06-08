@@ -27,7 +27,8 @@ public enum Table {
 	DISCORD_SERVERS,
 	DISCORD_USERS,
 	OPERATORS,
-	PLAYERS;
+	PLAYERS,
+	WIIS;
 	
 	public static final String HOST = "@'localhost'";
 	

@@ -13,6 +13,7 @@ import com.gamebuster19901.excite.Main;
 import com.gamebuster19901.excite.Player;
 import com.gamebuster19901.excite.Wiimmfi;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
+import com.gamebuster19901.excite.bot.user.Wii;
 import com.gamebuster19901.excite.util.Named;
 import com.gamebuster19901.excite.util.TimeUtils;
 import com.mojang.brigadier.CommandDispatcher;
@@ -72,10 +73,12 @@ public class WhoIsCommand {
 						DiscordUser user = (DiscordUser) match;
 						Member member;
 						embed.setColor(Color.WHITE);
+						Wii[] wiis = user.getRegisteredWiis();
 						Set<Player> profiles = user.getProfiles(context);
 						Duration timeOnline = Duration.ZERO;
 						Instant lastOnline = TimeUtils.PLAYER_EPOCH;
 						String profileList = "";
+						String wiiList = "";
 						for(Player profile : profiles) {
 							profileList = profileList + profile.toEmbedstring() + "\n";
 							timeOnline = timeOnline.plus(profile.getOnlineDuration());
@@ -83,6 +86,9 @@ public class WhoIsCommand {
 							if(profileLastOnline.isAfter(lastOnline)) {
 								lastOnline = profileLastOnline;
 							}
+						}
+						for(Wii wii : wiis) {
+							wiiList = wiiList + wii.getName() + "\n";
 						}
 						if(hasMembers && (member = user.getMember(context.getServer())) != null) {
 							embed.setColor(member.getColor());
@@ -97,6 +103,7 @@ public class WhoIsCommand {
 							embed.addField("Member for:", readableDuration(TimeUtils.since(member.getTimeJoined().toInstant()), false), false);
 							embed.addField("Time Online:", readableDuration(timeOnline, true), false);
 							embed.addField(profiles.size() + " registered Profiles:", profileList, false);
+							embed.addField(wiis.length + " registered Wiis:", wiiList, false);
 						}
 						else {
 							embed.setThumbnail(user.getJDAUser().getEffectiveAvatarUrl());
@@ -105,6 +112,7 @@ public class WhoIsCommand {
 							embed.addField("ID:", "" + user.getID(), false);
 							embed.addField("Time Online:", readableDuration(timeOnline, true), false);
 							embed.addField(profiles.size() + " registered Profiles:", profileList, false);
+							embed.addField(wiis.length + " registered Wiis:", wiiList, false);
 							embed.appendDescription("For more information, execute this command in a server the user is in.");
 						}
 					}
