@@ -3,10 +3,13 @@ package com.gamebuster19901.excite;
 import java.io.File;
 import java.io.IOError;
 import java.io.IOException;
+
 import java.sql.SQLException;
 import java.sql.SQLNonTransientConnectionException;
+
 import java.time.Duration;
 import java.time.Instant;
+
 import java.util.Scanner;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.logging.Level;
@@ -24,6 +27,7 @@ import com.gamebuster19901.excite.bot.user.DiscordUser;
 import com.gamebuster19901.excite.bot.user.UnknownDiscordUser;
 import com.gamebuster19901.excite.util.StacktraceUtil;
 import com.gamebuster19901.excite.util.ThreadService;
+
 import com.mysql.cj.exceptions.CJCommunicationsException;
 import com.mysql.cj.exceptions.ConnectionIsClosedException;
 import com.mysql.cj.jdbc.exceptions.CommunicationsException;
@@ -48,7 +52,6 @@ public class Main {
 	
 	@SuppressWarnings("rawtypes")
 	public static void main(String[] args) throws InterruptedException, ClassNotFoundException, IOException, SQLException {
-	
 		if(args.length % 2 != 0) {
 			throw new IllegalArgumentException("Must be started with an even number of arguments!");
 		}
