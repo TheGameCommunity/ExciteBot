@@ -26,9 +26,6 @@ public class ExciteLauncherService implements ILaunchHandlerService {
 	public void configureTransformationClassLoader(ITransformingClassLoaderBuilder builder) {
 		for (final URL url : Java9ClassLoaderUtil.getSystemClassPathURLs()) {
 			try {
-				if(new File(url.toURI()).isDirectory()) {
-					continue;
-				}
 				builder.addTransformationPath(new File(url.toURI()).toPath());
 			} catch (Throwable t) {
 				throw new IOError(new Error("Could not start ExciteLauncher service!", t));
