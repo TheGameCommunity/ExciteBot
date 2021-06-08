@@ -17,7 +17,6 @@ import java.util.logging.Logger;
 
 import javax.security.auth.login.LoginException;
 
-import org.apache.commons.io.output.NullWriter;
 import com.gamebuster19901.excite.bot.DiscordBot;
 import com.gamebuster19901.excite.bot.command.Commands;
 import com.gamebuster19901.excite.bot.command.ConsoleContext;
@@ -52,9 +51,6 @@ public class Main {
 	
 	@SuppressWarnings("rawtypes")
 	public static void main(String[] args) throws InterruptedException, ClassNotFoundException, IOException, SQLException {
-		for(int i = 0; i < 1000; i++) {
-			NullWriter.NULL_WRITER.write("lol");
-		}
 		if(args.length % 2 != 0) {
 			throw new IllegalArgumentException("Must be started with an even number of arguments!");
 		}

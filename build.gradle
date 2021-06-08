@@ -56,6 +56,7 @@ jar {
 	manifest {
 		attributes(
 			'Class-Path': classpathVar,
+			'MixinConfigs:': 'mixins.json',
 			'Main-Class': 'cpw.mods.modlauncher.Launcher',
 			'MixinConfigs':'mixins.json',
 			'Specification-Version': 8.0
