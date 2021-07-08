@@ -25,3 +25,9 @@ hs_err_pid*.log
 /.archive
 # secrets
 **.secret
+
+#ModLauncher
+logs/*
+
+#Built Jar
+ExciteBot*.jar

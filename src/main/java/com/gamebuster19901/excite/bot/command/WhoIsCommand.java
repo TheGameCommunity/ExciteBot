@@ -135,8 +135,8 @@ public class WhoIsCommand {
 						String userList = "";
 						for(DiscordUser user : users) {
 							Member member;
-							if(hasMembers && (member = user.getMember(context.getServer())) != null) {
-								userList = userList + embed.appendDescription(user.toDetailedString() + " AKA " + member.getEffectiveName() + "#" + member.getIdLong() + "\n");
+							if(hasMembers && (member = user.getMember(context.getServer())) != null && member.getNickname() != null) {
+								userList = userList + user.toDetailedString() + " AKA " + member.getEffectiveName() + "#" + member.getIdLong() + "\n";
 							}
 							else {
 								userList = userList + user.toDetailedString() + "\n";
