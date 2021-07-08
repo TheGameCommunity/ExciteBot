@@ -27,7 +27,6 @@ import com.gamebuster19901.excite.bot.user.DiscordUser;
 import com.gamebuster19901.excite.bot.user.UnknownDiscordUser;
 import com.gamebuster19901.excite.util.StacktraceUtil;
 import com.gamebuster19901.excite.util.ThreadService;
-
 import com.mysql.cj.exceptions.CJCommunicationsException;
 import com.mysql.cj.exceptions.ConnectionIsClosedException;
 import com.mysql.cj.jdbc.exceptions.CommunicationsException;
@@ -265,7 +264,8 @@ public class Main {
 						break;
 					}
 					catch(Throwable t) {
-						t.printStackTrace();
+						throw new RuntimeException(t);
+						//t.printStackTrace();
 					}
 				}
 			}

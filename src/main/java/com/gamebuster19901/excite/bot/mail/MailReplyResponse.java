@@ -18,6 +18,7 @@ import java.util.logging.Level;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
@@ -31,7 +32,7 @@ import com.gamebuster19901.excite.bot.user.Wii;
 import com.gamebuster19901.excite.util.TimeUtils;
 import com.gamebuster19901.excite.util.file.File;
 
-public abstract class MailReplyResponse extends MailResponse {
+public abstract class MailReplyResponse<T> extends MailResponse implements EMessage {
 	
 	public static final String US_ASCII = "us-ascii";
 	public static final String UTF16BE = "utf-16be";
@@ -80,7 +81,7 @@ public abstract class MailReplyResponse extends MailResponse {
 			MailHandler.LOGGER.log(Level.INFO, getResponseTemplates(responder).size() + "");
 			
 			MultipartEntityBuilder builder = MultipartEntityBuilder.create();
-			for(FormBodyPartBuilder reply : getResponseTemplates(responder)) {
+			for(Object response : getResponseTemplates(responder)) {
 				builder.addPart(reply.build());
 			}
 			
@@ -90,12 +91,13 @@ public abstract class MailReplyResponse extends MailResponse {
 			}
 			
 			request.setEntity(builder.build());
+			request.getEntity().getContent();
 			dupe.setEntity(dupeMultiPart.build());
 			CloseableHttpResponse response = client.execute(request);
 			HttpEntity responseEntity = response.getEntity();
 			if(responseEntity != null) {
 				InputStream stream = responseEntity.getContent();
-				String rawResponse = new String(stream.readAllBytes(), StandardCharsets.UTF_8);
+				String rawResponse = new String(IOUtils.toByteArray(stream), StandardCharsets.UTF_8);
 				ByteArrayOutputStream logStream = new ByteArrayOutputStream();
 				dupe.getEntity().writeTo(logStream);
 				MailHandler.LOGGER.log(Level.INFO, new String(logStream.toByteArray()));
@@ -135,25 +137,12 @@ public abstract class MailReplyResponse extends MailResponse {
 		}
 	}
 	
-	protected List<FormBodyPartBuilder> getResponseTemplates(Wii responder) throws MessagingException {
-		ArrayList<FormBodyPartBuilder> ret = new ArrayList<FormBodyPartBuilder>();
+	protected List<T> getResponseTemplates(Wii responder) throws MessagingException {
+		ArrayList<T> ret = new ArrayList<T>();
 		ret.add(getDefaultResponseTemplate(responder));
 		return ret;
 	}
 	
-	protected FormBodyPartBuilder getDefaultResponseTemplate(Wii responder) {
-		FormBodyPartBuilder builder = FormBodyPartBuilder.create();
-		builder.addField("Date", TimeUtils.getRC24Date(Date.from(Instant.now())));
-		builder.addField("From", responder.getEmail());
-		builder.addField("To", respondee.getEmail());
-		try {
-			builder.setBody(new StringBody("m", Charset.forName(US_ASCII)));
-		} catch (UnsupportedEncodingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		builder.setName("body");
-		return builder;
-	}
+	protected abstract T getDefaultResponseTemplate(Wii responder);
 	
 }

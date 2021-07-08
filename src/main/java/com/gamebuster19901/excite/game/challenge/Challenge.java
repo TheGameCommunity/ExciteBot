@@ -24,7 +24,7 @@ public class Challenge implements Rewardable, DataSource {
 	private byte[] challengeData;
 	
 	public Challenge(File file) {
-		
+		throw new UnsupportedOperationException("Not implemented yet");
 	}
 
 	@Override

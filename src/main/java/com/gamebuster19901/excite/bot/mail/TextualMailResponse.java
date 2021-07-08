@@ -1,18 +1,13 @@
 package com.gamebuster19901.excite.bot.mail;
 
-import java.io.UnsupportedEncodingException;
-import java.nio.charset.Charset;
-
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 
-import org.apache.http.entity.mime.content.StringBody;
-
 import com.gamebuster19901.excite.bot.user.Wii;
 
-public class TextualMailResponse extends MailReplyResponse {
+public class TextualMailResponse extends MailReplyResponse implements EMessage {
 	
-	private StringBody body;
+	private static final String TEXTUAL_RESPONSE = null;
 	
 	public TextualMailResponse(Wii responder, Wii respondee, MimeMessage message) throws MessagingException {
 		super(responder, respondee, message);
@@ -23,19 +18,31 @@ public class TextualMailResponse extends MailReplyResponse {
 	}
 	
 	public void setText(String text) throws MessagingException {
-		setText(text, Charset.forName(US_ASCII));
+		getResponseTemplates(responder).set(0, text);
 	}
-	
-	public void setText(String text, Charset charset) throws MessagingException {
-		try {
-			getResponseTemplates(responder).get(0).setBody(new StringBody(text, charset)).setName("body");
-		} catch (UnsupportedEncodingException e) {
-			throw new MessagingException("", e);
-		}
+
+	@Override
+	protected Object getDefaultResponseTemplate(Wii responder) {
+		// TODO Auto-generated method stub
+		return null;
 	}
-	
-	public void setText(StringBody body) throws MessagingException {
-		getResponseTemplates(responder).get(0).setBody(body);
+
+	@Override
+	public String getFrom() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String getTo() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String getSubject() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 	
 }
