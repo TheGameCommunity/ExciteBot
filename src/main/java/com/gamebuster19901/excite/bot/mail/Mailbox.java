@@ -3,6 +3,7 @@ package com.gamebuster19901.excite.bot.mail;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -13,12 +14,15 @@ import java.io.InputStreamReader;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
 import javax.mail.Address;
+import javax.mail.Header;
 import javax.mail.MessagingException;
 import javax.mail.Session;
 import javax.mail.internet.MimeMessage;
@@ -37,14 +41,15 @@ import com.gamebuster19901.excite.util.file.File;
 import static com.gamebuster19901.excite.bot.database.Table.*;
 import static com.gamebuster19901.excite.bot.database.Column.*;
 
-public class MailHandler {
+public class Mailbox {
 	private static final Pattern CONTENT_TYPE_PATTERN = Pattern.compile("Content-Type:.*");
-	static final Logger LOGGER = Logger.getLogger(MailHandler.class.getName());
+	static final Logger LOGGER = Logger.getLogger(Mailbox.class.getName());
 	public static final String SERVER = "rc24.xyz";
 	public static final String APP_ID_HEADER = "X-Wii-AppId";
 	public static final String APP_ID = "1-52583345-0001";
+	public static final String BOUNDARY = "t9Sf4yfjf1RtvDu3AA";
 	
-	public static void receive() throws IOException {
+	public static void receive() throws IOException, MessagingException {
 		File secretFile = new File("./mail.secret");
 		String wiiID;
 		String password;
@@ -60,9 +65,9 @@ public class MailHandler {
 			request = new HttpGet("https://mtw." + SERVER + "/cgi-bin/receive.cgi?mlid=" + wiiID + "&passwd=" + password + "&maxsize=11534336");
 			
 			CloseableHttpResponse response = client.execute(request);
+			LOGGER.log(Level.INFO, "Sent mail fetch request");
 			HttpEntity entity = response.getEntity();
 			if(entity != null) {
-				LOGGER.log(Level.INFO, "Sent mail fetch request");
 				InputStream contentStream = entity.getContent();
 				mailReader = new InputStreamReader(contentStream);
 				char[] data = new char[1];
@@ -71,7 +76,7 @@ public class MailHandler {
 					content.append(data);
 				}
 				LOGGER.log(Level.INFO, content.toString());
-				parseMail(Wii.getWii(wiiID), content.toString());
+				parseMail(content.toString());
 			}
 			else {
 				LOGGER.log(Level.INFO, "Response was null");
@@ -109,52 +114,54 @@ public class MailHandler {
 		}
 	}
 	
-	private static void parseMail(Wii responder, String mailData) {
+	private static void parseMail(String mailData) throws MessagingException, IOException {
 		String delimiter = mailData.substring(0, mailData.indexOf('\r'));
 		LOGGER.log(Level.INFO, "Delimiter is: " + delimiter);
 		ArrayList<String> emails = new ArrayList<String>();
 		emails.addAll(Arrays.asList(mailData.split(delimiter)));
-		emails.removeIf((predicate) -> {return predicate.isEmpty() || predicate.equals("--\r\n");});
+		emails.removeIf((predicate) -> {return predicate.trim().isEmpty() || predicate.equals("--");});
+		LinkedHashSet<MailResponse> responses = new LinkedHashSet<MailResponse>();
 		for(String content : emails) {
-			content = CONTENT_TYPE_PATTERN.matcher(content).replaceFirst("");
-			content = content.trim();
-			MailResponse response = null;
+			MimeMessage message = new MimeMessage(null, new ByteArrayInputStream(content.getBytes()));
+			MimeMessage innerMessage1 = new MimeMessage(null, message.getInputStream());
+			MimeMessage innerMessage2 = new MimeMessage(null, innerMessage1.getInputStream());
+			System.out.println(innerMessage2.getContent().toString());
+			
+			for(Header header : Collections.list(innerMessage2.getAllHeaders())) {
+				System.out.println(header.getName() + ": " + header.getValue());
+			}
+			LinkedHashSet<MailResponse> response = null;
 			try {
-				response = analyzeMail(responder, content);
+				response = analyzeMail(Wii.getWii("1056185520598803"), innerMessage2);
+				if(response != null) {
+					responses.addAll(response);
+				}
 			}
 			catch(Exception e) {
 				LOGGER.log(Level.WARNING, "Couldn't analayze a mail item: \"" + content + "\"", e);
 				continue;
 			}
-			try {
-				response.respond();
-			}
-			catch(Throwable t) {
-				try {
-					MailResponse failureResponse = response.handleResponseFailure(t);
-					failureResponse.respond();
-				} catch (Throwable e) {
-					LOGGER.log(Level.SEVERE, "Could not respond to mail.", t);
-				}
-			}
 		}
-	}
-
-	private static MailResponse analyzeMail(Wii responder, String content) throws MessagingException {
-		Session session = Session.getInstance(new Properties());
-		InputStream data = new ByteArrayInputStream(content.getBytes());
-		MimeMessage message = new MimeMessage(session, data);
 		
-		Address[] from = message.getFrom();
+		
+	}
+	
+	private static LinkedHashSet<MailResponse> analyzeMail(Wii responder, MimeMessage prompt) throws MessagingException {
+		LinkedHashSet<MailResponse> responses = new LinkedHashSet<MailResponse>();
+		Session session = Session.getInstance(new Properties());
+		
+		Address[] from = prompt.getFrom();
 		LOGGER.log(Level.INFO, "Analyzing mail from: " + (from != null ? from[0] : from));
 		if(from == null) {
-			return new NoResponse(message);
+			responses.add(new NoResponse(prompt));
+			return responses;
 		}
 		
-		Wii sender = Wii.getWii(message.getFrom()[0].toString());
+		Wii sender = Wii.getWii(prompt.getFrom()[0].toString());
 		if(sender instanceof InvalidWii) {
 			LOGGER.log(Level.INFO, "Ignoring non-wii mail");
-			return new NoResponse(message);
+			responses.add(new NoResponse(prompt));
+			return responses;
 		}
 		
 		if(!sender.isKnown()) {
@@ -165,33 +172,81 @@ public class MailHandler {
 			}
 		}
 		
-		String[] appheaders = message.getHeader(APP_ID_HEADER);
+		String[] appheaders = prompt.getHeader(APP_ID_HEADER);
 		String app = "";
 		if(appheaders.length > 0) {
 			app = appheaders[0];
 		}
 		Rewardable attachment = InvalidChallenge.INSTANCE;
 		if(app.equals(APP_ID)) {
-			attachment = analyzeIngameMail(message, sender);
+			attachment = analyzeIngameMail(prompt, sender);
 		}
 		
 		if(sender.getOwner() instanceof UnknownDiscordUser) { //if wii is not registered
-			MultiResponse multiResponse = new MultiResponse(message);
-			MailResponse friendResponse = new AddFriendResponse(responder, sender, message);
-			MailResponse response = new DiscordCodeResponse(responder, sender, message);
+			MailResponse friendResponse = new AddFriendResponse(responder, sender, prompt);
+			MailResponse response = new DiscordCodeResponse(responder, sender, prompt);
 			
-			multiResponse.addResponse(friendResponse);
+			responses.add(friendResponse);
 			
 			if(attachment.getReward() > 0) {
-				multiResponse.addResponse(new RefundResponse(responder, message, attachment));
+				responses.add(new RefundResponse(responder, prompt, attachment));
 			}
-			multiResponse.addResponse(response);
-			return multiResponse;
+			responses.add(response);
 		}
 		else { //excitebot is not currently accepting mail from anything other than Excitebots
 			LOGGER.log(Level.INFO, "Excitebot is not currently accepting mail from anything other than Excitebots");
-			return new NoResponse(message);
+			responses.add(new NoResponse(prompt));
 		}
+		return responses;
+	}
+	
+	/**
+	 * We try to send all of the mail at once. If it fails, send responses individually to isolate which response is causing the issue.
+	 * @param responses
+	 */
+	public static void sendResponses(LinkedHashSet<MailResponse> responses) {
+		CloseableHttpClient client = HttpClients.createDefault();
+		String wiiID;
+		String password;
+		HttpPost request;
+		BufferedReader fileReader = null;
+		try {
+			File secretFile = new File("./mail.secret");
+			fileReader = new BufferedReader(new FileReader(secretFile));
+			wiiID = fileReader.readLine();
+			password = fileReader.readLine();
+			request = new HttpPost("https://mtw." + SERVER + "/cgi-bin/send.cgi?mlid=" + wiiID + "&passwd=" + password + "&maxsize=11534336");
+			request.addHeader("Content-Type", "multipart/form-data; boundary=" + BOUNDARY);
+			
+			String from = wiiID + "@rc24.xyz";
+			
+			String s = 					
+				"Content-Disposition: form-data; name=\"mlid\"\r\n"
+				+ "mlid="+wiiID+"\r\n"
+				+ "passwd="+password+"\r\n"
+				+ "--" + BOUNDARY + "\r\n";
+			
+			for(MailResponse response : responses) {
+				if(response instanceof MailReplyResponse) {
+					MailReplyResponse reply = (MailReplyResponse) response;
+					reply.initVars();
+					
+					
+					s = s + response.getResponse();
+				}
+			}
+			
+			s = s 
+				+ "--\r\n";
+		}
+		catch(Throwable t) {
+			System.out.println(t);
+			sendResponsesOneByOne(responses);
+		}
+	}
+	
+	public static void sendResponsesOneByOne(LinkedHashSet<MailResponse> responses) {
+		
 	}
 	
 	public static Rewardable analyzeIngameMail(MimeMessage message, Wii wii) {

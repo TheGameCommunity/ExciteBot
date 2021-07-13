@@ -1,7 +1,5 @@
 package com.gamebuster19901.excite.bot.mail;
 
-import java.util.logging.Level;
-
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 
@@ -21,11 +19,16 @@ public class RefundResponse extends MailReplyResponse implements Rewardable {
 	public int getReward() {
 		return rewardable.getReward();
 	}
+
+	@Override
+	protected String getResponseTemplate() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 	
 	@Override
-	public void respond() throws MessagingException {
-		super.respond();
-		MailHandler.LOGGER.log(Level.INFO, "Refunded " + getReward() + " to " + message.getSender());
+	public void initVars() {
+		super.initVars();
 	}
 
 }

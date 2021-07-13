@@ -1,0 +1,13 @@
+Content-Disposition: form-data; name="%mailNumber%"
+
+MAIL_FROM: %from%
+RCPT TO: %to%
+From: %from%
+To: %to%
+Content-Type: text/plain; charset=utf-16be
+Content-Transfer-Encoding: base64
+%headers%
+
+%text%
+
+--%boundary%

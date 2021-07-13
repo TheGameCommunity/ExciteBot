@@ -21,9 +21,12 @@ public class DiscordCodeResponse extends TextualMailResponse {
 		hadOldCode = (wiiToRegister.getRegistrationCode() != null) ? true : false;
 		registrationCode = wiiToRegister.generateRegistrationCode();
 		desiredWiis.add(wiiToRegister);
-		setText(registrationCode);
+		
 	}
 	
-	
+	@Override
+	public void initVars() {
+		super.initVars();
+	}
 	
 }

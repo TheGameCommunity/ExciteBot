@@ -21,7 +21,7 @@ import com.gamebuster19901.excite.bot.DiscordBot;
 import com.gamebuster19901.excite.bot.command.Commands;
 import com.gamebuster19901.excite.bot.command.ConsoleContext;
 import com.gamebuster19901.excite.bot.database.sql.DatabaseConnection;
-import com.gamebuster19901.excite.bot.mail.MailHandler;
+import com.gamebuster19901.excite.bot.mail.Mailbox;
 import com.gamebuster19901.excite.bot.user.ConsoleUser;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
 import com.gamebuster19901.excite.bot.user.UnknownDiscordUser;
@@ -257,7 +257,7 @@ public class Main {
 			public void run() {
 				while(true) {
 					try {
-						MailHandler.receive();
+						Mailbox.receive();
 						Thread.sleep(5000);
 					}
 					catch(InterruptedException e) {
