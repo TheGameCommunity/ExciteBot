@@ -241,7 +241,7 @@ public class Mailbox {
 				+ "--\r\n";
 		}
 		catch(Throwable t) {
-			System.out.println(t);
+			t.printStackTrace();
 			sendResponsesOneByOne(responses);
 		}
 	}
