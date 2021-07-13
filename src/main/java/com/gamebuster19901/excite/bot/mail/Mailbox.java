@@ -184,14 +184,15 @@ public class Mailbox {
 		
 		if(sender.getOwner() instanceof UnknownDiscordUser) { //if wii is not registered
 			MailResponse friendResponse = new AddFriendResponse(responder, sender, prompt);
-			MailResponse response = new DiscordCodeResponse(responder, sender, prompt);
+			LOGGER.info("Sending friend request to " + sender);
+			MailResponse codeResponse = new DiscordCodeResponse(responder, sender, prompt);
+			LOGGER.info("Sending verification discord code to " + sender);
 			
 			responses.add(friendResponse);
-			
 			if(attachment.getReward() > 0) {
 				responses.add(new RefundResponse(responder, prompt, attachment));
 			}
-			responses.add(response);
+			responses.add(codeResponse);
 		}
 		else { //excitebot is not currently accepting mail from anything other than Excitebots
 			LOGGER.log(Level.INFO, "Excitebot is not currently accepting mail from anything other than Excitebots");
@@ -250,7 +251,6 @@ public class Mailbox {
 	}
 	
 	public static Rewardable analyzeIngameMail(MimeMessage message, Wii wii) {
-		
 		return InvalidChallenge.INSTANCE;
 	}
 	
