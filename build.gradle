@@ -61,7 +61,8 @@ jar {
 			'Class-Path': classpathVar,
 			'MixinConfigs': 'mixins.json',
 			'Main-Class': 'cpw.mods.modlauncher.Launcher',
-			'Specification-Version': 8.0
+			'Specification-Version': 8.0,
+			'Multi-Release': 'true'
 		)
 	}
 	from {
