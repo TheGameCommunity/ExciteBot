@@ -1,6 +1,7 @@
 package com.gamebuster19901.excite.bot.mail;
 
 import java.io.IOException;
+import java.util.Base64;
 
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
@@ -9,8 +10,11 @@ import org.apache.commons.codec.Charsets;
 import org.apache.commons.io.IOUtils;
 
 import com.gamebuster19901.excite.bot.user.Wii;
+import static java.nio.charset.StandardCharsets.UTF_16BE;
 
 public class TextualMailResponse extends MailReplyResponse {
+	
+	public static final Base64.Encoder ENCODER = Base64.getEncoder();
 	
 	private String text = "";
 	
@@ -38,8 +42,15 @@ public class TextualMailResponse extends MailReplyResponse {
 	@Override
 	public void initVars() {
 		super.initVars();
-		setVar("text", text);
+		StringBuilder builder = new StringBuilder();
+		String txt = ENCODER.encodeToString(UTF_16BE.encode(text).array());
+		for(int i = 0; i < txt.length(); i++) {
+			if(i > 0 && (i % 76 == 0)) {
+				builder.append('\n');
+			}
+			builder.append(txt.charAt(i));
+		}
+		setVar("text", builder.toString());
 	}
-
 	
 }

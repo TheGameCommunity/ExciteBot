@@ -4,9 +4,10 @@ MAIL_FROM: %from%
 RCPT TO: %to%
 From: %from%
 To: %to%
+X-Wii-AppId: 2-48414541-0001
+X-Wii-Cmd: 00042019
 Content-Type: text/plain; charset=utf-16be
 Content-Transfer-Encoding: base64
-%headers%
 
 %text%
 
