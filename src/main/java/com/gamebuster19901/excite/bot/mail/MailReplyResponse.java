@@ -8,10 +8,10 @@ import com.gamebuster19901.excite.bot.user.Wii;
 public abstract class MailReplyResponse extends MailResponse {
 	
 	protected Wii responder;
-	protected Wii respondee;
+	protected EmailAddress respondee;
 	protected String response = getResponseTemplate();
 	
-	public MailReplyResponse(Wii responder, Wii respondee, MimeMessage message) {
+	public MailReplyResponse(Wii responder, EmailAddress respondee, MimeMessage message) {
 		super(message);
 		this.responder = responder;
 		this.respondee = respondee;
@@ -33,7 +33,7 @@ public abstract class MailReplyResponse extends MailResponse {
 	}
 	
 	public void setVar(String var, String value) {
-		response.replace("%" + var + "%", value);
+		response = response.replace("%" + var + "%", value);
 	}
 	
 	protected abstract String getResponseTemplate();
