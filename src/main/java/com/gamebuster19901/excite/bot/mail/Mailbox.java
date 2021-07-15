@@ -14,15 +14,16 @@ import java.io.IOError;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.ByteBuffer;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Pattern;
 
 import javax.mail.Address;
 import javax.mail.MessagingException;
@@ -41,16 +42,19 @@ import com.gamebuster19901.excite.game.challenge.InvalidChallenge;
 import com.gamebuster19901.excite.game.challenge.Rewardable;
 import com.gamebuster19901.excite.util.file.File;
 
+import static java.nio.charset.StandardCharsets.UTF_16BE;
 import static com.gamebuster19901.excite.bot.database.Table.*;
 import static com.gamebuster19901.excite.bot.database.Column.*;
 
 public class Mailbox {
-	private static final Pattern CONTENT_TYPE_PATTERN = Pattern.compile("Content-Type:.*");
 	static final Logger LOGGER = Logger.getLogger(Mailbox.class.getName());
 	public static final String SERVER = "rc24.xyz";
 	public static final String APP_ID_HEADER = "X-Wii-AppId";
-	public static final String APP_ID = "1-52583345-0001";
+	public static final String EXCITEBOTS = "1-52583345-0001";
+	public static final String FRIEND_REQUEST = "0-00000001-0001";
+	public static final String WII_MESSAGE = "2-48414541-0001";
 	public static final String BOUNDARY = "t9Sf4yfjf1RtvDu3AA";
+	public static final Base64.Decoder DECODER = Base64.getDecoder();
 	
 	public static void receive() throws IOException, MessagingException {
 		File secretFile = new File("./mail.secret");
@@ -168,8 +172,8 @@ public class Mailbox {
 			return responses;
 		}
 		else {
-		
-			if(!sender.isKnown()) {
+			boolean wasKnown;
+			if(!(wasKnown = sender.isKnown())) {
 				try {
 					Insertion.insertInto(WIIS).setColumns(WII_ID).to(sender.getWiiCode().toString()).prepare(ConsoleContext.INSTANCE).execute();
 				} catch (SQLException e) {
@@ -184,21 +188,25 @@ public class Mailbox {
 				app = appheaders[0];
 			}
 			Rewardable attachment = InvalidChallenge.INSTANCE;
-			if(app.equals(APP_ID)) {
+			if(app.equals(EXCITEBOTS)) {
 				attachment = analyzeIngameMail(prompt, sender);
 			}
 			
 			if(sender.getOwner() instanceof UnknownDiscordUser) { //if wii is not registered
-				MailResponse friendResponse = new AddFriendResponse(responder, sender, prompt);
-				LOGGER.info("Sending friend request to " + sender);
-				MailResponse codeResponse = new DiscordCodeResponse(responder, sender, prompt);
-				LOGGER.info("Sending verification discord code to " + sender);
-				
-				responses.add(friendResponse);
-				if(attachment.getReward() > 0) {
-					responses.add(new RefundResponse(responder, prompt, attachment));
+				if(app.equals(FRIEND_REQUEST) && !wasKnown) {
+					MailResponse friendResponse = new AddFriendResponse(responder, sender, prompt);
+					LOGGER.info("Sending friend request to " + sender);
+					MailResponse codeResponse = new DiscordCodeResponse(responder, sender, prompt);
+					LOGGER.info("Sending verification discord code to " + sender);
+					
+					responses.add(friendResponse);
+					responses.add(codeResponse);
 				}
-				responses.add(codeResponse);
+
+				if(attachment.getReward() > 0) {
+					//responses.add(new RefundResponse(responder, prompt, attachment));
+				}
+				
 			}
 			else { //excitebot is not currently accepting mail from anything other than Excitebots
 				LOGGER.log(Level.INFO, "Excitebot is not currently accepting mail from anything other than Excitebots");
