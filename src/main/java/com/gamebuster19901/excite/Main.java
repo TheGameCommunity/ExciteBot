@@ -15,6 +15,7 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.mail.Address;
 import javax.security.auth.login.LoginException;
 
 import com.gamebuster19901.excite.bot.DiscordBot;
@@ -27,6 +28,7 @@ import com.gamebuster19901.excite.bot.user.DiscordUser;
 import com.gamebuster19901.excite.bot.user.UnknownDiscordUser;
 import com.gamebuster19901.excite.util.StacktraceUtil;
 import com.gamebuster19901.excite.util.ThreadService;
+
 import com.mysql.cj.exceptions.CJCommunicationsException;
 import com.mysql.cj.exceptions.ConnectionIsClosedException;
 import com.mysql.cj.jdbc.exceptions.CommunicationsException;
@@ -37,7 +39,6 @@ import net.dv8tion.jda.api.entities.Activity.ActivityType;
 import net.dv8tion.jda.api.exceptions.ErrorResponseException;
 
 public class Main {
-	
 	private static final Logger LOGGER = Logger.getLogger(Main.class.getName());
 	public static long botOwner = -1;
 	
@@ -51,6 +52,11 @@ public class Main {
 	
 	@SuppressWarnings("rawtypes")
 	public static void main(String[] args) throws InterruptedException, ClassNotFoundException, IOException, SQLException {
+		ClassLoader classloader = Address.class.getClassLoader();
+		if(!(classloader.getClass().getName().equals("cpw.mods.modlauncher.TransformingClassLoader"))) {
+			System.out.println(Address.class.getClassLoader().getClass().getName());
+			throw new LinkageError("Incorrect classloader. Mixins are not loaded. " + Address.class.getClassLoader());
+		}
 		if(args.length % 2 != 0) {
 			throw new IllegalArgumentException("Must be started with an even number of arguments!");
 		}
@@ -270,6 +276,7 @@ public class Main {
 				}
 			}
 		};
+		mailThread.setContextClassLoader(null);
 		mailThread.setName("mailThread");
 		mailThread.setDaemon(false);
 		ThreadService.run(mailThread);
