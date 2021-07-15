@@ -11,6 +11,7 @@ import com.gamebuster19901.excite.bot.command.ConsoleContext;
 import com.gamebuster19901.excite.bot.database.Comparison;
 import com.gamebuster19901.excite.bot.database.Result;
 import com.gamebuster19901.excite.bot.database.Table;
+import com.gamebuster19901.excite.bot.mail.EmailAddress;
 import com.gamebuster19901.excite.util.Named;
 import com.gamebuster19901.excite.util.Owned;
 
@@ -19,7 +20,7 @@ import static com.gamebuster19901.excite.bot.database.Column.*;
 import static com.gamebuster19901.excite.bot.database.Table.WIIS;
 import static com.gamebuster19901.excite.bot.user.DesiredProfile.validPasswordChars;
 
-public class Wii implements Named, Owned<DiscordUser> {
+public class Wii implements Named, Owned<DiscordUser>, EmailAddress {
 	
 	private static final String EMAIL_SUFFIX = "@rc24.xyz";
 	private static final Pattern PATTERN = Pattern.compile("^\\d{16}$");
@@ -192,6 +193,11 @@ public class Wii implements Named, Owned<DiscordUser> {
 		public boolean isKnown() {
 			return false;
 		}
+	}
+
+	@Override
+	public String getType() {
+		return "rfc822";
 	}
 	
 }
