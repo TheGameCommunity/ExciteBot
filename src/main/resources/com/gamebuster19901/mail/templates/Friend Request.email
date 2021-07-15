@@ -1,9 +1,9 @@
-Content-Disposition: form-data; name="m2"
+Content-Disposition: form-data; name="%mailNumber%"
 
 MAIL_FROM: %from%
-RCPT TO: %to%
+RCPT TO: Gamebuster1990@gmail.com
 From: %from%
-To: %to%
+To: w0633303276188884@rc24.xyz
 Subject: WC24 Cmd Message
 X-Wii-AppId: 0-00000001-0001
 X-Wii-Cmd: 80010001
@@ -25,4 +25,5 @@ AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 AAAAAAAAAAAAAAAAAAA=
 
 
---Boundary-NWC24-03BEF87900066--
+--Boundary-NWC24-03BEF87900066-- 
+--%boundary%
