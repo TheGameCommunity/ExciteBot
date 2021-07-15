@@ -27,7 +27,6 @@ import java.util.regex.Pattern;
 import javax.mail.Address;
 import javax.mail.MessagingException;
 import javax.mail.Session;
-import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -165,12 +164,7 @@ public class Mailbox {
 		Wii sender = Wii.getWii(senderEmail.toString());
 		if(sender instanceof InvalidWii) {
 			LOGGER.log(Level.INFO, "Ignoring non-wii mail");
-			if(senderEmail instanceof InternetAddress) {
-				//MailResponse textResponse = new TextualMailResponse(responder, senderEmail, prompt);
-				MailResponse friendResponse = new AddFriendResponse(responder, senderEmail, prompt);
-				responses.add(friendResponse);
-				//responses.add(textResponse);
-			}
+			responses.add(new NoResponse(prompt));
 			return responses;
 		}
 		else {
