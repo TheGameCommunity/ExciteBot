@@ -14,7 +14,7 @@ public class TextualMailResponse extends MailReplyResponse {
 	
 	private String text = "";
 	
-	public TextualMailResponse(Wii responder, Wii respondee, MimeMessage message) throws MessagingException {
+	public TextualMailResponse(Wii responder, EmailAddress respondee, MimeMessage message) throws MessagingException {
 		super(responder, respondee, message);
 	}
 	
@@ -25,7 +25,7 @@ public class TextualMailResponse extends MailReplyResponse {
 	@Override
 	protected String getResponseTemplate() {
 		try {
-			return IOUtils.toString(TextualMailResponse.class.getResourceAsStream("/com/gamebuster19901//mail/templates/Email.email"), Charsets.UTF_8);
+			return IOUtils.toString(TextualMailResponse.class.getResourceAsStream("/com/gamebuster19901/mail/templates/Email.email"), Charsets.UTF_8);
 		} catch (IOException e) {
 			throw new RuntimeException(new MessagingException("Unable to retrieve response template", e));
 		}
