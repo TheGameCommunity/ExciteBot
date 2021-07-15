@@ -9,22 +9,15 @@ import org.apache.commons.codec.Charsets;
 import org.apache.commons.io.IOUtils;
 
 import com.gamebuster19901.excite.bot.user.Wii;
-import com.gamebuster19901.excite.bot.user.Wii.InvalidWii;
 
 public class AddFriendResponse extends MailReplyResponse {
 	
-	public AddFriendResponse(Wii responder, EmailAddress wiiToBefriend, MimeMessage message) throws MessagingException {
+	public AddFriendResponse(Wii responder, Wii wiiToBefriend, MimeMessage message) throws MessagingException {
 		super(responder, wiiToBefriend, message);
 		System.out.println(wiiToBefriend);
 		System.out.println(wiiToBefriend.getEmail());
 		System.out.println(wiiToBefriend.getClass().getClassLoader());
 		System.out.println(wiiToBefriend.getClass());
-		if(wiiToBefriend instanceof InvalidWii) {
-			throw new AssertionError();
-		}
-		if(wiiToBefriend instanceof Wii) {
-			throw new AssertionError();
-		}
 	}
 
 	@Override
