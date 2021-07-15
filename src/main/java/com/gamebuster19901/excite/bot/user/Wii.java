@@ -86,9 +86,9 @@ public class Wii implements Named, Owned<DiscordUser>, EmailAddress {
 	}
 	
 	public String generateRegistrationCode() {
-		char[] sequence = new char[16];
+		char[] sequence = new char[8];
 		for(int i = 0; i < sequence.length; i++) {
-			sequence[i] = validPasswordChars.charAt(RANDOM.nextInt(validPasswordChars.length()));
+			sequence[i] = validPasswordChars.charAt(RANDOM.nextInt(validPasswordChars.length() - 4));
 		}
 		String code = new String(sequence);
 		try {
