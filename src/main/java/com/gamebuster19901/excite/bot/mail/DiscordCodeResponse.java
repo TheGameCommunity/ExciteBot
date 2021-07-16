@@ -33,7 +33,7 @@ public class DiscordCodeResponse extends TextualMailResponse {
 				+ "%bot% is in, or in a private\n"
 				+ "message with %bot%:\n"
 				+ "\n"
-				+ "register %code%\n"
+				+ "register wii %code%\n"
 				+ "\n"
 				+ "You should receive a message on\n"
 				+ "discord once you are successfully\n"
@@ -47,7 +47,7 @@ public class DiscordCodeResponse extends TextualMailResponse {
 				+ "Cheers,\n"
 				+ "Gamebuster";
 		text = text.replace("%bot%", Main.discordBot.getSelfUser().getAsTag());
-		text = text.replace("%code%", registrationCode);
+		text = text.replace("%code%", wiiToRegister.getWiiCode().toString());
 		setText(text);
 	}
 	
