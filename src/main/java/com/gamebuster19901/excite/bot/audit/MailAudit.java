@@ -8,7 +8,6 @@ import java.io.File;
 import java.io.IOError;
 import java.sql.SQLException;
 
-import javax.mail.Address;
 import javax.mail.MessagingException;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
@@ -21,7 +20,11 @@ import com.gamebuster19901.excite.bot.database.Insertion;
 import com.gamebuster19901.excite.bot.database.Row;
 import com.gamebuster19901.excite.bot.database.Table;
 import com.gamebuster19901.excite.bot.database.sql.PreparedStatement;
+import com.gamebuster19901.excite.bot.mail.AddFriendResponse;
+import com.gamebuster19901.excite.bot.mail.EmailAddress;
+import com.gamebuster19901.excite.bot.mail.MailReplyResponse;
 import com.gamebuster19901.excite.bot.mail.Mailbox;
+import com.gamebuster19901.excite.bot.mail.RefundResponse;
 
 public class MailAudit extends Audit {
 
@@ -33,9 +36,9 @@ public class MailAudit extends Audit {
 
 	@SuppressWarnings("rawtypes")
 	public static MailAudit addMailAudit(MessageContext context, MimeMessage message, boolean incoming, File file) throws AddressException, MessagingException {
-		Address from = message.getFrom()[0];
-		Address to = new InternetAddress(message.getHeader("To")[0]);
-		String description = from + " sent mail to " + to;
+		EmailAddress from = (EmailAddress)(Object)message.getFrom()[0];
+		EmailAddress to = (EmailAddress)(Object)new InternetAddress(message.getHeader("To")[0]);
+		String description = from.getEmail() + " sent mail to " + to.getEmail();
 		String[] appIDHeader = message.getHeader(Mailbox.APP_ID_HEADER);
 		String mailType = "GENERIC";
 		if(appIDHeader != null) {
@@ -58,7 +61,7 @@ public class MailAudit extends Audit {
 		try {
 			st = Insertion.insertInto(Table.MAIL)
 			.setColumns(AUDIT_ID, SENDER, RECEIVER, INCOMING, MAIL_TYPE, FILE)
-			.to(parent.getID(), from.toString(), to.toString(), incoming, mailType, file.getAbsolutePath())
+			.to(parent.getID(), from.getEmail(), to.getEmail(), incoming, mailType, file.getAbsolutePath())
 			.prepare(context, true);
 			
 			st.execute();
@@ -72,6 +75,43 @@ public class MailAudit extends Audit {
 			throw new IOError(e);
 		}
 		
+	}
+	
+	@SuppressWarnings("rawtypes")
+	public static MailAudit addMailAudit(MessageContext context, MailReplyResponse message, boolean incoming, File file) {
+		EmailAddress from = message.getResponder();
+		EmailAddress to = message.getRespondee();
+		String description = from.getEmail() + " sent mail to " + to.getEmail();
+		String mailType = "GENERIC";
+		if(message instanceof AddFriendResponse) {
+			description = from.getEmail() + " sent a friend request to " + to.getEmail();
+			mailType = "FRIEND_REQUEST";
+		}
+		else if (message instanceof RefundResponse) {
+			description = "refunded " + ((RefundResponse)message).getReward() + " to " + to.getEmail();
+			mailType = "REFUND";
+		}
+		
+		Audit parent = Audit.addAudit(context, AuditType.LOG_OUT_AUDIT, description);
+		
+		PreparedStatement st;
+		
+		try {
+			st = Insertion.insertInto(Table.MAIL)
+			.setColumns(AUDIT_ID, SENDER, RECEIVER, INCOMING, MAIL_TYPE, FILE)
+			.to(parent.getID(), from.getEmail(), to.getEmail(), incoming, mailType, file.getAbsolutePath())
+			.prepare(context, true);
+			
+			st.execute();
+			
+			MailAudit ret = getMailAuditByAuditID(ConsoleContext.INSTANCE, parent.getID());
+			ret.parentData = parent;
+			
+			return ret;
+		}
+		catch(SQLException e) {
+			throw new IOError(e);
+		}
 	}
 	
 	private static MailAudit getMailAuditByAuditID(ConsoleContext context, long auditID) {

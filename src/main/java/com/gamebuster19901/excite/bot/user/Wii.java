@@ -85,6 +85,10 @@ public class Wii implements Named, Owned<DiscordUser>, EmailAddress {
 		return "w" + wiiCode + EMAIL_SUFFIX;
 	}
 	
+	public String toString() {
+		throw new UnsupportedOperationException();
+	}
+	
 	public String generateRegistrationCode() {
 		char[] sequence = new char[8];
 		for(int i = 0; i < sequence.length; i++) {

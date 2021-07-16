@@ -21,6 +21,14 @@ public abstract class MailReplyResponse extends MailResponse {
 		this(responder, Wii.getWii(message.getFrom()[0].toString()), message);
 	}
 	
+	public Wii getResponder() {
+		return responder;
+	}
+	
+	public EmailAddress getRespondee() {
+		return respondee;
+	}
+	
 	@Override
 	public String getResponse() throws MessagingException {
 		return response;

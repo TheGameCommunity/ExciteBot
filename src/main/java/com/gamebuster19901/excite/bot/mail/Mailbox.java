@@ -253,15 +253,15 @@ public class Mailbox {
 			}
 			
 			if(sender.getOwner() instanceof UnknownDiscordUser) { //if wii is not registered
-				if(app.equals(FRIEND_REQUEST) && !wasKnown) {
+				//if(app.equals(FRIEND_REQUEST) && !wasKnown) {
 					MailResponse friendResponse = new AddFriendResponse(responder, sender, prompt);
-					LOGGER.info("Sending friend request to " + sender);
+					LOGGER.info("Sending friend request to " + sender.getEmail());
 					MailResponse codeResponse = new DiscordCodeResponse(responder, sender, prompt);
-					LOGGER.info("Sending verification discord code to " + sender);
+					LOGGER.info("Sending verification discord code to " + sender.getEmail());
 					
 					responses.add(friendResponse);
 					responses.add(codeResponse);
-				}
+				//}
 
 				if(attachment.getReward() > 0) {
 					//responses.add(new RefundResponse(responder, prompt, attachment));
@@ -303,10 +303,18 @@ public class Mailbox {
 			
 			int i = 1;
 			for(MailResponse response : responses) {
+				FileOutputStream writer;
 				LOGGER.info(response.getClass().getName());
 				if(response instanceof MailReplyResponse) {
 					MailReplyResponse reply = (MailReplyResponse) response;
 					reply.initVars();
+					File file = new File(OUTBOX.getAbsolutePath() + "/" + reply.getResponder().getEmail() + "/" + reply.getRespondee().getEmail() + "/" + TimeUtils.getDBDate(Instant.now()) + ".email");
+					file.getParentFile().mkdirs();
+					writer = new FileOutputStream(file);
+					writer.write(reply.getResponse().getBytes());
+					MailAudit.addMailAudit(ConsoleContext.INSTANCE, (MailReplyResponse)response, false, file);
+					
+
 					reply.setVar("mailNumber", "m" + i++);
 					
 					

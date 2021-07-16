@@ -14,7 +14,7 @@ public class AddFriendResponse extends MailReplyResponse {
 	
 	public AddFriendResponse(Wii responder, Wii wiiToBefriend, MimeMessage message) throws MessagingException {
 		super(responder, wiiToBefriend, message);
-		System.out.println(wiiToBefriend);
+		System.out.println(wiiToBefriend.getWiiCode());
 		System.out.println(wiiToBefriend.getEmail());
 		System.out.println(wiiToBefriend.getClass().getClassLoader());
 		System.out.println(wiiToBefriend.getClass());
