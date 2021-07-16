@@ -18,7 +18,9 @@ public enum AuditType {
 	RANK_CHANGE_AUDIT(RankChangeAudit.class, AUDIT_RANK_CHANGES),
 	
 	LOG_IN_AUDIT(LogInAudit.class, AUDIT_PROFILE_LOGINS),
-	LOG_OUT_AUDIT(LogOutAudit.class, AUDIT_PROFILE_LOGOUTS)
+	LOG_OUT_AUDIT(LogOutAudit.class, AUDIT_PROFILE_LOGOUTS),
+	
+	MAIL_AUDIT(MailAudit.class, MAIL)
 	
 	;
 

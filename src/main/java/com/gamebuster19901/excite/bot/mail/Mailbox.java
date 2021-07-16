@@ -9,13 +9,17 @@ import org.apache.http.entity.StringEntity;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOError;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.nio.ByteBuffer;
+
 import java.sql.SQLException;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
@@ -33,6 +37,7 @@ import javax.mail.internet.MimeMessage;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 
+import com.gamebuster19901.excite.bot.audit.MailAudit;
 import com.gamebuster19901.excite.bot.command.ConsoleContext;
 import com.gamebuster19901.excite.bot.database.Insertion;
 import com.gamebuster19901.excite.bot.user.UnknownDiscordUser;
@@ -40,9 +45,11 @@ import com.gamebuster19901.excite.bot.user.Wii;
 import com.gamebuster19901.excite.bot.user.Wii.InvalidWii;
 import com.gamebuster19901.excite.game.challenge.InvalidChallenge;
 import com.gamebuster19901.excite.game.challenge.Rewardable;
-import com.gamebuster19901.excite.util.file.File;
+import com.gamebuster19901.excite.util.StacktraceUtil;
+import com.gamebuster19901.excite.util.TimeUtils;
 
-import static java.nio.charset.StandardCharsets.UTF_16BE;
+import java.io.File;
+
 import static com.gamebuster19901.excite.bot.database.Table.*;
 import static com.gamebuster19901.excite.bot.database.Column.*;
 
@@ -55,6 +62,39 @@ public class Mailbox {
 	public static final String WII_MESSAGE = "2-48414541-0001";
 	public static final String BOUNDARY = "t9Sf4yfjf1RtvDu3AA";
 	public static final Base64.Decoder DECODER = Base64.getDecoder();
+	
+	public static final File MAILBOX;
+	public static final File INBOX;
+	public static final File INBOX_ERRORED;
+	public static final File OUTBOX;
+	public static final File OUTBOX_ERRORED;
+	static {
+		MAILBOX = new File("./run/Mailbox");
+		INBOX = new File("./run/Mailbox/Inbox");
+		INBOX_ERRORED = new File("./run/Mailbox/Inbox/Errored");
+		OUTBOX = new File("./run/Mailbox/Outbox");
+		OUTBOX_ERRORED = new File("./run/Mailbox/Outbox/Errored");
+		
+		if(!MAILBOX.exists()) {
+			MAILBOX.mkdirs();
+		}
+		if(!INBOX.exists()) {
+			INBOX.mkdirs();
+		}
+		if(!INBOX_ERRORED.exists()) {
+			INBOX_ERRORED.mkdirs();
+		}
+		if(!OUTBOX.exists()) {
+			OUTBOX.mkdirs();
+		}
+		if(!OUTBOX_ERRORED.exists()) {
+			OUTBOX_ERRORED.mkdirs();
+		}
+		
+		if(!(MAILBOX.exists() && INBOX.exists() && INBOX_ERRORED.exists() && OUTBOX.exists() && OUTBOX_ERRORED.exists())) {
+			throw new IOError(new FileNotFoundException("Could not create necessary mailbox files"));
+		}
+	}
 	
 	public static void receive() throws IOException, MessagingException {
 		File secretFile = new File("./mail.secret");
@@ -82,7 +122,7 @@ public class Mailbox {
 				while(mailReader.read(data) != -1) {
 					content.append(data);
 				}
-				LOGGER.log(Level.INFO, content.toString());
+				LOGGER.log(Level.SEVERE, content.toString());
 				parseMail(content.toString());
 			}
 			else {
@@ -129,10 +169,16 @@ public class Mailbox {
 		emails.removeIf((predicate) -> {return predicate.trim().isEmpty() || predicate.equals("--");});
 		LinkedHashSet<MailResponse> responses = new LinkedHashSet<MailResponse>();
 		for(String content : emails) {
+			FileOutputStream writer = null;
 			MimeMessage message = new MimeMessage(null, new ByteArrayInputStream(content.getBytes()));
 			MimeMessage innerMessage1 = new MimeMessage(null, message.getInputStream());
 			MimeMessage innerMessage2 = new MimeMessage(null, innerMessage1.getInputStream());
-			System.out.println(innerMessage2.getContent().toString());
+			ByteArrayOutputStream stringStream = new ByteArrayOutputStream();
+			innerMessage2.writeTo(stringStream);
+			String email = new String(stringStream.toByteArray()).trim();
+			if(email.isEmpty() || email.contains("This part is ignored.") && email.contains("cd=100")) {
+				continue;
+			}
 			
 			for(javax.mail.Header header : Collections.list(innerMessage2.getAllHeaders())) {
 				System.out.println(header.getName() + ": " + header.getValue());
@@ -143,10 +189,24 @@ public class Mailbox {
 				if(response != null) {
 					responses.addAll(response);
 				}
+				Address from = innerMessage2.getFrom() != null ? innerMessage2.getFrom()[0] : null;
+				
+				//if(!(response.stream().allMatch((response1) -> {return response1 instanceof NoResponse;}))) {
+					File file = new File(INBOX.getAbsolutePath() + "/" + from + "/" + TimeUtils.getDBDate(Instant.now()) + ".email");
+					file.getParentFile().mkdirs();
+					writer = new FileOutputStream(file);
+					innerMessage2.writeTo(writer);
+					MailAudit.addMailAudit(ConsoleContext.INSTANCE, innerMessage2, true, file);
+				//}
 			}
 			catch(Exception e) {
 				LOGGER.log(Level.WARNING, "Couldn't analayze a mail item: \"" + content + "\"", e);
 				continue;
+			}
+			finally {
+				if(writer != null) {
+					writer.close();
+				}
 			}
 		}
 		sendResponses(responses);
@@ -218,7 +278,7 @@ public class Mailbox {
 	}
 	
 	/**
-	 * We try to send all of the mail at once. If it fails, send responses individually to isolate which response is causing the issue.
+	 * We try to send all of the mail at once.
 	 * @param responses
 	 */
 	public static void sendResponses(LinkedHashSet<MailResponse> responses) {
@@ -227,6 +287,7 @@ public class Mailbox {
 		String password;
 		HttpPost request;
 		BufferedReader fileReader = null;
+		String s = "String uninitialized";
 		try {
 			File secretFile = new File("./mail.secret");
 			fileReader = new BufferedReader(new FileReader(secretFile));
@@ -234,7 +295,7 @@ public class Mailbox {
 			password = fileReader.readLine();
 			request = new HttpPost("https://mtw." + SERVER + "/cgi-bin/send.cgi?mlid=" + wiiID + "&passwd=" + password + "&maxsize=11534336");
 			request.addHeader("Content-Type", "multipart/form-data; boundary=" + BOUNDARY);
-			String s = 					
+			s = 					
 				"Content-Disposition: form-data; name=\"mlid\"\n"
 				+ "mlid="+wiiID+"\n"
 				+ "passwd="+password+"\n"
@@ -279,8 +340,16 @@ public class Mailbox {
 			}
 		}
 		catch(Throwable t) {
-			t.printStackTrace();
-			sendResponsesOneByOne(responses);
+			LOGGER.log(Level.SEVERE, "Failed to send emails", t);
+			File errored = new File(OUTBOX_ERRORED.getAbsolutePath() + "/" + TimeUtils.getDBDate(Instant.now()) + " " + t.getClass().getSimpleName() + ".email");
+			try {
+				errored.getParentFile().mkdirs();
+				FileWriter writer = new FileWriter(errored);
+				writer.write(s + "\n\n====STACKTRACE====\n\n" + StacktraceUtil.getStackTrace(t));
+				writer.close();
+			} catch (IOException e) {
+				throw new IOError(e);
+			}
 		}
 		finally {
 			if(fileReader != null) {
