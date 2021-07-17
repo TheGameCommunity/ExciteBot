@@ -114,7 +114,7 @@ public class Main {
 		Instant nextDiscordPing = Instant.now();
 		Instant sendDiscordNotifications = Instant.now();
 		startConsole();
-		startMailThread();
+		Thread mailThread = startMailThread();
 		try {
 			while(true) {
 				try {
@@ -179,6 +179,9 @@ public class Main {
 						continue;
 					}
 					throw t;
+				}
+				if(!mailThread.isAlive()) {
+					throw new Error("Mail thread has died");
 				}
 				Thread.sleep(1000);
 			}
@@ -257,7 +260,7 @@ public class Main {
 		consoleThread.start();
 	}
 	
-	private static void startMailThread() {
+	private static Thread startMailThread() {
 		Thread mailThread = new Thread() {
 			@Override
 			public void run() {
@@ -280,6 +283,7 @@ public class Main {
 		mailThread.setName("mailThread");
 		mailThread.setDaemon(false);
 		ThreadService.run(mailThread);
+		return mailThread;
 	}
 	
 	public static Thread updateLists(boolean start, boolean join) throws InterruptedException {
