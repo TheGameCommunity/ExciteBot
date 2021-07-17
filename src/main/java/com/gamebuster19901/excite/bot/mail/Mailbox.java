@@ -187,6 +187,7 @@ public class Mailbox {
 		emails.addAll(Arrays.asList(mailData.split(delimiter)));
 		emails.removeIf((predicate) -> {return predicate.trim().isEmpty() || predicate.equals("--");});
 		LinkedHashSet<MailResponse> responses = new LinkedHashSet<MailResponse>();
+		int i = 1;
 		for(String content : emails) {
 			FileOutputStream writer = null;
 			MimeMessage message = new MimeMessage(null, new ByteArrayInputStream(content.getBytes()));
@@ -214,7 +215,7 @@ public class Mailbox {
 				Address from = innerMessage2.getFrom() != null ? innerMessage2.getFrom()[0] : null;
 				
 				if(!(response.stream().allMatch((response1) -> {return response1 instanceof NoResponse;}))) {
-					File file = new File(INBOX.getAbsolutePath() + "/" + from + "/" + TimeUtils.getDBDate(Instant.now()) + ".email");
+					File file = new File(INBOX.getAbsolutePath() + "/" + from + "/" + TimeUtils.getDBDate(Instant.now()) + "(" + i++ + ")" + ".email");
 					file.getParentFile().mkdirs();
 					writer = new FileOutputStream(file);
 					innerMessage2.writeTo(writer);
@@ -330,7 +331,7 @@ public class Mailbox {
 				if(response instanceof MailReplyResponse) {
 					MailReplyResponse reply = (MailReplyResponse) response;
 					reply.initVars();
-					File file = new File(OUTBOX.getAbsolutePath() + "/" + reply.getResponder().getEmail() + "/" + reply.getRespondee().getEmail() + "/" + TimeUtils.getDBDate(Instant.now()) + ".email");
+					File file = new File(OUTBOX.getAbsolutePath() + "/" + reply.getResponder().getEmail() + "/" + reply.getRespondee().getEmail() + "/" + TimeUtils.getDBDate(Instant.now()) + "(" + i +")" + ".email");
 					file.getParentFile().mkdirs();
 					writer = new FileOutputStream(file);
 					writer.write(reply.getResponse().getBytes());
