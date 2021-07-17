@@ -73,7 +73,7 @@ public class ConsoleUser extends UnloadedDiscordUser {
 	
 	@Override
 	public String toString() {
-		return name + "(" + getID() + ")"; 
+		return name; 
 	}
 	
 	@Override
