@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
+import com.gamebuster19901.excite.bot.mail.Mailbox;
 import com.gamebuster19901.excite.bot.server.DiscordServer;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
 import com.gamebuster19901.excite.util.StacktraceUtil;
@@ -65,6 +66,7 @@ public class ArchiveCommand {
 					public volatile WorkerStatus status = NOT_STARTED;
 					public volatile byte updates = 0;
 					public volatile int messagesArchived = 0;
+					public volatile int wiiMessagesArchived = 0;
 					public volatile int attachmentsArchived = 0;
 					public volatile long estimatedSize = 0;
 					private volatile Throwable error;
@@ -75,14 +77,16 @@ public class ArchiveCommand {
 							Instant start = Instant.now();
 							EmbedBuilder embed = new EmbedBuilder();
 							embed.setTitle("Archive in progress...");
-							Field archivedMessagesField = new Field("Messages archived:", "0", true, true);
-							Field archivedAttachmentsField = new Field("Attachments archived:", "0", true, true);
+							Field archivedDiscordMessagesField = new Field("Discord Messages archived:", "0", true, true);
+							Field archivedDiscordAttachmentsField = new Field("Discord Attachments archived:", "0", true, true);
+							Field emailsArchivedField = new Field("Wii Mails archived:", "0", true, true);
 							Field estimatedSizeField = new Field("Estimated size:", FileUtils.humanReadableByteCount(0), true, true);
 							Field timeElapsedField = new Field("Time elapsed:", "0 seconds", true, true);
 							embed.setTimestamp(start);
 							WorkerStatus currentStatus = status;
-							embed.addField(archivedMessagesField);
-							embed.addField(archivedAttachmentsField);
+							embed.addField(archivedDiscordMessagesField);
+							embed.addField(archivedDiscordAttachmentsField);
+							embed.addField(emailsArchivedField);
 							embed.addField(estimatedSizeField);
 							embed.addField(timeElapsedField);
 							Message message = source.sendMessage(embed.build());
@@ -103,8 +107,9 @@ public class ArchiveCommand {
 											embed.setColor(new Color(204, 204, 0)); //dark yellow
 										}
 										embed.setTitle("Archive in progress...");
-										embed.addField(archivedMessagesField = new Field("Messages archived:", messagesArchived + "", true, true));
-										embed.addField(archivedAttachmentsField = new Field("Attachments archived:", attachmentsArchived +"", true, true));
+										embed.addField(archivedDiscordMessagesField = new Field("Discord Messages archived:", messagesArchived + "", true, true));
+										embed.addField(archivedDiscordAttachmentsField = new Field("Discord Attachments archived:", attachmentsArchived +"", true, true));
+										embed.addField(emailsArchivedField = new Field("Wii Messages archived:", wiiMessagesArchived + "", true, true));
 										embed.addField(estimatedSizeField = new Field("Estimated size:", FileUtils.humanReadableByteCount(estimatedSize), true, true));
 										embed.addField(timeElapsedField = new Field ("Time elapsed:", TimeUtils.readableDuration(Duration.between(start, now)), true, true));
 										embed.setTimestamp(now);
@@ -116,11 +121,14 @@ public class ArchiveCommand {
 								}
 							}
 							Instant now = Instant.now();
-							embed.addField(archivedMessagesField = new Field("Messages archived:", messagesArchived + "", true, true));
-							embed.addField(archivedAttachmentsField = new Field("Attachments archived:", attachmentsArchived +"", true, true));
+							embed.setTitle("Archive complete");
+							embed.addField(archivedDiscordMessagesField = new Field("Discord Messages archived:", messagesArchived + "", true, true));
+							embed.addField(archivedDiscordAttachmentsField = new Field("Discord Attachments archived:", attachmentsArchived +"", true, true));
+							embed.addField(emailsArchivedField = new Field("Wii Messages archived:", wiiMessagesArchived + "", true, true));
 							embed.addField(estimatedSizeField = new Field("Estimated size:", FileUtils.humanReadableByteCount(estimatedSize), true, true));
 							embed.addField(timeElapsedField = new Field ("Time elapsed:", TimeUtils.readableDuration(Duration.between(start, now)), true, true));
 							embed.setTimestamp(now);
+							message.editMessage(embed.build()).complete();
 							if(currentStatus == COMPLETE) {
 								embed.setColor(Color.GREEN);
 								source.sendMessage(source.getDiscordAuthor().getJDAUser().getAsMention() + " Archive complete.");
@@ -135,6 +143,15 @@ public class ArchiveCommand {
 						String date = TimeUtils.getDBDate(Instant.now());
 						try {
 							status = WORKING;
+							for(File f : org.apache.commons.io.FileUtils.listFiles(Mailbox.MAILBOX, null, true)) {
+								File archive = new File(".archive/" + date + "/" + f.getPath().replace("/run", ""));
+								if(!archive.getParentFile().mkdirs() && !archive.getParentFile().exists()) {
+									throw new IOException("Could not create " + archive.getAbsolutePath());
+								}
+								org.apache.commons.io.FileUtils.copyFile(f, archive);
+								wiiMessagesArchived++;
+								estimatedSize += archive.length();
+							}
 							for(TextChannel channel : channelsToArchive) {
 								try {
 									File file = new File(".archive/" + date + "/" + channel.getName() + "/" + channel.getName() + ".arc");
