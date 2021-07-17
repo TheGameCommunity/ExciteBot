@@ -6,6 +6,7 @@ import javax.annotation.Nullable;
 
 import com.gamebuster19901.excite.Main;
 import com.gamebuster19901.excite.Player;
+import com.gamebuster19901.excite.bot.audit.BotDeleteMessageAudit;
 import com.gamebuster19901.excite.bot.database.sql.DatabaseConnection;
 import com.gamebuster19901.excite.bot.server.DiscordServer;
 import com.gamebuster19901.excite.bot.user.ConsoleUser;
@@ -225,5 +226,16 @@ public class MessageContext<E>{
 		
 		return message;
 		
+	}
+	
+	public void deletePromptingMessage(MessageContext deleter, String response) {
+		Message message = getMessage();
+		if(message != null) {
+			message.delete().complete();
+			BotDeleteMessageAudit.addBotDeleteMessageAudit(deleter, this, "User published their registration code.");
+			if(response != null && !response.isEmpty()) {
+				sendMessage(response);
+			}
+		}
 	}
 }

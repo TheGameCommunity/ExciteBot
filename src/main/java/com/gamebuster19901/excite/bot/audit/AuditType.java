@@ -12,6 +12,7 @@ public enum AuditType {
 	BAN(Ban.class, AUDIT_BANS),
 	PARDON(Pardon.class, AUDIT_PARDONS),
 	
+	BOT_MSG_DELETE(BotDeleteMessageAudit.class, AUDIT_BOT_MSG_DEL),
 	COMMAND_AUDIT(CommandAudit.class, AUDIT_COMMANDS),
 	NAME_CHANGE_AUDIT(NameChangeAudit.class, AUDIT_NAME_CHANGES),
 	DISCOVERY_AUDIT(DiscoveryAudit.class, AUDIT_PROFILE_DISCOVERIES),
