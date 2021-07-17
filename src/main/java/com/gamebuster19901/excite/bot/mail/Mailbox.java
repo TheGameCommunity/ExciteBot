@@ -23,7 +23,6 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
-import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Properties;
 import java.util.logging.Level;
@@ -122,7 +121,7 @@ public class Mailbox {
 				while(mailReader.read(data) != -1) {
 					content.append(data);
 				}
-				LOGGER.log(Level.SEVERE, content.toString());
+				LOGGER.log(Level.FINEST, content.toString());
 				parseMail(content.toString());
 			}
 			else {
