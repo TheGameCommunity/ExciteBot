@@ -112,7 +112,7 @@ public class Mailbox {
 			request = new HttpGet("https://mtw." + SERVER + "/cgi-bin/receive.cgi?mlid=" + wiiID + "&passwd=" + password + "&maxsize=11534336");
 			
 			CloseableHttpResponse response = client.execute(request);
-			LOGGER.log(Level.INFO, "Sent mail fetch request");
+			LOGGER.log(Level.FINEST, "Sent mail fetch request");
 			HttpEntity entity = response.getEntity();
 			if(entity != null) {
 				InputStream contentStream = entity.getContent();
@@ -126,7 +126,7 @@ public class Mailbox {
 				parseMail(content.toString());
 			}
 			else {
-				LOGGER.log(Level.INFO, "Response was null");
+				LOGGER.log(Level.FINEST, "Response was null");
 			}
 		}
 		finally {
@@ -163,7 +163,7 @@ public class Mailbox {
 	
 	private static void parseMail(String mailData) throws MessagingException, IOException {
 		String delimiter = mailData.substring(0, mailData.indexOf('\r'));
-		LOGGER.log(Level.INFO, "Delimiter is: " + delimiter);
+		LOGGER.log(Level.FINEST, "Delimiter is: " + delimiter);
 		ArrayList<String> emails = new ArrayList<String>();
 		emails.addAll(Arrays.asList(mailData.split(delimiter)));
 		emails.removeIf((predicate) -> {return predicate.trim().isEmpty() || predicate.equals("--");});
@@ -180,9 +180,12 @@ public class Mailbox {
 				continue;
 			}
 			
-			for(javax.mail.Header header : Collections.list(innerMessage2.getAllHeaders())) {
-				System.out.println(header.getName() + ": " + header.getValue());
-			}
+			/*
+				for(javax.mail.Header header : Collections.list(innerMessage2.getAllHeaders())) {
+					System.out.println(header.getName() + ": " + header.getValue());
+				}
+			*/
+			
 			LinkedHashSet<MailResponse> response = null;
 			try {
 				response = analyzeMail(Wii.getWii("1056185520598803"), innerMessage2);
@@ -191,13 +194,13 @@ public class Mailbox {
 				}
 				Address from = innerMessage2.getFrom() != null ? innerMessage2.getFrom()[0] : null;
 				
-				//if(!(response.stream().allMatch((response1) -> {return response1 instanceof NoResponse;}))) {
+				if(!(response.stream().allMatch((response1) -> {return response1 instanceof NoResponse;}))) {
 					File file = new File(INBOX.getAbsolutePath() + "/" + from + "/" + TimeUtils.getDBDate(Instant.now()) + ".email");
 					file.getParentFile().mkdirs();
 					writer = new FileOutputStream(file);
 					innerMessage2.writeTo(writer);
 					MailAudit.addMailAudit(ConsoleContext.INSTANCE, innerMessage2, true, file);
-				//}
+				}
 			}
 			catch(Exception e) {
 				LOGGER.log(Level.WARNING, "Couldn't analayze a mail item: \"" + content + "\"", e);
@@ -218,7 +221,7 @@ public class Mailbox {
 		Session session = Session.getInstance(new Properties());
 		
 		Address[] from = prompt.getFrom();
-		LOGGER.log(Level.INFO, "Analyzing mail from: " + (from != null ? from[0] : from));
+		LOGGER.log(Level.FINEST, "Analyzing mail from: " + (from != null ? from[0] : from));
 		if(from == null) {
 			responses.add(new NoResponse(prompt));
 			return responses;
@@ -227,7 +230,7 @@ public class Mailbox {
 		EmailAddress senderEmail = (EmailAddress)(Object)prompt.getFrom()[0];
 		Wii sender = Wii.getWii(senderEmail.toString());
 		if(sender instanceof InvalidWii) {
-			LOGGER.log(Level.INFO, "Ignoring non-wii mail");
+			LOGGER.log(Level.FINEST, "Ignoring non-wii mail");
 			responses.add(new NoResponse(prompt));
 			return responses;
 		}
@@ -255,9 +258,9 @@ public class Mailbox {
 			if(sender.getOwner() instanceof UnknownDiscordUser) { //if wii is not registered
 				//if(app.equals(FRIEND_REQUEST) && !wasKnown) {
 					MailResponse friendResponse = new AddFriendResponse(responder, sender, prompt);
-					LOGGER.info("Sending friend request to " + sender.getEmail());
+					LOGGER.finest("Sending friend request to " + sender.getEmail());
 					MailResponse codeResponse = new DiscordCodeResponse(responder, sender, prompt);
-					LOGGER.info("Sending verification discord code to " + sender.getEmail());
+					LOGGER.finest("Sending verification discord code to " + sender.getEmail());
 					
 					responses.add(friendResponse);
 					responses.add(codeResponse);
@@ -269,7 +272,7 @@ public class Mailbox {
 				
 			}
 			else { //excitebot is not currently accepting mail from anything other than Excitebots
-				LOGGER.log(Level.INFO, "Excitebot is not currently accepting mail from anything other than Excitebots");
+				LOGGER.log(Level.FINEST, "Excitebot is not currently accepting mail from anything other than Excitebots");
 				responses.add(new NoResponse(prompt));
 			}
 		}
@@ -304,7 +307,7 @@ public class Mailbox {
 			int i = 1;
 			for(MailResponse response : responses) {
 				FileOutputStream writer;
-				LOGGER.info(response.getClass().getName());
+				LOGGER.finest(response.getClass().getName());
 				if(response instanceof MailReplyResponse) {
 					MailReplyResponse reply = (MailReplyResponse) response;
 					reply.initVars();
@@ -323,7 +326,7 @@ public class Mailbox {
 			}
 			
 			if(i == 1) {
-				System.out.println("No responses.");
+				//System.out.println("No responses.");
 				return;
 			}
 			
@@ -333,22 +336,24 @@ public class Mailbox {
 			StringEntity e = new StringEntity(s);
 			request.setEntity(e);
 			
-			org.apache.http.Header[] headers = request.getAllHeaders();
-			for(org.apache.http.Header header : headers) {
-				System.err.println(header.getName() + ": " + header.getValue());
-			}
-			System.err.println(s);
+			/* debug code
+				org.apache.http.Header[] headers = request.getAllHeaders();
+				for(org.apache.http.Header header : headers) {
+					System.err.println(header.getName() + ": " + header.getValue());
+				}
+				System.err.println(s);
+			*/
 			
 			CloseableHttpResponse response = client.execute(request);
 			if(response != null) {
 				ByteArrayOutputStream logStream = new ByteArrayOutputStream();
 				response.getEntity().writeTo(logStream);
-				LOGGER.log(Level.INFO, logStream.toString());
+				LOGGER.log(Level.FINEST, logStream.toString());
 				logStream.close();
 			}
 		}
 		catch(Throwable t) {
-			LOGGER.log(Level.SEVERE, "Failed to send emails", t);
+			LOGGER.log(Level.FINEST, "Failed to send emails", t);
 			File errored = new File(OUTBOX_ERRORED.getAbsolutePath() + "/" + TimeUtils.getDBDate(Instant.now()) + " " + t.getClass().getSimpleName() + ".email");
 			try {
 				errored.getParentFile().mkdirs();
