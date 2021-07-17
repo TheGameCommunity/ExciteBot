@@ -11,15 +11,23 @@ public class RegisterCommand {
 
 	@SuppressWarnings("rawtypes")
 	public static void register(CommandDispatcher<MessageContext> dispatcher) {
-		dispatcher.register(Commands.literal("register").then(Commands.literal("profile")
-				.then(Commands.argument("player", StringArgumentType.greedyString()).executes(context -> {
-					requestRegistration(context.getSource(), context.getArgument("player", String.class));
-					return 1;
-				})))
-				.then(Commands.literal("wii").then(Commands.argument("code", StringArgumentType.greedyString()))).executes((context -> {
-					return 1;
-				}
-		)));
+		dispatcher.register(Commands.literal("register")
+			.then(Commands.literal("profile")
+				.then(Commands.argument("player", StringArgumentType.greedyString())
+					.executes(context -> {
+						requestRegistration(context.getSource(), context.getArgument("player", String.class));
+						return 1;
+					})	
+				)
+			).then(Commands.literal("wii")
+				.then(Commands.argument("code", StringArgumentType.greedyString())
+					.executes(context -> {
+						registerWii(context.getSource(), context.getArgument("code", String.class));
+						return 1;
+					})
+				)
+			)
+		);
 	}
 	
 	@SuppressWarnings("rawtypes")
@@ -83,6 +91,8 @@ public class RegisterCommand {
 	}
 	
 	private static void registerWii(MessageContext context, String securityCode) {
-		
+		if(context.isGuildMessage()) {
+			context.deletePromptingMessage(ConsoleContext.INSTANCE, context.getMention() + " - Woah! Send your code to me via direct message! Nobody else should be seeing your registration code!");
+		}
 	}
 }
