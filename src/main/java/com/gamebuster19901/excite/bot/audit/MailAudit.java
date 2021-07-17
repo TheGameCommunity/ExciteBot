@@ -54,7 +54,7 @@ public class MailAudit extends Audit {
 			}
 		}
 		
-		Audit parent = Audit.addAudit(context, AuditType.LOG_OUT_AUDIT, description);
+		Audit parent = Audit.addAudit(context, AuditType.MAIL_AUDIT, description);
 		
 		PreparedStatement st;
 		
@@ -92,7 +92,7 @@ public class MailAudit extends Audit {
 			mailType = "REFUND";
 		}
 		
-		Audit parent = Audit.addAudit(context, AuditType.LOG_OUT_AUDIT, description);
+		Audit parent = Audit.addAudit(context, AuditType.MAIL_AUDIT, description);
 		
 		PreparedStatement st;
 		
