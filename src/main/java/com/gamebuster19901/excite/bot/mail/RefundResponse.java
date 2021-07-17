@@ -22,8 +22,7 @@ public class RefundResponse extends MailReplyResponse implements Rewardable {
 
 	@Override
 	protected String getResponseTemplate() {
-		// TODO Auto-generated method stub
-		return null;
+		throw new AssertionError("Not implemented");
 	}
 	
 	@Override
