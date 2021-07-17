@@ -16,6 +16,7 @@ public enum Table {
 	
 	ADMINS,
 	AUDIT_BANS,
+	AUDIT_BOT_MSG_DEL,
 	AUDIT_COMMANDS,
 	AUDIT_NAME_CHANGES,
 	AUDIT_PARDONS,
@@ -26,8 +27,10 @@ public enum Table {
 	AUDITS,
 	DISCORD_SERVERS,
 	DISCORD_USERS,
+	MAIL,
 	OPERATORS,
-	PLAYERS;
+	PLAYERS,
+	WIIS;
 	
 	public static final String HOST = "@'localhost'";
 	

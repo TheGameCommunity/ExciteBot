@@ -34,12 +34,13 @@ public class ThreadService {
 	
 	private static ConcurrentLinkedDeque<Thread> threads = new ConcurrentLinkedDeque<Thread>();
 	
-	public static Thread run(Runnable runnable) {
+	public static Thread run(String name, Runnable runnable) {
 		Thread thread = new Thread(runnable);
-		return run(thread);
+		return run(name, thread);
 	}
 	
-	public static Thread run(Thread thread) {
+	public static Thread run(String name, Thread thread) {
+		thread.setName(name);
 		if(!thread.isAlive()) {
 			thread.start();
 			threads.add(thread);
@@ -47,7 +48,8 @@ public class ThreadService {
 		return thread;
 	}
 	
-	public static void add(Thread thread) {
+	public static void add(String name, Thread thread) {
+		thread.setName(name);
 		Thread.State state = thread.getState();
 		if(state == Thread.State.NEW) {
 			throw new IllegalStateException("Thread " + thread + "has not started!");
@@ -57,6 +59,7 @@ public class ThreadService {
 	
 	@SuppressWarnings("rawtypes")
 	public static void shutdown(MessageContext context, int ExitCode) {
+		Main.stopping = true;
 		Thread shutdownHandler = new Thread() {
 			@Override
 			public void run() {
@@ -64,11 +67,19 @@ public class ThreadService {
 				int threadCount;
 				int waitTime = 0;
 				do {
+					for(Thread t : threads) {
+						t.interrupt();
+					}
 					threadCount = threads.size();
 					if(threadCount == 0) {
 						break;
 					}
-					context.sendMessage("Waiting for " + threadCount + " threads to finish...");
+					String message = "==========\nWaiting for " + threadCount + " thread(s) to finish:\n\n";
+					for(Thread t : threads) {
+						message = message + t.getName() + " - " + t.getState() + "\n";
+					}
+					message = message + "==========";
+					context.sendMessage(message);
 					try {
 						Thread.sleep(1000);
 						waitTime = waitTime + 1000;

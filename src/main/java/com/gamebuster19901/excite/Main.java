@@ -15,12 +15,14 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.mail.Address;
 import javax.security.auth.login.LoginException;
 
 import com.gamebuster19901.excite.bot.DiscordBot;
 import com.gamebuster19901.excite.bot.command.Commands;
 import com.gamebuster19901.excite.bot.command.ConsoleContext;
 import com.gamebuster19901.excite.bot.database.sql.DatabaseConnection;
+import com.gamebuster19901.excite.bot.mail.Mailbox;
 import com.gamebuster19901.excite.bot.user.ConsoleUser;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
 import com.gamebuster19901.excite.bot.user.UnknownDiscordUser;
@@ -37,7 +39,6 @@ import net.dv8tion.jda.api.entities.Activity.ActivityType;
 import net.dv8tion.jda.api.exceptions.ErrorResponseException;
 
 public class Main {
-	
 	private static final Logger LOGGER = Logger.getLogger(Main.class.getName());
 	public static long botOwner = -1;
 	
@@ -48,9 +49,15 @@ public class Main {
 	private static ConcurrentLinkedDeque<String> consoleCommandsAwaitingProcessing = new ConcurrentLinkedDeque<String>();
 
 	public static ConsoleUser CONSOLE;
+	public static boolean stopping = false;
 	
 	@SuppressWarnings("rawtypes")
 	public static void main(String[] args) throws InterruptedException, ClassNotFoundException, IOException, SQLException {
+		ClassLoader classloader = Address.class.getClassLoader();
+		if(!(classloader.getClass().getName().equals("cpw.mods.modlauncher.TransformingClassLoader"))) {
+			System.out.println(Address.class.getClassLoader().getClass().getName());
+			throw new LinkageError("Incorrect classloader. Mixins are not loaded. " + Address.class.getClassLoader());
+		}
 		if(args.length % 2 != 0) {
 			throw new IllegalArgumentException("Must be started with an even number of arguments!");
 		}
@@ -108,7 +115,7 @@ public class Main {
 		Instant nextDiscordPing = Instant.now();
 		Instant sendDiscordNotifications = Instant.now();
 		startConsole();
-		
+		Thread mailThread = startMailThread();
 		try {
 			while(true) {
 				try {
@@ -173,6 +180,9 @@ public class Main {
 						continue;
 					}
 					throw t;
+				}
+				if(!mailThread.isAlive() && !stopping) {
+					throw new Error("Mail thread has died");
 				}
 				Thread.sleep(1000);
 			}
@@ -251,6 +261,31 @@ public class Main {
 		consoleThread.start();
 	}
 	
+	private static Thread startMailThread() {
+		Thread mailThread = new Thread() {
+			@Override
+			public void run() {
+				while(true) {
+					try {
+						Mailbox.receive();
+						Thread.sleep(5000);
+					}
+					catch(InterruptedException e) {
+						break;
+					}
+					catch(Throwable t) {
+						throw new RuntimeException(t);
+						//t.printStackTrace();
+					}
+				}
+			}
+		};
+		mailThread.setContextClassLoader(null);
+		mailThread.setDaemon(false);
+		ThreadService.run("mailThread", mailThread);
+		return mailThread;
+	}
+	
 	public static Thread updateLists(boolean start, boolean join) throws InterruptedException {
 		Thread listUpdater = new Thread() {
 			public void run() {
@@ -260,7 +295,7 @@ public class Main {
 		};
 		if(start) {
 			listUpdater.start();
-			ThreadService.add(listUpdater);
+			ThreadService.add("listUpdater", listUpdater);
 			if(join) {
 				listUpdater.join();
 			}

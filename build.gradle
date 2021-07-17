@@ -20,6 +20,9 @@ repositories {
 	}
 }
 
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
 dependencies {
 	implementation group: 'com.sun.mail', name: 'javax.mail', version: '1.6.2'
 	implementation group: 'javax.activation', name: 'javax.activation-api', version: '1.2.0'

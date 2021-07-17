@@ -24,6 +24,13 @@ public class Course {
 		}
 	}
 	
+	public boolean acceptingChallenges() {
+		if(cup.isTutorial() || cup.isMode(Mode.POKER) || cup.isMode(Mode.MINIGAME)) {
+			return false;
+		}
+		return true;
+	}
+	
 	public static Course fromString(String courseString) {
 		Cup cup = Cup.fromString(courseString);
 		for(Course course : cup.getCourses()) {
