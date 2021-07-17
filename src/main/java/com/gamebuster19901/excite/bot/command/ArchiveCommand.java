@@ -60,7 +60,7 @@ public class ArchiveCommand {
 						return 1;
 					}
 				}
-				Thread workerThread = ThreadService.run(new Thread() {
+				Thread workerThread = ThreadService.run("Archiver thread", new Thread() {
 					private final Thread workerThread = this;
 					private final int newlineSize = System.lineSeparator().length();
 					public volatile WorkerStatus status = NOT_STARTED;
@@ -73,7 +73,7 @@ public class ArchiveCommand {
 					
 					@Override
 					public void run() {
-						Thread monitorThread = ThreadService.run(() -> {
+						Thread monitorThread = ThreadService.run("Archive monitor", new Thread() { public void run(){
 							Instant start = Instant.now();
 							EmbedBuilder embed = new EmbedBuilder();
 							embed.setTitle("Archive in progress...");
@@ -117,11 +117,15 @@ public class ArchiveCommand {
 									}
 									Thread.sleep(2500);
 								} catch (InterruptedException e) {
-									System.out.println("Monitor thread interrupted!");
+									currentStatus = ERRORED;
+									embed.setTitle("Archive failed");
+									embed.setColor(Color.RED);
+									message.editMessage(embed.build()).complete();
+									System.out.println("Monitor thread interrupted... stopping!");
+									return;
 								}
 							}
 							Instant now = Instant.now();
-							embed.setTitle("Archive complete");
 							embed.addField(archivedDiscordMessagesField = new Field("Discord Messages archived:", messagesArchived + "", true, true));
 							embed.addField(archivedDiscordAttachmentsField = new Field("Discord Attachments archived:", attachmentsArchived +"", true, true));
 							embed.addField(emailsArchivedField = new Field("Wii Messages archived:", wiiMessagesArchived + "", true, true));
@@ -131,14 +135,16 @@ public class ArchiveCommand {
 							message.editMessage(embed.build()).complete();
 							if(currentStatus == COMPLETE) {
 								embed.setColor(Color.GREEN);
+								embed.setTitle("Archive complete");
 								source.sendMessage(source.getDiscordAuthor().getJDAUser().getAsMention() + " Archive complete.");
 							}
 							else {
 								embed.setColor(Color.RED);
+								embed.setTitle("Archive failed");
 								source.sendMessage(source.getDiscordAuthor().getJDAUser().getAsMention() + " Archive FAILED.");
 							}
 							message.editMessage(embed.build()).complete();
-						});
+						}});
 						
 						String date = TimeUtils.getDBDate(Instant.now());
 						try {
@@ -181,6 +187,9 @@ public class ArchiveCommand {
 																future.get();
 																i++;
 															} catch (Throwable t) {
+																if(t instanceof InterruptedException) {
+																	throw new ThreadDeath();
+																}
 																if(i < 4) {
 																	source.sendMessage("Encountered " + t.getClass().getSimpleName() + " while downloading " + attachmentFile + " retrying... (" + i + "/4)");
 																}

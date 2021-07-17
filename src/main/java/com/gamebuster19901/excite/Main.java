@@ -49,6 +49,7 @@ public class Main {
 	private static ConcurrentLinkedDeque<String> consoleCommandsAwaitingProcessing = new ConcurrentLinkedDeque<String>();
 
 	public static ConsoleUser CONSOLE;
+	public static boolean stopping = false;
 	
 	@SuppressWarnings("rawtypes")
 	public static void main(String[] args) throws InterruptedException, ClassNotFoundException, IOException, SQLException {
@@ -180,7 +181,7 @@ public class Main {
 					}
 					throw t;
 				}
-				if(!mailThread.isAlive()) {
+				if(!mailThread.isAlive() && !stopping) {
 					throw new Error("Mail thread has died");
 				}
 				Thread.sleep(1000);
@@ -280,9 +281,8 @@ public class Main {
 			}
 		};
 		mailThread.setContextClassLoader(null);
-		mailThread.setName("mailThread");
 		mailThread.setDaemon(false);
-		ThreadService.run(mailThread);
+		ThreadService.run("mailThread", mailThread);
 		return mailThread;
 	}
 	
@@ -295,7 +295,7 @@ public class Main {
 		};
 		if(start) {
 			listUpdater.start();
-			ThreadService.add(listUpdater);
+			ThreadService.add("listUpdater", listUpdater);
 			if(join) {
 				listUpdater.join();
 			}
