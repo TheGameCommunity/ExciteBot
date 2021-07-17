@@ -9,12 +9,11 @@ import com.gamebuster19901.excite.bot.database.Table;
 import com.gamebuster19901.excite.bot.database.sql.PreparedStatement;
 
 import static com.gamebuster19901.excite.bot.database.Column.*;
+import static com.gamebuster19901.excite.bot.database.Comparator.*;
 import static com.gamebuster19901.excite.bot.database.Table.*;
 
 import java.io.IOError;
 import java.sql.SQLException;
-
-import static com.gamebuster19901.excite.bot.database.Comparator.*;
 
 public class BotDeleteMessageAudit extends Audit {
 

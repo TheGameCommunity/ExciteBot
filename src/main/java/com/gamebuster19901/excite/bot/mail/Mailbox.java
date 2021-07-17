@@ -67,6 +67,7 @@ public class Mailbox {
 	public static final File INBOX_ERRORED;
 	public static final File OUTBOX;
 	public static final File OUTBOX_ERRORED;
+	public static final EmailAddress ADDRESS;
 	static {
 		MAILBOX = new File("./run/Mailbox");
 		INBOX = new File("./run/Mailbox/Inbox");
@@ -92,6 +93,25 @@ public class Mailbox {
 		
 		if(!(MAILBOX.exists() && INBOX.exists() && INBOX_ERRORED.exists() && OUTBOX.exists() && OUTBOX_ERRORED.exists())) {
 			throw new IOError(new FileNotFoundException("Could not create necessary mailbox files"));
+		}
+		File secretFile = new File("./mail.secret");
+		String wiiID;
+		BufferedReader fileReader = null;
+		try {
+			fileReader = new BufferedReader(new FileReader(secretFile));
+			ADDRESS = Wii.getWii(fileReader.readLine());
+		}
+		catch(Throwable t) {
+			throw new Error(t);
+		}
+		finally {
+			if(fileReader != null) {
+				try {
+					fileReader.close();
+				} catch (IOException e) {
+					throw new Error(e);
+				}
+			}
 		}
 	}
 	
@@ -374,8 +394,10 @@ public class Mailbox {
 		}
 	}
 	
-	public static void sendResponsesOneByOne(LinkedHashSet<MailResponse> responses) {
-		
+	public static LinkedHashSet<MailResponse> packResponses(MailResponse...mailResponses) {
+		LinkedHashSet<MailResponse> responses = new LinkedHashSet<MailResponse>();
+		responses.addAll(Arrays.asList(mailResponses));
+		return responses;
 	}
 	
 	public static Rewardable analyzeIngameMail(MimeMessage message, Wii wii) {

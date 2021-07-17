@@ -21,7 +21,8 @@ public enum AuditType {
 	LOG_IN_AUDIT(LogInAudit.class, AUDIT_PROFILE_LOGINS),
 	LOG_OUT_AUDIT(LogOutAudit.class, AUDIT_PROFILE_LOGOUTS),
 	
-	MAIL_AUDIT(MailAudit.class, MAIL)
+	MAIL_AUDIT(MailAudit.class, MAIL),
+	WII_REGISTRATION_AUDIT(WiiRegistrationAudit.class, AUDIT_WII_REGISTER),
 	
 	;
 

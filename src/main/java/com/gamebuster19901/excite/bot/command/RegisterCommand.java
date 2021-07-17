@@ -1,9 +1,19 @@
 package com.gamebuster19901.excite.bot.command;
 
+import java.sql.SQLException;
 import java.util.HashSet;
 
+import javax.mail.MessagingException;
+
 import com.gamebuster19901.excite.Player;
+import com.gamebuster19901.excite.bot.database.Column;
+import com.gamebuster19901.excite.bot.database.Comparator;
+import com.gamebuster19901.excite.bot.database.Comparison;
+import com.gamebuster19901.excite.bot.database.Result;
+import com.gamebuster19901.excite.bot.database.Table;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
+import com.gamebuster19901.excite.bot.user.Wii;
+import com.gamebuster19901.excite.util.StacktraceUtil;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
 
@@ -90,9 +100,28 @@ public class RegisterCommand {
 				);
 	}
 	
+	@SuppressWarnings("rawtypes")
 	private static void registerWii(MessageContext context, String securityCode) {
 		if(context.isGuildMessage()) {
 			context.deletePromptingMessage(ConsoleContext.INSTANCE, context.getMention() + " - Woah! Send your code to me via direct message! Nobody else should be seeing your registration code!");
+			return;
+		}
+		if(context.isConsoleMessage()) {
+			context.sendMessage("This command can only be executed in discord");
+			return;
+		}
+		try {
+			Result result = Table.selectColumnsFromWhere(context, Column.WII_ID, Table.WIIS, new Comparison(Column.REGISTRATION_CODE, Comparator.EQUALS, securityCode));
+			if(result.hasNext()) {
+				result.next();
+				Wii wii = Wii.getWii(result.getString(Column.WII_ID));
+				wii.register(context);
+			}
+			else {
+				context.sendMessage("Unknown registration code.");
+			}
+		} catch (SQLException | MessagingException e) {
+			context.sendMessage(StacktraceUtil.getStackTrace(e));
 		}
 	}
 }

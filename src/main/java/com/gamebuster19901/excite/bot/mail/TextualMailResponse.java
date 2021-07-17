@@ -35,8 +35,9 @@ public class TextualMailResponse extends MailReplyResponse {
 		}
 	}
 	
-	public void setText(String text) {
+	public TextualMailResponse setText(String text) {
 		this.text = text;
+		return this;
 	}
 
 	@Override

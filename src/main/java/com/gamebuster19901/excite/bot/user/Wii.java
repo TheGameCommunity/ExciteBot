@@ -1,19 +1,30 @@
 package com.gamebuster19901.excite.bot.user;
 
+import java.awt.Color;
 import java.io.IOError;
 import java.sql.SQLException;
+import java.util.LinkedHashSet;
 import java.util.Random;
 import java.util.regex.Pattern;
 
 import javax.annotation.Nullable;
+import javax.mail.MessagingException;
 
+import com.gamebuster19901.excite.bot.audit.WiiRegistrationAudit;
 import com.gamebuster19901.excite.bot.command.ConsoleContext;
+import com.gamebuster19901.excite.bot.command.MessageContext;
 import com.gamebuster19901.excite.bot.database.Comparison;
 import com.gamebuster19901.excite.bot.database.Result;
 import com.gamebuster19901.excite.bot.database.Table;
 import com.gamebuster19901.excite.bot.mail.EmailAddress;
+import com.gamebuster19901.excite.bot.mail.MailResponse;
+import com.gamebuster19901.excite.bot.mail.Mailbox;
+import com.gamebuster19901.excite.bot.mail.TextualMailResponse;
+import com.gamebuster19901.excite.bot.server.emote.Emote;
 import com.gamebuster19901.excite.util.Named;
 import com.gamebuster19901.excite.util.Owned;
+
+import net.dv8tion.jda.api.EmbedBuilder;
 
 import static com.gamebuster19901.excite.bot.database.Comparator.*;
 import static com.gamebuster19901.excite.bot.database.Column.*;
@@ -71,7 +82,7 @@ public class Wii implements Named, Owned<DiscordUser>, EmailAddress {
 	@Override
 	public String getName() {
 		if(wiiCode.isValid) {
-			return wiiCode.hyphenate();
+			return Emote.getEmote("wii") + wiiCode.hyphenate();
 		}
 		return wiiCode.toString();
 	}
@@ -114,6 +125,27 @@ public class Wii implements Named, Owned<DiscordUser>, EmailAddress {
 			throw new IOError(e);
 		}
 		
+	}
+	
+	public void register(MessageContext owner) throws SQLException, MessagingException{
+		Table.updateWhere(owner, WIIS, DISCORD_ID, owner.getSenderId(), new Comparison(WII_ID, EQUALS, wiiCode.code));
+		Table.updateWhere(owner, WIIS, REGISTRATION_CODE, null, new Comparison(WII_ID, EQUALS, wiiCode.code));
+		WiiRegistrationAudit.addWiiRegistrationAudit(owner, this, false);
+		EmbedBuilder embed = new EmbedBuilder();
+		embed.setColor(Color.GREEN);
+		embed.setTitle("Registration Successful");
+		embed.setDescription("You have succesfully registered the following wii:\n\n" + this.getIdentifierName());
+		EmailAddress exciteEmail = Mailbox.ADDRESS;
+		owner.sendMessage(embed.build());
+		LinkedHashSet<MailResponse> wiiMail = Mailbox.packResponses(
+				new TextualMailResponse((Wii)exciteEmail, this, null).setText(
+					"This wii has been registered with\n Excitebot.\n" +
+					"registrant: " + owner.getDiscordAuthor().getIdentifierName() + "\n\n" +
+					"If this is not you, contact a TCG\nadmin immediately.\n\n" +
+					"-The Game Community"
+				)
+			);
+		Mailbox.sendResponses(wiiMail);
 	}
 	
 	public static Wii getWii(String code) {

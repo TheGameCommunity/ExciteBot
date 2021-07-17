@@ -180,6 +180,23 @@ CREATE TABLE `audit_rank_changes` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Table structure for table `audit_wii_register`
+--
+
+DROP TABLE IF EXISTS `audit_wii_register`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `audit_wii_register` (
+  `auditID` bigint unsigned NOT NULL,
+  `wiiID` varchar(45) NOT NULL,
+  `discordID` varchar(45) NOT NULL,
+  `unregister` tinyint unsigned NOT NULL,
+  PRIMARY KEY (`auditID`),
+  UNIQUE KEY `auditID_UNIQUE` (`auditID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
 -- Table structure for table `audits`
 --
 
@@ -195,7 +212,7 @@ CREATE TABLE `audits` (
   `issued` varchar(45) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
   PRIMARY KEY (`auditID`),
   UNIQUE KEY `auditID_UNIQUE` (`auditID`)
-) ENGINE=InnoDB AUTO_INCREMENT=3585 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=3628 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -301,7 +318,7 @@ DROP TABLE IF EXISTS `wiis`;
 CREATE TABLE `wiis` (
   `wiiID` varchar(16) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
   `discordID` bigint unsigned NOT NULL DEFAULT '0',
-  `registrationCode` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL,
+  `registrationCode` varchar(8) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL,
   PRIMARY KEY (`wiiID`),
   UNIQUE KEY `wiis_UNIQUE` (`wiiID`),
   UNIQUE KEY `registrationCode_UNIQUE` (`registrationCode`)
@@ -473,4 +490,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2021-07-17  6:08:01
+-- Dump completed on 2021-07-17 18:43:51
