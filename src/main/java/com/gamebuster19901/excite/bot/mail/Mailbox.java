@@ -181,7 +181,17 @@ public class Mailbox {
 	}
 	
 	private static void parseMail(String mailData) throws MessagingException, IOException {
-		String delimiter = mailData.substring(0, mailData.indexOf('\r'));
+		String delimiter;
+		try {
+			delimiter = mailData.substring(0, mailData.indexOf('\r'));
+		}
+		catch(Throwable t) {
+			FileWriter f = new FileWriter(new File("./badMail.email"));
+			f.write(mailData);
+			f.close();
+			LOGGER.severe(mailData);
+			throw t;
+		}
 		LOGGER.log(Level.FINEST, "Delimiter is: " + delimiter);
 		ArrayList<String> emails = new ArrayList<String>();
 		emails.addAll(Arrays.asList(mailData.split(delimiter)));
