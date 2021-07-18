@@ -11,10 +11,12 @@ import java.time.format.FormatStyle;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalAccessor;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.Locale;
 
 public final class TimeUtils {
 	public static final DateTimeFormatter DB_DATE_FORMATTER = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM).withLocale(Locale.US).withZone(ZoneId.of("UTC"));
+	public static final SimpleDateFormat RIICONNECT24_FORMATTER = new SimpleDateFormat("dd MMM YYYY HH:mm:ss XX");
 	public static final Duration FOREVER = ChronoUnit.FOREVER.getDuration();
 	public static final Instant PLAYER_EPOCH = Instant.parse("2020-11-01T07:00:00Z"); //The second 2:00 am EST that occurs due do daylight savings
 	public static String readableDuration(Duration duration, boolean... units) {
@@ -177,8 +179,12 @@ public final class TimeUtils {
 		return ret;
 	}
 	
-	public static String getDate(TemporalAccessor temporal) {
+	public static String getDBDate(TemporalAccessor temporal) {
 		return DB_DATE_FORMATTER.format(temporal);
+	}
+	
+	public static String getRC24Date(Date date) {
+		return RIICONNECT24_FORMATTER.format(date);
 	}
 	
 	public static Month getMonth(LocalDate date) {

@@ -8,7 +8,7 @@ import com.gamebuster19901.excite.Player;
 
 public class DesiredProfile {
 
-	private static final String validPasswordChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNPQRSTUVWXYZ123456789,.!?";
+	public static final String validPasswordChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNPQRSTUVWXYZ123456789,.!?";
 	
 	private final DiscordUser requester;
 	private final Player desiredProfile;

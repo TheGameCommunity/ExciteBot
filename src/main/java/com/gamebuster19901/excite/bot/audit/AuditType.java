@@ -12,13 +12,17 @@ public enum AuditType {
 	BAN(Ban.class, AUDIT_BANS),
 	PARDON(Pardon.class, AUDIT_PARDONS),
 	
+	BOT_MSG_DELETE(BotDeleteMessageAudit.class, AUDIT_BOT_MSG_DEL),
 	COMMAND_AUDIT(CommandAudit.class, AUDIT_COMMANDS),
 	NAME_CHANGE_AUDIT(NameChangeAudit.class, AUDIT_NAME_CHANGES),
 	DISCOVERY_AUDIT(DiscoveryAudit.class, AUDIT_PROFILE_DISCOVERIES),
 	RANK_CHANGE_AUDIT(RankChangeAudit.class, AUDIT_RANK_CHANGES),
 	
 	LOG_IN_AUDIT(LogInAudit.class, AUDIT_PROFILE_LOGINS),
-	LOG_OUT_AUDIT(LogOutAudit.class, AUDIT_PROFILE_LOGOUTS)
+	LOG_OUT_AUDIT(LogOutAudit.class, AUDIT_PROFILE_LOGOUTS),
+	
+	MAIL_AUDIT(MailAudit.class, MAIL),
+	WII_REGISTRATION_AUDIT(WiiRegistrationAudit.class, AUDIT_WII_REGISTER),
 	
 	;
 
