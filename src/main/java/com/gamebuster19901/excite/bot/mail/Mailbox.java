@@ -17,7 +17,7 @@ import java.io.IOError;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-
+import java.net.SocketException;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -147,6 +147,9 @@ public class Mailbox {
 			else {
 				LOGGER.log(Level.FINEST, "Response was null");
 			}
+		}
+		catch (SocketException e) {
+			LOGGER.warning("Socket Exception... Skipping mail retrieval");
 		}
 		finally {
 			wiiID = null;
