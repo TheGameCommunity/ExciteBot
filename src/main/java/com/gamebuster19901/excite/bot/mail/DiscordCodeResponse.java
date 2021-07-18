@@ -20,7 +20,7 @@ public class DiscordCodeResponse extends TextualMailResponse {
 	public DiscordCodeResponse(Wii responder, Wii wiiToRegister, MimeMessage message) throws MessagingException {
 		super(responder, wiiToRegister, message);
 		hadOldCode = (wiiToRegister.getRegistrationCode() != null) ? true : false;
-		registrationCode = wiiToRegister.generateRegistrationCode();
+		registrationCode = wiiToRegister.getRegistrationCode();
 		desiredWiis.add(wiiToRegister);
 		String text = "Welcome to The Game Community!\n"
 				+ "\n"
@@ -31,7 +31,6 @@ public class DiscordCodeResponse extends TextualMailResponse {
 				+ "Please execute the following\n"
 				+ "command in a private message\n"
 				+ "with %bot%:\n"
-				+ "message with %bot%:\n"
 				+ "\n"
 				+ "register wii %code%\n"
 				+ "\n"

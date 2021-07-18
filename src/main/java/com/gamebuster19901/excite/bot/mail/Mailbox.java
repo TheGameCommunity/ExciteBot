@@ -276,7 +276,7 @@ public class Mailbox {
 			}
 			
 			if(sender.getOwner() instanceof UnknownDiscordUser) { //if wii is not registered
-				//if(app.equals(FRIEND_REQUEST) && !wasKnown) {
+				if(app.equals(FRIEND_REQUEST) && !wasKnown) {
 					MailResponse friendResponse = new AddFriendResponse(responder, sender, prompt);
 					LOGGER.finest("Sending friend request to " + sender.getEmail());
 					MailResponse codeResponse = new DiscordCodeResponse(responder, sender, prompt);
@@ -284,7 +284,7 @@ public class Mailbox {
 					
 					responses.add(friendResponse);
 					responses.add(codeResponse);
-				//}
+				}
 
 				if(attachment.getReward() > 0) {
 					//responses.add(new RefundResponse(responder, prompt, attachment));

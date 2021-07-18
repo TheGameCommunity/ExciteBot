@@ -100,7 +100,7 @@ public class Wii implements Named, Owned<DiscordUser>, EmailAddress {
 		throw new UnsupportedOperationException();
 	}
 	
-	public String generateRegistrationCode() {
+	private void generateRegistrationCode() {
 		char[] sequence = new char[8];
 		for(int i = 0; i < sequence.length; i++) {
 			sequence[i] = validPasswordChars.charAt(RANDOM.nextInt(validPasswordChars.length() - 4));
@@ -108,7 +108,6 @@ public class Wii implements Named, Owned<DiscordUser>, EmailAddress {
 		String code = new String(sequence);
 		try {
 			Table.updateWhere(ConsoleContext.INSTANCE, WIIS, REGISTRATION_CODE, code, new Comparison(WII_ID, EQUALS, wiiCode));
-			return getRegistrationCode();
 		} catch (SQLException e) {
 			throw new IOError(e);
 		}
@@ -118,7 +117,24 @@ public class Wii implements Named, Owned<DiscordUser>, EmailAddress {
 		try {
 			Result result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, REGISTRATION_CODE, WIIS, new Comparison(WII_ID, EQUALS, wiiCode));
 			if(result.next()) {
-				return result.getString(REGISTRATION_CODE);
+				String ret = result.getString(REGISTRATION_CODE);
+				if(ret == null) {
+					generateRegistrationCode();
+					result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, REGISTRATION_CODE, WIIS, new Comparison(WII_ID, EQUALS, wiiCode));
+					if(result.next()) {
+						return result.getString(REGISTRATION_CODE);
+					}
+				}
+				else {
+					return ret;
+				}
+			}
+			else {
+				generateRegistrationCode();
+				result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, REGISTRATION_CODE, WIIS, new Comparison(WII_ID, EQUALS, wiiCode));
+				if(result.next()) {
+					return result.getString(REGISTRATION_CODE);
+				}
 			}
 			throw new AssertionError();
 		} catch (SQLException e) {
