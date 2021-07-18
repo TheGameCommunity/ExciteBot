@@ -17,7 +17,7 @@ import java.io.IOError;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-
+import java.net.SocketException;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -148,6 +148,9 @@ public class Mailbox {
 				LOGGER.log(Level.FINEST, "Response was null");
 			}
 		}
+		catch (SocketException e) {
+			LOGGER.warning("Socket Exception... Skipping mail retrieval");
+		}
 		finally {
 			wiiID = null;
 			password = null;
@@ -181,7 +184,17 @@ public class Mailbox {
 	}
 	
 	private static void parseMail(String mailData) throws MessagingException, IOException {
-		String delimiter = mailData.substring(0, mailData.indexOf('\r'));
+		String delimiter;
+		try {
+			delimiter = mailData.substring(0, mailData.indexOf('\r'));
+		}
+		catch(Throwable t) {
+			FileWriter f = new FileWriter(new File("./badMail.email"));
+			f.write(mailData);
+			f.close();
+			LOGGER.severe(mailData);
+			throw t;
+		}
 		LOGGER.log(Level.FINEST, "Delimiter is: " + delimiter);
 		ArrayList<String> emails = new ArrayList<String>();
 		emails.addAll(Arrays.asList(mailData.split(delimiter)));
