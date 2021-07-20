@@ -267,6 +267,7 @@ public class Mailbox {
 		Address[] from = prompt.getFrom();
 		LOGGER.log(Level.FINEST, "Analyzing mail from: " + (from != null ? from[0] : from));
 		if(from == null) {
+			LOGGER.warning("Mail had no sender.");
 			responses.add(new NoResponse(prompt));
 			return responses;
 		}
@@ -274,7 +275,7 @@ public class Mailbox {
 		EmailAddress senderEmail = (EmailAddress)(Object)prompt.getFrom()[0];
 		Wii sender = Wii.getWii(senderEmail.toString());
 		if(sender instanceof InvalidWii) {
-			LOGGER.log(Level.FINEST, "Ignoring non-wii mail");
+			LOGGER.log(Level.WARNING, "Ignoring non-wii mail");
 			responses.add(new NoResponse(prompt));
 			return responses;
 		}
@@ -316,7 +317,7 @@ public class Mailbox {
 				
 			}
 			else { //excitebot is not currently accepting mail from anything other than Excitebots
-				LOGGER.log(Level.FINEST, "Excitebot is not currently accepting mail from anything other than Excitebots");
+				LOGGER.log(Level.WARNING, "Excitebot is not currently accepting mail from anything other than Excitebots");
 				responses.add(new NoResponse(prompt));
 			}
 		}
