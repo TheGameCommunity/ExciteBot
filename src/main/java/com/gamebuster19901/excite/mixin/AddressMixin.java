@@ -11,4 +11,19 @@ import com.gamebuster19901.excite.bot.mail.EmailAddress;
 @Mixin(value = Address.class, remap = false)
 public abstract class AddressMixin implements EmailAddress {
 
+	public String getNamePart() {
+		String address = getEmail();
+		return address.substring(0, address.indexOf('@'));
+	}
+	
+	public String getDomainPart() {
+		String address = getEmail();
+		return address.substring(address.indexOf('@') + 1, address.length());
+	}
+	
+	@Override
+	public Address toAddress() {
+		return (Address)(Object)this;
+	}
+	
 }

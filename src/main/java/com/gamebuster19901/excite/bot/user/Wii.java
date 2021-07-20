@@ -177,6 +177,22 @@ public class Wii implements Named, Owned<DiscordUser>, EmailAddress {
 		return new WiiCode(code);
 	}
 	
+
+	@Override
+	public String getType() {
+		return "rfc822";
+	}
+
+	@Override
+	public String getNamePart() {
+		return getWiiCode().toRiiConnect24();
+	}
+
+	@Override
+	public String getDomainPart() {
+		return EMAIL_SUFFIX.substring(1);
+	}
+	
 	@SuppressWarnings("rawtypes")
 	public static class WiiCode implements Comparable {
 		
@@ -245,11 +261,6 @@ public class Wii implements Named, Owned<DiscordUser>, EmailAddress {
 		public boolean isKnown() {
 			return false;
 		}
-	}
-
-	@Override
-	public String getType() {
-		return "rfc822";
 	}
 	
 }
