@@ -322,6 +322,11 @@ public class Mailbox {
 			}
 		}
 		
+		if(responses.isEmpty()) {
+			LOGGER.warning("No responses added?! Manually adding NoResponse.");
+			responses.add(new NoResponse(prompt));
+		}
+		
 		return responses;
 	}
 	
