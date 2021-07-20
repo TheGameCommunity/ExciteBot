@@ -1,6 +1,7 @@
 package com.gamebuster19901.excite.bot.mail;
 
 import org.apache.http.HttpEntity;
+import org.apache.http.StatusLine;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
@@ -131,6 +132,18 @@ public class Mailbox {
 			request = new HttpGet("https://mtw." + SERVER + "/cgi-bin/receive.cgi?mlid=" + wiiID + "&passwd=" + password + "&maxsize=11534336");
 			
 			CloseableHttpResponse response = client.execute(request);
+			StatusLine line = response.getStatusLine();
+			if(line != null) {
+				int statusCode = line.getStatusCode();
+				if(statusCode >= 300) {
+					LOGGER.warning("Unexpected status code " + statusCode + ". Skipping mail retrieval.");
+					return;
+				}
+			}
+			else {
+				LOGGER.severe("Did not receive a status response?! Skipping mail retrieval.");
+				return;
+			}
 			LOGGER.log(Level.FINEST, "Sent mail fetch request");
 			HttpEntity entity = response.getEntity();
 			if(entity != null) {
