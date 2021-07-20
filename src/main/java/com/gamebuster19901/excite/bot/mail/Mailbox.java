@@ -227,13 +227,11 @@ public class Mailbox {
 				}
 				Address from = innerMessage2.getFrom() != null ? innerMessage2.getFrom()[0] : null;
 				
-				if(!(response.stream().allMatch((response1) -> {return response1 instanceof NoResponse;}))) {
-					File file = new File(INBOX.getAbsolutePath() + "/" + from + "/" + TimeUtils.getDBDate(Instant.now()) + "(" + i++ + ")" + ".email");
-					file.getParentFile().mkdirs();
-					writer = new FileOutputStream(file);
-					innerMessage2.writeTo(writer);
-					MailAudit.addMailAudit(ConsoleContext.INSTANCE, innerMessage2, true, file);
-				}
+				File file = new File(INBOX.getAbsolutePath() + "/" + from + "/" + TimeUtils.getDBDate(Instant.now()) + "(" + i++ + ")" + ".email");
+				file.getParentFile().mkdirs();
+				writer = new FileOutputStream(file);
+				innerMessage2.writeTo(writer);
+				MailAudit.addMailAudit(ConsoleContext.INSTANCE, innerMessage2, true, file);
 			}
 			catch(Exception e) {
 				LOGGER.log(Level.WARNING, "Couldn't analayze a mail item: \"" + content + "\"", e);
