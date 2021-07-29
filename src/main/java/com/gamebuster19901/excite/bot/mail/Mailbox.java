@@ -70,6 +70,7 @@ public class Mailbox {
 	public static final File OUTBOX_ERRORED;
 	public static final EmailAddress ADDRESS;
 	static {
+		LOGGER.setLevel(Main.LOG_LEVEL);
 		MAILBOX = new File("./run/Mailbox");
 		INBOX = new File("./run/Mailbox/Inbox");
 		INBOX_ERRORED = new File("./run/Mailbox/Inbox/Errored");

@@ -9,7 +9,7 @@ import java.sql.SQLNonTransientConnectionException;
 
 import java.time.Duration;
 import java.time.Instant;
-
+import java.util.Arrays;
 import java.util.Scanner;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.logging.Level;
@@ -40,6 +40,7 @@ import net.dv8tion.jda.api.exceptions.ErrorResponseException;
 
 public class Main {
 	private static final Logger LOGGER = Logger.getLogger(Main.class.getName());
+	public static Level LOG_LEVEL = Level.INFO;
 	public static long botOwner = -1;
 	
 	public static DatabaseConnection database;
@@ -58,15 +59,8 @@ public class Main {
 			System.out.println(Address.class.getClassLoader().getClass().getName());
 			throw new LinkageError("Incorrect classloader. Mixins are not loaded. " + Address.class.getClassLoader());
 		}
-		if(args.length % 2 != 0) {
-			throw new IllegalArgumentException("Must be started with an even number of arguments!");
-		}
-		
-		for(int i = 0; i < args.length; i++) {
-			if(args[i].equals("-owner")) {
-				botOwner = Long.parseLong(args[++i]);
-			}
-		}
+
+		parseArgs(args);
 		
 		wiimmfi = startWiimmfi(args);
 		discordBot = null;
@@ -301,6 +295,54 @@ public class Main {
 			}
 		}
 		return listUpdater;
+	}
+	
+	private static void parseArgs(String[] args) {
+		System.out.println(Arrays.toString(args));
+		if(args.length % 2 != 0) {
+			throw new IllegalArgumentException("Must be started with an even number of arguments!");
+		}
+		for(int i = 0; i < args.length; i++) {
+			if(i % 2 != 0) {
+				i++;
+				continue;
+			}
+			if(args[i].equals("--owner")) {
+				botOwner = Long.parseLong(args[++i]);
+				continue;
+			}
+			if(args[i].equals("--logLevel")){
+				switch(args[++i].toUpperCase()) {
+					case "FINEST":
+						LOG_LEVEL = Level.FINEST;
+						break;
+					case "FINER":
+						LOG_LEVEL = Level.FINER;
+						break;
+					case "FINE":
+						LOG_LEVEL = Level.FINE;
+						break;
+					case "INFO":
+						LOG_LEVEL = Level.INFO;
+						break;
+					case "WARNING":
+						LOG_LEVEL = Level.WARNING;
+						break;
+					case "SEVERE":
+						LOG_LEVEL = Level.SEVERE;
+						break;
+					case "OFF":
+						LOG_LEVEL = Level.OFF;
+						break;
+					default:
+						LOGGER.warning("Unknown logging level " + args[i] + " using INFO instead.");
+						LOG_LEVEL = Level.INFO;
+						break;
+				}
+				LOGGER.severe(LOG_LEVEL.getName());
+				continue;
+			}
+		}
 	}
 	
 }
