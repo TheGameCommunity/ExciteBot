@@ -18,7 +18,6 @@ import java.io.IOError;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.SocketException;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -62,7 +61,6 @@ public class Mailbox {
 	public static final String WII_MESSAGE = "2-48414541-0001";
 	public static final String BOUNDARY = "t9Sf4yfjf1RtvDu3AA";
 	public static final Base64.Decoder DECODER = Base64.getDecoder();
-	
 	public static final File MAILBOX;
 	public static final File INBOX;
 	public static final File INBOX_ERRORED;
@@ -155,15 +153,22 @@ public class Mailbox {
 				while(mailReader.read(data) != -1) {
 					content.append(data);
 				}
-				LOGGER.log(Level.FINEST, content.toString());
-				parseMail(content.toString());
+				String mailData = content.toString();
+				LOGGER.log(Level.FINEST, mailData);
+				if(mailData.contains("cd=0")) {
+					parseMail(mailData);
+				}
+				else {
+					LOGGER.warning("Could not parse incoming mail, received the following from rc24:\n\n" + mailData);
+				}
 			}
 			else {
 				LOGGER.log(Level.FINEST, "Response was null");
 			}
 		}
-		catch (SocketException e) {
-			LOGGER.warning("Socket Exception... Skipping mail retrieval");
+		catch (IOException e) {
+			LOGGER.warning("IOException... Skipping mail retrieval");
+			e.printStackTrace();
 		}
 		finally {
 			wiiID = null;
