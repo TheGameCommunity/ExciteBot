@@ -1,13 +1,24 @@
 package com.gamebuster19901.excite.game.challenge;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
 import javax.activation.DataSource;
+import javax.mail.MessagingException;
+import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeMultipart;
+import javax.mail.util.ByteArrayDataSource;
+
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.io.IOUtils;
 
 import com.gamebuster19901.excite.game.Bot;
 import com.gamebuster19901.excite.game.Course;
+import com.gamebuster19901.excite.game.Cup;
 import com.gamebuster19901.excite.util.file.File;
 
 public class Challenge implements Rewardable, DataSource {
@@ -23,8 +34,28 @@ public class Challenge implements Rewardable, DataSource {
 	private final Bot bot;
 	private byte[] challengeData;
 	
-	public Challenge(File file) {
-		throw new UnsupportedOperationException("Not implemented yet");
+	public Challenge(File file) throws MessagingException, IOException {
+		if(FilenameUtils.getExtension(file.getAbsolutePath()).contains("email")) {
+			
+			MimeMessage message = new MimeMessage(null, new FileInputStream(file));
+			MimeMultipart multiMessage = new MimeMultipart(new ByteArrayDataSource(message.getInputStream(), "multipart/mixed"));
+			challengeData = IOUtils.toString(multiMessage.getBodyPart(1).getDataHandler().getInputStream()).getBytes();
+			
+			writeChallengeData(new java.io.File(file.getParentFile().getAbsolutePath() + "/" + file.getName() + ".email.challenge"));
+			
+			reward = 0;
+			bot = Bot.FROG;
+			course = Cup.SCHOOL.getCourses()[0];
+		}
+		else {
+			throw new UnsupportedOperationException("Not implemented yet");
+		}
+	}
+	
+	public void writeChallengeData(java.io.File file) throws FileNotFoundException, IOException {
+		FileOutputStream fos = new FileOutputStream(file);
+		fos.write(challengeData);
+		fos.close();
 	}
 
 	@Override

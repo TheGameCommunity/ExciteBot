@@ -7,8 +7,6 @@ import javax.mail.MessagingException;
 import javax.mail.Message.RecipientType;
 import javax.mail.internet.MimeMessage;
 
-import com.gamebuster19901.excite.bot.user.Wii;
-
 public class MailForwardResponse extends MailReplyResponse {
 
 	private final EmailAddress originalFrom;
@@ -17,7 +15,7 @@ public class MailForwardResponse extends MailReplyResponse {
 	private final MimeMessage forwardMessage;
 	
 	public MailForwardResponse(MimeMessage message, EmailAddress forwardTo) throws MessagingException {
-		super(Wii.getWii(((EmailAddress)message.getAllRecipients()[0]).getNamePart()), forwardTo, message);
+		super(Mailbox.THIS_WII, forwardTo, message);
 		originalMessage = message;
 		forwardMessage = new MimeMessage(originalMessage);
 		originalFrom = (EmailAddress)message.getFrom()[0];

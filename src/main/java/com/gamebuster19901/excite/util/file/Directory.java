@@ -3,6 +3,7 @@ package com.gamebuster19901.excite.util.file;
 import java.io.IOError;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 @SuppressWarnings("serial")
 public class Directory extends java.io.File {
@@ -62,6 +63,9 @@ public class Directory extends java.io.File {
 			for(java.io.File f : super.listFiles()) {
 				if(f.isFile()) {
 					files.add(new File(f));
+				}
+				if(f.isDirectory()) {
+					files.addAll(Arrays.asList(new Directory(f).listFiles()));
 				}
 			}
 		}

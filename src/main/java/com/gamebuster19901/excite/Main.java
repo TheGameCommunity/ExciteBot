@@ -12,6 +12,8 @@ import java.time.Instant;
 import java.util.Arrays;
 import java.util.Scanner;
 import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -61,6 +63,10 @@ public class Main {
 		}
 
 		parseArgs(args);
+		
+		Handler consoleHandler = new ConsoleHandler();
+		consoleHandler.setLevel(LOG_LEVEL);
+		LOGGER.addHandler(consoleHandler);
 		
 		wiimmfi = startWiimmfi(args);
 		discordBot = null;

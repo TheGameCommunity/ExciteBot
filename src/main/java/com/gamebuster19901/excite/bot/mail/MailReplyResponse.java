@@ -7,11 +7,11 @@ import com.gamebuster19901.excite.bot.user.Wii;
 
 public abstract class MailReplyResponse extends MailResponse {
 	
-	protected Wii responder;
+	protected EmailAddress responder;
 	protected EmailAddress respondee;
 	protected String response = getResponseTemplate();
 	
-	public MailReplyResponse(Wii responder, EmailAddress respondee, MimeMessage message) {
+	public MailReplyResponse(EmailAddress responder, EmailAddress respondee, MimeMessage message) {
 		super(message);
 		this.responder = responder;
 		this.respondee = respondee;
@@ -21,7 +21,7 @@ public abstract class MailReplyResponse extends MailResponse {
 		this(responder, Wii.getWii(message.getFrom()[0].toString()), message);
 	}
 	
-	public Wii getResponder() {
+	public EmailAddress getResponder() {
 		return responder;
 	}
 	

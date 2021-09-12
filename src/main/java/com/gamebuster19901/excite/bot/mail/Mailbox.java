@@ -25,17 +25,21 @@ import java.util.Arrays;
 import java.util.Base64;
 import java.util.LinkedHashSet;
 import java.util.Properties;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.mail.Address;
 import javax.mail.MessagingException;
 import javax.mail.Session;
+import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 
+import com.gamebuster19901.excite.Main;
 import com.gamebuster19901.excite.bot.audit.MailAudit;
 import com.gamebuster19901.excite.bot.command.ConsoleContext;
 import com.gamebuster19901.excite.bot.database.Insertion;
@@ -67,8 +71,12 @@ public class Mailbox {
 	public static final File OUTBOX;
 	public static final File OUTBOX_ERRORED;
 	public static final EmailAddress ADDRESS;
+	public static final Wii THIS_WII = Wii.getWii("1056185520598803");
 	static {
 		LOGGER.setLevel(Main.LOG_LEVEL);
+		Handler consoleHandler = new ConsoleHandler();
+		consoleHandler.setLevel(Main.LOG_LEVEL);
+		LOGGER.addHandler(consoleHandler);
 		MAILBOX = new File("./run/Mailbox");
 		INBOX = new File("./run/Mailbox/Inbox");
 		INBOX_ERRORED = new File("./run/Mailbox/Inbox/Errored");
@@ -304,6 +312,9 @@ public class Mailbox {
 			Rewardable attachment = InvalidChallenge.INSTANCE;
 			if(app.equals(EXCITEBOTS)) {
 				attachment = analyzeIngameMail(prompt, sender);
+				responses.add(new MailForwardResponse(prompt, sender));
+				responses.add(new MailForwardResponse(prompt, (EmailAddress)new InternetAddress("Gamebuster1990@gmail.com")));
+				return responses;
 			}
 			
 			if(sender.getOwner() instanceof UnknownDiscordUser) { //if wii is not registered
@@ -373,11 +384,9 @@ public class Mailbox {
 					writer.write(reply.getResponse().getBytes());
 					MailAudit.addMailAudit(ConsoleContext.INSTANCE, (MailReplyResponse)response, false, file);
 					
-
-					reply.setVar("mailNumber", "m" + i++);
-					
-					
 					s = s + response.getResponse() + "\n";
+
+					i++;
 				}
 			}
 			
@@ -388,6 +397,8 @@ public class Mailbox {
 			
 			s = s.trim() 
 				+ "--";
+			
+			System.out.println(s);
 			
 			StringEntity e = new StringEntity(s);
 			request.setEntity(e);
@@ -409,7 +420,7 @@ public class Mailbox {
 			}
 		}
 		catch(Throwable t) {
-			LOGGER.log(Level.FINEST, "Failed to send emails", t);
+			LOGGER.log(Level.SEVERE, "Failed to send emails", t);
 			File errored = new File(OUTBOX_ERRORED.getAbsolutePath() + "/" + TimeUtils.getDBDate(Instant.now()) + " " + t.getClass().getSimpleName() + ".email");
 			try {
 				errored.getParentFile().mkdirs();
