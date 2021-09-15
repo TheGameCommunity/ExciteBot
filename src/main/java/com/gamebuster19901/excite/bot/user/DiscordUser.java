@@ -660,7 +660,7 @@ public class DiscordUser implements Banee {
 	}
 	
 	public static void notifyDiscordUsers() throws SQLException {
-		int count = Wiimmfi.getAcknowledgedPlayerCount();
+		int count = Main.wiimmfi.getAcknowledgedPlayerCount();
 		Result result = Table.selectAllFrom(ConsoleContext.INSTANCE, DISCORD_USERS);
 		while(result.next()) {
 			int threshold = result.getInt(THRESHOLD);

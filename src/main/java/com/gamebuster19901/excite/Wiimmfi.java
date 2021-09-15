@@ -83,7 +83,7 @@ public class Wiimmfi {
 		}
 	}
 	
-	public static Player[] updateOnlinePlayers() throws SQLException {
+	public Player[] updateOnlinePlayers() throws SQLException {
 		HashSet<Player> onlinePlayers = new HashSet<Player>();
 		HashSet<Player> hostingPlayers = new HashSet<Player>();
 		if(document != null) {
@@ -198,15 +198,15 @@ public class Wiimmfi {
 		return response;
 	}
 	
-	public static int getIgnoredOnlinePlayerCount() {
+	public int getIgnoredOnlinePlayerCount() {
 		return getIgnoredOnlinePlayers().size();
 	}
 	
-	public static int getOnlinePlayerCount() {
+	public int getOnlinePlayerCount() {
 		return getOnlinePlayers().size();
 	}
 	
-	public static int getAcknowledgedPlayerCount() {
+	public int getAcknowledgedPlayerCount() {
 		return getOnlinePlayerCount() - getIgnoredOnlinePlayerCount();
 	}
 	
@@ -214,7 +214,7 @@ public class Wiimmfi {
 		return error;
 	}
 	
-	private static String parseLine(String s, int line) {
+	private String parseLine(String s, int line) {
 		String[] lines = s.split("\n");
 		return lines[line].replace("<td>", "").replaceAll("</td>", "").replaceAll(" ", "");
 	}

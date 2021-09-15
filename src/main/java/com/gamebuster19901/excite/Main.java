@@ -127,7 +127,7 @@ public class Main {
 							if(prevError != null) {
 								LOGGER.log(Level.SEVERE, "Error resolved.");
 							}
-							Wiimmfi.updateOnlinePlayers();
+							wiimmfi.updateOnlinePlayers();
 							
 							int waitTime = 3000;
 							nextWiimmfiPing = Instant.now().plus(Duration.ofMillis(waitTime));
