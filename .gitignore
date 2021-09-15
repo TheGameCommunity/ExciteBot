@@ -25,6 +25,7 @@ hs_err_pid*.log
 /.archive
 # secrets
 **.secret
+**/secret/**
 
 #ModLauncher
 logs/*
