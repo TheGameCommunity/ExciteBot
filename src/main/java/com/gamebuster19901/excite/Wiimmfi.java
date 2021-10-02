@@ -42,6 +42,7 @@ public class Wiimmfi {
 		}
 	}
 	
+	private Instant nextPing = Instant.now().plus(Duration.ofSeconds(20));
 	private URL url;
 	private Throwable error = null;
 	
@@ -69,20 +70,24 @@ public class Wiimmfi {
 	}
 	
 	public void update() {
-		if(url != null) {
-			try {
-				InputStream is = EXCITEBOTS.openStream();
-				JSON = JsonParser.parseString(IOUtils.toString(is, StandardCharsets.UTF_8));
-				is.close();
-				error = null;
+		if(Instant.now().isAfter(nextPing)) {
+			if(url != null) {
+				try {
+					URLConnection connection = EXCITEBOTS.openConnection();
+					connection.setRequestProperty("User-Agent", "Excitebot (+https://github.com/Gamebuster19901/ExciteBot)");
+					InputStream is = connection.getInputStream();
+					JSON = JsonParser.parseString(IOUtils.toString(is, StandardCharsets.UTF_8));
+					is.close();
+					error = null;
+				}
+				catch(Exception e) {
+					error = e;
+				}
 			}
-			catch(Exception e) {
-				error = e;
-			}
-		}
-		else {
-			if(error == null) {
-				error = new NullPointerException("No url or file provided!");
+			else {
+				if(error == null) {
+					error = new NullPointerException("No url or file provided!");
+				}
 			}
 		}
 	}
