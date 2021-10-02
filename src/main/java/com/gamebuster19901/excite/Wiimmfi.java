@@ -40,13 +40,11 @@ public class Wiimmfi {
 	private static JsonElement JSON;
 	private static HashSet<Player> PREV_ONLINE_PLAYERS = new HashSet<Player>();
 	private static HashSet<Player> ONLINE_PLAYERS = new HashSet<Player>();
-	private static HashSet<Player> HOSTING_PLAYERS = new HashSet<Player>();
 	static {
 		try {
 			String key = IOUtils.toString(new FileInputStream(new File("./wiimmfi.secret")), Charsets.UTF_8);
 			EXCITEBOTS = new URL("https://wiimmfi.de/json/jacc/" + key + "/games/exciteracewii");
 		} catch (IOException e) {
-			throw new AssertionError(e);
 			throw new IOError(e);
 		}
 	}
@@ -104,7 +102,6 @@ public class Wiimmfi {
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public static Player[] updateOnlinePlayers() throws SQLException, WiimmfiResponseException {
 		HashSet<Player> onlinePlayers = new HashSet<Player>();
-		HashSet<Player> hostingPlayers = new HashSet<Player>();
 		
 		if (JSON != null) {
 			JsonArray objects = null;
@@ -208,9 +205,6 @@ public class Wiimmfi {
 							player.setHost(host);
 						}
 						onlinePlayers.add(player);
-						if(player.isHosting()) {
-							hostingPlayers.add(player);
-						}
 					};
 					break elementFinder;
 				}
@@ -273,7 +267,6 @@ public class Wiimmfi {
 		}
 		
 		ONLINE_PLAYERS = onlinePlayers;
-		HOSTING_PLAYERS = hostingPlayers;
 		PREV_ONLINE_PLAYERS = ONLINE_PLAYERS;
 		
 		return onlinePlayers.toArray(new Player[]{});
