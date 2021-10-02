@@ -1,0 +1,23 @@
+From: [@FROM]
+To: [@TO]
+X-Wii-AppId: 1-52583345-3031
+MIME-Version: 1.0
+Content-Type: multipart/mixed;
+ boundary="Boundary-NWC24-03CDF5DB0000D"
+
+--Boundary-NWC24-03CDF5DB0000D
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+
+ver=[@VER] type=[@TYPE] crc=[@CRC] 
+--Boundary-NWC24-03CDF5DB0000D
+Content-Type: application/octet-stream;
+ name=a0000013.dat
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment;
+ filename=a0000013.dat
+
+[@CHALLENGE]
+
+
+--Boundary-NWC24-03CDF5DB0000D--

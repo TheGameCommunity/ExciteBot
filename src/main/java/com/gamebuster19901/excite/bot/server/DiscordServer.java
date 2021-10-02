@@ -1,83 +1,56 @@
 package com.gamebuster19901.excite.bot.server;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOError;
-import java.io.IOException;
-import java.io.StringWriter;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map.Entry;
+import java.sql.SQLException;
+import java.util.ArrayList;
 
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVParser;
-import org.apache.commons.csv.CSVPrinter;
-import org.apache.commons.csv.CSVRecord;
+import static com.gamebuster19901.excite.bot.database.Comparator.EQUALS;
 
 import com.gamebuster19901.excite.Main;
-import com.gamebuster19901.excite.bot.common.preferences.LongPreference;
-import com.gamebuster19901.excite.bot.common.preferences.StringPreference;
-import com.gamebuster19901.excite.output.OutputCSV;
-import com.gamebuster19901.excite.util.FileUtils;
+import com.gamebuster19901.excite.bot.command.ConsoleContext;
+import com.gamebuster19901.excite.bot.command.MessageContext;
+import com.gamebuster19901.excite.bot.database.Comparison;
+import com.gamebuster19901.excite.bot.database.Result;
+import com.gamebuster19901.excite.bot.database.Table;
+import com.gamebuster19901.excite.bot.database.sql.PreparedStatement;
+
+import static com.gamebuster19901.excite.bot.database.Column.*;
+
+import static com.gamebuster19901.excite.bot.database.Table.DISCORD_SERVERS;
 
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Role;
 
-public class DiscordServer implements OutputCSV{
-
-	private static final File SERVER_PREFS = new File("./run/serverPreferences.csv");
-	private static final File OLD_SERVER_PREFS = new File("./run/serverPreferences.csv.old");
-	private static HashMap<Long, DiscordServer> servers = new HashMap<Long, DiscordServer>();
+public class DiscordServer {
 	
-	static {
-		try {
-			if(!SERVER_PREFS.exists()) {
-				SERVER_PREFS.getParentFile().mkdirs();
-				SERVER_PREFS.createNewFile();
+	protected final long id;
+	
+	public DiscordServer(Result results) throws SQLException {
+		this.id = results.getLong(SERVER_ID);
+	}
+	
+	public DiscordServer(long guildId) {
+		this.id = guildId;
+	}
+	
+	public static void addServer(Guild guild) {
+		if(getServer(ConsoleContext.INSTANCE, guild.getIdLong()) == null) {
+			try {
+				addServer(ConsoleContext.INSTANCE, guild.getIdLong(), guild.getName());
 			}
-			else {
-				if(OLD_SERVER_PREFS.exists()) {
-					if(!FileUtils.contentEquals(SERVER_PREFS, OLD_SERVER_PREFS)) {
-						throw new IOException("File content differs!");
-					}
-				}
+			catch(SQLException e) {
+				throw new AssertionError("Unable to add new discord server ", e);
 			}
-			for(DiscordServer server : getEncounteredServersFromFile()) {
-				addServer(server);
-			}
-		}
-		catch(IOException e) {
-			throw new IOError(e);
 		}
 	}
 	
-	StringPreference name;
-	protected final LongPreference id;
-	RolePreference adminRoles;
-	
-	public DiscordServer(String name, long guildId) {
-		this.name = new StringPreference(name);
-		this.id = new LongPreference(guildId);
-		this.adminRoles = new RolePreference(this);
-	}
-
-	@Override
-	public String toCSV() {
-		final Guild guild = getGuild();
-		try (
-			StringWriter writer = new StringWriter();
-			CSVPrinter printer = new CSVPrinter(writer, CSVFormat.DEFAULT.withTrim(false));
-		)
-		{
-			printer.printRecord(name, id, adminRoles);
-			printer.flush();
-			return writer.toString();
-		} catch (IOException e) {
-			throw new IOError(e);
-		}
+	@SuppressWarnings({ "rawtypes", "resource" })
+	public static DiscordServer addServer(MessageContext context, long guildId, String name) throws SQLException {
+		PreparedStatement ps = context.getConnection().prepareStatement("INSERT INTO " + DISCORD_SERVERS + " (" + SERVER_ID + ", " + SERVER_NAME + ") VALUES (?, ?)");
+		ps.setLong(1, guildId);
+		ps.setString(2, name);
+		ps.execute();
+		return getServer(context, guildId);
 	}
 
 	public Guild getGuild() {
@@ -89,34 +62,61 @@ public class DiscordServer implements OutputCSV{
 	}
 	
 	public long getId() {
-		return id.getValue();
-	}
-	
-	public Role[] getAdminRoles() {
-		HashSet<Role> roles = new HashSet<Role>();
-		for(Long roleID : adminRoles.getValue()) {
-			Role role = getRoleById(roleID);
-			if(role != null) {
-				roles.add(role);
-			}
-		}
-		return roles.toArray(new Role[]{});
+		return id;
 	}
 	
 	public Role[] getRoles() {
 		return getGuild().getRoles().toArray(new Role[]{});
 	}
 	
-	public void addAdminRole(Role role) {
-		this.adminRoles.addRole(role);
-	}
-	
-	public void removeAdminRole(Role role) {
-		this.adminRoles.removeRole(role);
-	}
-	
+	@SuppressWarnings("deprecation")
 	public String getName() {
-		return name.toString();
+		try {
+			Result result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, SERVER_NAME, DISCORD_SERVERS, new Comparison(SERVER_ID, EQUALS, getId()));
+			if(result.next()) {
+				return result.getString(SERVER_NAME);
+			}
+			else {
+				throw new AssertionError("Could not find name for server " + getId());
+			}
+		} catch (SQLException e) {
+			throw new IOError(e);
+		}
+	}
+	
+	public void setName(String name) {
+		try {
+			Table.updateWhere(ConsoleContext.INSTANCE, DISCORD_SERVERS, SERVER_NAME, name, new Comparison(SERVER_ID, EQUALS, getId()));
+		} catch (SQLException e) {
+			throw new IOError(e);
+		}
+	}
+	
+	@SuppressWarnings("deprecation")
+	public String getPrefix() {
+		try {
+			Result result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, SERVER_PREFIX, DISCORD_SERVERS, new Comparison(SERVER_ID, EQUALS, getId()));
+			if(result.next()) {
+				return result.getString(SERVER_PREFIX);
+			}
+			else {
+				throw new AssertionError("Could not find prefix for server " + getId());
+			}
+		} catch (SQLException e) {
+			throw new IOError(e);
+		}
+	}
+	
+	public void setPrefix(String prefix) {
+		try {
+			Table.updateWhere(ConsoleContext.INSTANCE, DISCORD_SERVERS, SERVER_PREFIX, prefix, new Comparison(SERVER_ID, EQUALS, getId()));
+		} catch (SQLException e) {
+			throw new IOError(e);
+		}
+	}
+	
+	public boolean isLoaded() {
+		return Main.discordBot.jda.getGuildById(getId()) != null;
 	}
 	
 	@Override
@@ -136,128 +136,32 @@ public class DiscordServer implements OutputCSV{
 		return getName() + " (" + getId() + ")";
 	}
 	
-	public static void addServer(DiscordServer server) {
-		for(Entry<Long, DiscordServer> serverEntry : servers.entrySet()) {
-			DiscordServer s = serverEntry.getValue();
-			if(server.equals(s)) {
-				if(s instanceof UnloadedDiscordServer && !(server instanceof UnloadedDiscordServer)) {
-					RolePreference adminRoles = s.adminRoles;
-					server.adminRoles = adminRoles;
-					servers.put(s.getId(), server);
-					System.out.println("Loaded previously unloaded server " + server.getGuild().getName());
-				}
-				return;
+	@SuppressWarnings("rawtypes")
+	public static DiscordServer getServer(MessageContext context, long serverId) {
+		try {
+			Result results = Table.selectAllFromWhere(context, DISCORD_SERVERS, new Comparison(SERVER_ID, EQUALS, serverId));
+			
+			if(results.next()) {
+				return new DiscordServer(results.getLong(SERVER_ID));
 			}
-		}
-		servers.put(server.getId(), server);
-	}
-	
-	public static DiscordServer getServer(long serverId) {
-		DiscordServer discordServer = servers.get(serverId);
-		if(discordServer == null || discordServer instanceof UnloadedDiscordServer) {
 			return null;
-		}
-		return discordServer;
-	}
-	
-	public static HashSet<DiscordServer> getLoadedDiscordServers() {
-		HashSet<DiscordServer> servers = new HashSet<DiscordServer>();
-		for(Entry<Long, DiscordServer> serverEntry : DiscordServer.servers.entrySet()) {
-			DiscordServer server = serverEntry.getValue();
-			if(!(server instanceof UnloadedDiscordServer)) {
-				servers.add(server);
-			}
-		}
-		return servers;
-	}
-	
-	public static HashSet<DiscordServer> getKnownDiscordServers() {
-		HashSet<DiscordServer> servers = new HashSet<DiscordServer>();
-		for(Entry<Long, DiscordServer> serverEntry : DiscordServer.servers.entrySet()) {
-			servers.add(serverEntry.getValue());
-		}
-		return servers;
-	}
-	
-	public static void updateServerList() {
-		for(Guild guild : Main.discordBot.jda.getGuilds()) {
-			addServer(new DiscordServer(guild.getName(), guild.getIdLong()));
+		} catch (SQLException e) {
+			throw new IOError(e);
 		}
 	}
 	
-	public static void updateServerPreferencesFile() {
-		BufferedWriter writer = null;
+	public static DiscordServer[] getKnownDiscordServers() {
 		try {
-			if(OLD_SERVER_PREFS.exists()) {
-				OLD_SERVER_PREFS.delete();
+			ArrayList<DiscordServer> servers = new ArrayList<DiscordServer>();
+			Result results = Table.selectAllFrom(ConsoleContext.INSTANCE, DISCORD_SERVERS);
+			while(results.next()) {
+				servers.add(new DiscordServer(results));
 			}
-			if(!SERVER_PREFS.renameTo(OLD_SERVER_PREFS)) {
-				throw new IOException();
-			}
-			SERVER_PREFS.createNewFile();
-			writer = new BufferedWriter(new FileWriter(SERVER_PREFS));
-			for(Entry<Long, DiscordServer> discordServer : servers.entrySet()) {
-				writer.write(discordServer.getValue().toCSV());
-			}
+			return servers.toArray(new DiscordServer[] {});
 		}
-		catch(IOException e) {
-			throw new AssertionError(e);
-		}
-		finally {
-			try {
-				if(writer != null) {
-					writer.close();
-				}
-			}
-			catch(IOException e) {
-				throw new IOError(e);
-			}
+		catch (SQLException e) {
+			throw new IOError(e);
 		}
 	}
-	
-	private static DiscordServer[] getEncounteredServersFromFile() {
-		HashSet<DiscordServer> discordServers = new HashSet<DiscordServer>();
-		try {
-			BufferedReader reader = new BufferedReader(new FileReader(SERVER_PREFS));
-			CSVParser csvParser = new CSVParser(reader, CSVFormat.DEFAULT);
-			try {
-				for(CSVRecord csvRecord : csvParser) {
-					String name = csvRecord.get(0);
-					long guildId = Long.parseLong(csvRecord.get(1));
-					DiscordServer discordServer;
-					if(Main.discordBot.jda.getGuildById(guildId) != null) {
-						discordServer = new DiscordServer(name, guildId);
-					}
-					else {
-						discordServer = new UnloadedDiscordServer(guildId);
-						System.out.println("Could not find Guild for server " + name + " (" + guildId + ")");
-					}
-					String adminRoleString = csvRecord.get(2);
-					if(!adminRoleString.isEmpty()) {
-						String[] adminRoleIdStrings = csvRecord.get(2).split(",");
-						long[] adminRoleIds = new long[adminRoleIdStrings.length];
-						for(int i = 0; i < adminRoleIdStrings.length; i++) {
-							if(!adminRoleIdStrings[i].isEmpty()) {
-								adminRoleIds[i] = Long.parseLong(adminRoleIdStrings[i]);
-							}
-						}
-						discordServer.adminRoles.setFromIds(adminRoleIds);
-					}
-					discordServers.add(discordServer);
-				}
-			}
-			finally {
-				if(reader != null) {
-					reader.close();
-				}
-				if(csvParser != null) {
-					csvParser.close();
-				}
-			}
-		}
-		catch(IOException e) {
-			throw new AssertionError(e);
-		}
-		return discordServers.toArray(new DiscordServer[]{});
-	}
+
 }

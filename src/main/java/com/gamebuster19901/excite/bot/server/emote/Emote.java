@@ -1,18 +1,20 @@
 package com.gamebuster19901.excite.bot.server.emote;
 
-import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.gamebuster19901.excite.bot.command.ConsoleContext;
 import com.gamebuster19901.excite.bot.server.DiscordServer;
-import com.gamebuster19901.excite.bot.server.UnloadedDiscordServer;
+
+import net.dv8tion.jda.api.entities.Guild;
 
 public class Emote {
 	
 	private static final Logger LOGGER = Logger.getLogger(Emote.class.getName());
 	
-	private static final HashMap<String, Emote> EMOTES = new HashMap<String, Emote>();
+	private static final ConcurrentHashMap<String, Emote> EMOTES = new ConcurrentHashMap<String, Emote>();
 	
 	private long discordServer = -1;
 	private String name;
@@ -37,16 +39,19 @@ public class Emote {
 		Emote emote = EMOTES.get(name);
 		if(emote != null && 
 				emote.discordServer != -1 
-				&& ! (DiscordServer.getServer(emote.discordServer) instanceof UnloadedDiscordServer)) {
+				&& DiscordServer.getServer(ConsoleContext.INSTANCE, emote.discordServer).isLoaded()) {
 			return EMOTES.get(name);
 		}
 		
 		String ret = "";
-		for(DiscordServer server : DiscordServer.getLoadedDiscordServers()) {
-			List<net.dv8tion.jda.api.entities.Emote> emotes = server.getGuild().getEmotesByName(name, false);
-			if(emotes.size() > 0) {
-				LOGGER.info("Found emote :" + name + ": " + " in " + server);
-				return new Emote(name, server.getId(), emotes.get(0).getAsMention());
+		for(DiscordServer server : DiscordServer.getKnownDiscordServers()) {
+			Guild guild = server.getGuild();
+			if(guild != null) {
+				List<net.dv8tion.jda.api.entities.Emote> emotes = server.getGuild().getEmotesByName(name, false);
+				if(emotes.size() > 0) {
+					LOGGER.info("Found emote :" + name + ": " + " in " + server);
+					return new Emote(name, server.getId(), emotes.get(0).getAsMention());
+				}
 			}
 		}
 		LOGGER.log(Level.WARNING, "Unable to find emote :" + name + ":");

@@ -6,7 +6,7 @@ public class HelpCommand {
 
 	@SuppressWarnings("rawtypes")
 	public static void register(CommandDispatcher<MessageContext> dispatcher) {
-		dispatcher.register(Commands.literal("!help").executes((context) -> {
+		dispatcher.register(Commands.literal("help").executes((context) -> {
 			return sendHelpInfo(context.getSource());
 		}));
 	}

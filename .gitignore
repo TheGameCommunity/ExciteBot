@@ -22,6 +22,12 @@ hs_err_pid*.log
 #Run
 /run
 /backups
-
+/.archive
 # secrets
 **.secret
+
+#ModLauncher
+logs/*
+
+#Built Jar
+ExciteBot*.jar
