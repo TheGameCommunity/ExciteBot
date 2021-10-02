@@ -294,7 +294,7 @@ public class Wiimmfi {
 			response = ": (" + onlinePlayers.length + ")\n\n";
 		}
 		else {
-			response = ": " + (onlinePlayers.length - ignoredPlayers.length) + " (" + onlinePlayers.length + " ignored)" + "\n\n";
+			response = ": " + (getAcknowledgedPlayerCount()) + " (" + getIgnoredOnlinePlayerCount() + " ignored)" + "\n\n";
 		}
 		
 		if(full) {
