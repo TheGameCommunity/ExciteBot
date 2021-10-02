@@ -97,7 +97,7 @@ public class Wiimmfi {
 			HashMap<String, JsonElement> object1Entries = new HashMap<String, JsonElement>();
 			if(JSON.isJsonArray()) {
 				objects = JSON.getAsJsonArray();
-				object1 = objects.get(1);
+				object1 = objects.get(0);
 			}
 			else {
 				object1 = JSON;
