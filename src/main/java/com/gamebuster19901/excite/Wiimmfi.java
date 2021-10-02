@@ -35,8 +35,9 @@ public class Wiimmfi {
 	private static HashSet<Player> HOSTING_PLAYERS = new HashSet<Player>();
 	static {
 		try {
-			EXCITEBOTS = new URL("https://wiimmfi.de/json/jacc/{APIKEY}/games/exciteracewii");
-		} catch (MalformedURLException e) {
+			String key = IOUtils.toString(new FileInputStream(new File("./wiimmfi.secret")), Charsets.UTF_8);
+			EXCITEBOTS = new URL("https://wiimmfi.de/json/jacc/" + key + "/games/exciteracewii");
+		} catch (IOException e) {
 			throw new AssertionError(e);
 		}
 	}
