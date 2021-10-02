@@ -4,11 +4,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOError;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLConnection;
-import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 import java.time.Duration;
 import java.time.Instant;
@@ -20,6 +17,14 @@ import java.util.logging.Logger;
 
 import org.apache.commons.codec.Charsets;
 import org.apache.commons.io.IOUtils;
+import org.apache.http.HttpHeaders;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.client.methods.RequestBuilder;
+import org.apache.http.impl.client.BasicResponseHandler;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.message.BasicHeader;
 
 import com.gamebuster19901.excite.bot.audit.LogInAudit;
 import com.gamebuster19901.excite.bot.audit.LogOutAudit;
@@ -42,8 +47,7 @@ public class Wiimmfi {
 	private static HashSet<Player> ONLINE_PLAYERS = new HashSet<Player>();
 	static {
 		try {
-			String key = IOUtils.toString(new FileInputStream(new File("./wiimmfi.secret")), Charsets.UTF_8);
-			EXCITEBOTS = new URL("https://wiimmfi.de/json/jacc/" + key + "/games/exciteracewii");
+			EXCITEBOTS = new URL("https://wiimmfi.de/json/jacc/@/games/exciteracewii");
 		} catch (IOException e) {
 			throw new IOError(e);
 		}
@@ -80,11 +84,12 @@ public class Wiimmfi {
 		if(Instant.now().isAfter(nextPing)) {
 			if(url != null) {
 				try {
-					URLConnection connection = EXCITEBOTS.openConnection();
-					connection.setRequestProperty("User-Agent", "Excitebot (+https://gamebuster19901.com/ExciteBot)");
-					InputStream is = connection.getInputStream();
-					JSON = JsonParser.parseString(IOUtils.toString(is, StandardCharsets.UTF_8));
-					is.close();
+					String key = IOUtils.toString(new FileInputStream(new File("./wiimmfi.secret")), Charsets.UTF_8);
+					HttpClient client = HttpClients.custom().build();
+					HttpUriRequest request = RequestBuilder.get(EXCITEBOTS.toURI()).setHeader(new BasicHeader("X-Wiimmfi-Key", key)).setHeader(new BasicHeader(HttpHeaders.USER_AGENT, "Excitebot (+https://gamebuster19901.com/ExciteBot)")).build();
+
+					HttpResponse response = client.execute(request);
+					JSON = JsonParser.parseString(new BasicResponseHandler().handleResponse(response));
 					error = null;
 				}
 				catch(Exception e) {
