@@ -81,7 +81,7 @@ public class Wiimmfi {
 			if(url != null) {
 				try {
 					URLConnection connection = EXCITEBOTS.openConnection();
-					connection.setRequestProperty("User-Agent", "Excitebot (+https://github.com/Gamebuster19901/ExciteBot)");
+					connection.setRequestProperty("User-Agent", "Excitebot (+https://gamebuster19901.com/ExciteBot)");
 					InputStream is = connection.getInputStream();
 					JSON = JsonParser.parseString(IOUtils.toString(is, StandardCharsets.UTF_8));
 					is.close();
