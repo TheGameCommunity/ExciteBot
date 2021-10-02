@@ -154,7 +154,7 @@ public class Mailbox {
 				}
 				String mailData = content.toString();
 				LOGGER.log(Level.FINEST, mailData);
-				if(mailData.contains("cd=0")) {
+				if(mailData.contains("cd=0") || mailData.contains("cd=100")) {
 					parseMail(mailData);
 				}
 				else {
