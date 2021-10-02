@@ -129,7 +129,7 @@ public class Main {
 							}
 							Wiimmfi.updateOnlinePlayers();
 							
-							int waitTime = 3000;
+							int waitTime = 20000;
 							nextWiimmfiPing = Instant.now().plus(Duration.ofMillis(waitTime));
 						}
 						else {
