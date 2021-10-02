@@ -199,6 +199,9 @@ public class Wiimmfi {
 							player.setHost(host);
 						}
 						onlinePlayers.add(player);
+						if(player.isHosting()) {
+							hostingPlayers.add(player);
+						}
 					};
 					break elementFinder;
 				}
