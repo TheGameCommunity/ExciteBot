@@ -2,6 +2,7 @@ package com.gamebuster19901.excite;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOError;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -46,6 +47,7 @@ public class Wiimmfi {
 			EXCITEBOTS = new URL("https://wiimmfi.de/json/jacc/" + key + "/games/exciteracewii");
 		} catch (IOException e) {
 			throw new AssertionError(e);
+			throw new IOError(e);
 		}
 	}
 	
