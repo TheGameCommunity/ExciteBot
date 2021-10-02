@@ -58,8 +58,7 @@ public class Player implements Banee, Owned<DiscordUser> {
 	private final int playerID;
 	
 	private transient int host;
-	private transient String onlineStatus = "";
-	private transient int connectionStatus;
+	private transient int connectionStatus = -1;
 	
 	private Player(Result results) throws SQLException {
 		this(results.getInt(PLAYER_ID));
@@ -70,7 +69,6 @@ public class Player implements Banee, Owned<DiscordUser> {
 		Player onlinePlayer = Wiimmfi.getOnlinePlayerByID(playerID);
 		if(onlinePlayer != null) {
 			this.host = onlinePlayer.host;
-			this.onlineStatus = onlinePlayer.onlineStatus;
 			this.connectionStatus = onlinePlayer.connectionStatus;
 		}
 	}
@@ -275,11 +273,7 @@ public class Player implements Banee, Owned<DiscordUser> {
 		}
 	}
 	
-	public void setOnlineStatus(String status) {
-		this.onlineStatus = status;
-	}
-	
-	public void setConnectionStatus(int status) {
+	public void setOnlineStatus(int status) {
 		this.connectionStatus = status;
 	}
 	
@@ -346,7 +340,7 @@ public class Player implements Banee, Owned<DiscordUser> {
 	}
 	
 	public boolean isOnline() {
-		return onlineStatus.contains("o");
+		return connectionStatus > -1;
 	}
 	
 	public boolean isHosting() {
@@ -354,27 +348,23 @@ public class Player implements Banee, Owned<DiscordUser> {
 	}
 	
 	public boolean isGlobal() {
-		return onlineStatus.contains("G");
+		return !isPrivate();
 	}
 	
 	public boolean isPrivate() {
-		return !isGlobal();
+		return (host == 2 && connectionStatus == 6) || (host == 1 && connectionStatus == 2);
 	}
 	
 	public boolean isSearching() {
-		return onlineStatus.contains("S") && !isHosting() ;
+		return connectionStatus == 3 && !isHosting() ;
 	}
 	
 	public boolean isFriendsList() {
-		return onlineStatus.equals("o") && connectionStatus == 1;
+		return connectionStatus == 1 && connectionStatus == 1;
 	}
 	
 	public void setHost(int host) {
 		this.host = host;
-	}
-	
-	public String getStatus() {
-		return onlineStatus;
 	}
 	
 	public void updateSecondsPlayed() {
