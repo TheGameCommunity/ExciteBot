@@ -352,7 +352,7 @@ public class Player implements Banee, Owned<DiscordUser> {
 	}
 	
 	public boolean isPrivate() {
-		return (host == 2 && connectionStatus == 6) || (host == 1 && connectionStatus == 2);
+		return (host == 2 && connectionStatus == 6);
 	}
 	
 	public boolean isSearching() {
