@@ -26,7 +26,6 @@ import com.gamebuster19901.excite.bot.mail.Mailbox;
 import com.gamebuster19901.excite.bot.user.ConsoleUser;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
 import com.gamebuster19901.excite.bot.user.UnknownDiscordUser;
-import com.gamebuster19901.excite.exception.WiimmfiErrorResponse;
 import com.gamebuster19901.excite.util.StacktraceUtil;
 import com.gamebuster19901.excite.util.ThreadService;
 
