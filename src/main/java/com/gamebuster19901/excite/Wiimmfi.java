@@ -32,6 +32,7 @@ import com.gamebuster19901.excite.bot.command.ConsoleContext;
 import com.gamebuster19901.excite.bot.command.MessageContext;
 import com.gamebuster19901.excite.exception.WiimmfiErrorResponse;
 import com.gamebuster19901.excite.exception.WiimmfiResponseException;
+import com.gamebuster19901.excite.util.TimeUtils;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
@@ -45,6 +46,7 @@ public class Wiimmfi {
 	private static JsonElement JSON;
 	private static HashSet<Player> PREV_ONLINE_PLAYERS = new HashSet<Player>();
 	private static HashSet<Player> ONLINE_PLAYERS = new HashSet<Player>();
+	private static final Duration WAIT_TIME = Duration.ofSeconds(20);
 	static {
 		try {
 			EXCITEBOTS = new URL("https://wiimmfi.de/json/jacc/@/games/exciteracewii");
@@ -53,7 +55,7 @@ public class Wiimmfi {
 		}
 	}
 	
-	private Instant nextPing = Instant.now().plus(Duration.ofSeconds(20));
+	private Instant nextPing = Instant.EPOCH;
 	private URL url;
 	private Throwable error = null;
 	
@@ -87,13 +89,14 @@ public class Wiimmfi {
 					String key = IOUtils.toString(new FileInputStream(new File("./wiimmfi.secret")), Charsets.UTF_8);
 					HttpClient client = HttpClients.custom().build();
 					HttpUriRequest request = RequestBuilder.get(EXCITEBOTS.toURI()).setHeader(new BasicHeader("X-Wiimmfi-Key", key)).setHeader(new BasicHeader(HttpHeaders.USER_AGENT, "Excitebot (+https://gamebuster19901.com/ExciteBot)")).build();
-
 					HttpResponse response = client.execute(request);
 					JSON = JsonParser.parseString(new BasicResponseHandler().handleResponse(response));
+					updateOnlinePlayers();
 					error = null;
 				}
 				catch(Exception e) {
 					error = e;
+					System.out.println(e);
 				}
 			}
 			else {
@@ -101,11 +104,12 @@ public class Wiimmfi {
 					error = new NullPointerException("No url or file provided!");
 				}
 			}
+			nextPing = Instant.now().plus(WAIT_TIME);
 		}
 	}
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public static Player[] updateOnlinePlayers() throws SQLException, WiimmfiResponseException {
+	public Player[] updateOnlinePlayers() throws SQLException, WiimmfiResponseException {
 		HashSet<Player> onlinePlayers = new HashSet<Player>();
 		
 		if (JSON != null) {

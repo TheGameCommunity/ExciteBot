@@ -26,6 +26,7 @@ import com.gamebuster19901.excite.bot.mail.Mailbox;
 import com.gamebuster19901.excite.bot.user.ConsoleUser;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
 import com.gamebuster19901.excite.bot.user.UnknownDiscordUser;
+import com.gamebuster19901.excite.exception.WiimmfiErrorResponse;
 import com.gamebuster19901.excite.util.StacktraceUtil;
 import com.gamebuster19901.excite.util.ThreadService;
 
@@ -111,9 +112,8 @@ public class Main {
 		while(DatabaseConnection.INSTANCE == null);
 		
 		Throwable prevError = null;
-		Instant nextWiimmfiPing = Instant.now();
-		Instant nextDiscordPing = Instant.now();
-		Instant sendDiscordNotifications = Instant.now();
+		Instant nextDiscordPing = Instant.now().minusMillis(1);
+		Instant sendDiscordNotifications = Instant.now().minusMillis(1);
 		startConsole();
 		Thread mailThread = startMailThread();
 		try {
@@ -121,24 +121,18 @@ public class Main {
 				try {
 					System.gc();
 					Throwable error = wiimmfi.getError();
-					if(nextWiimmfiPing.isBefore(Instant.now())) {
-						wiimmfi.update();
-						if(error == null) {
-							if(prevError != null) {
-								LOGGER.log(Level.SEVERE, "Error resolved.");
-							}
-							Wiimmfi.updateOnlinePlayers();
-							
-							int waitTime = 20000;
-							nextWiimmfiPing = Instant.now().plus(Duration.ofMillis(waitTime));
+					wiimmfi.update();
+					if(error == null) {
+						if(prevError != null) {
+							LOGGER.log(Level.SEVERE, "Error resolved.");
 						}
-						else {
-							nextWiimmfiPing = Instant.now().plus(Duration.ofMillis(5000));
-							if(prevError == null || !prevError.getClass().equals(error.getClass())) {
-								System.out.println("Error!");
-								LOGGER.log(Level.SEVERE, error, () -> error.getMessage());
-							}
+					}
+					else {
+						if(prevError == null || !prevError.getClass().equals(error.getClass())) {
+							System.out.println("Error!");
+							LOGGER.log(Level.SEVERE, error, () -> error.getMessage());
 						}
+						prevError = error;
 					}
 					if(discordBot != null) {
 						if(nextDiscordPing.isBefore(Instant.now())) {
@@ -154,7 +148,6 @@ public class Main {
 					while(!consoleCommandsAwaitingProcessing.isEmpty()) {
 						Commands.DISPATCHER.handleCommand(consoleCommandsAwaitingProcessing.pollFirst());
 					}
-					prevError = error;
 				}
 				catch(ErrorResponseException e) {
 					CONSOLE.sendMessage(StacktraceUtil.getStackTrace(e));
