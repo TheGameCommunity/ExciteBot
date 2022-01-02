@@ -48,7 +48,7 @@ public class Main {
 	
 	private static ConcurrentLinkedDeque<String> consoleCommandsAwaitingProcessing = new ConcurrentLinkedDeque<String>();
 
-	public static ConsoleUser CONSOLE;
+	public static ConsoleUser CONSOLE = new ConsoleUser();
 	public static boolean stopping = false;
 	
 	@SuppressWarnings("rawtypes")
