@@ -360,7 +360,7 @@ public class Player implements Banee, Owned<DiscordUser> {
 	}
 	
 	public boolean isFriendsList() {
-		return connectionStatus == 1 && connectionStatus == 1;
+		return connectionStatus == 1 && host == 0;
 	}
 	
 	public void setHost(int host) {

@@ -32,7 +32,6 @@ import com.gamebuster19901.excite.bot.command.ConsoleContext;
 import com.gamebuster19901.excite.bot.command.MessageContext;
 import com.gamebuster19901.excite.exception.WiimmfiErrorResponse;
 import com.gamebuster19901.excite.exception.WiimmfiResponseException;
-import com.gamebuster19901.excite.util.TimeUtils;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
@@ -40,7 +39,6 @@ import com.google.gson.JsonParser;
 public class Wiimmfi {
 	
 	private static final Logger logger = Logger.getLogger(Wiimmfi.class.getName());
-	
 	
 	private static final URL EXCITEBOTS;
 	private static JsonElement JSON;
@@ -219,44 +217,6 @@ public class Wiimmfi {
 				}
 			}
 		}
-		
-		/*if(document != null) {
-			document.getElementsByAttributeValueContaining("id", "game").remove();
-			Elements elements = document.getElementsByClass("tr0");
-			elements.addAll(document.getElementsByClass("tr1"));
-			for(Element e : elements) {
-				if(!e.hasClass("tr0") && !e.hasClass("tr1")) {
-					e.remove();
-				}
-			}
-			if(elements.size() > 0) {
-				Elements playerEntries = elements;
-				for(Element e : playerEntries) {
-					
-					String name = parseLine(e.html(), 10);
-					int hosting = 0;
-					String hostingString = parseLine(e.html(), 4);
-					if(!hostingString.equals("<tdclass=\"dbnull\">—")) {
-						hosting = Integer.parseInt(parseLine(e.html(), 3));
-					}
-					String status = parseLine(e.html(), 6);
-					
-					int playerId = Integer.parseInt(parseLine(e.html(), 1));
-					
-					Player player = Player.getPlayerByID(ConsoleContext.INSTANCE, playerId);
-					if(player instanceof UnknownPlayer) {
-						String friendCode = parseLine(e.html(), 2);
-						player = Player.addPlayer(new MessageContext(player), true, playerId, friendCode, name);
-					}
-					else {
-						player.setName(name);
-						player.setOnlineStatus(status);
-						player.setHost(hosting);
-					}
-					onlinePlayers.add(player);
-				}
-			}
-		}*/
 		
 		for(Player player : onlinePlayers) {
 			if(PREV_ONLINE_PLAYERS.contains(player)) {
