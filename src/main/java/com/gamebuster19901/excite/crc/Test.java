@@ -15,14 +15,8 @@ public class Test {
 		FileInputStream attachment = new FileInputStream(new File(args[0]));
 		final byte[] undecoded = IOUtils.toByteArray(attachment);
 		attachment.close();
-		final byte[] decoded = new String("STKA" + Base64.getMimeDecoder().decode(new String(undecoded))).getBytes();
-
-		
-		CRCTester undecodedTester = new CRCTester(undecoded);
-		CRCTester decodedTester = new CRCTester(decoded);
-		
-		System.out.println("Undecoded: " + Integer.toHexString(undecodedTester.test()) + "\nDecoded: " + Integer.toHexString(decodedTester.test()));
-		System.out.println("Undecoded comp: " + Integer.toHexString(~undecodedTester.test()) + "\nDecoded comp: " + Integer.toHexString(~decodedTester.test()));
+		final byte[] decoded = new String(Base64.getMimeDecoder().decode(new String(undecoded))).getBytes();
+		String crc = Integer.toHexString(new CRCTester(decoded).test());
 		
 	}
 	

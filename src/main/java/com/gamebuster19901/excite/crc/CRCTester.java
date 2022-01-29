@@ -10,13 +10,10 @@ import java.util.Base64;
 
 import org.apache.commons.io.IOUtils;
 
-import com.gamebuster19901.excite.bot.command.CRCCommand;
-
 public class CRCTester {
 	public static final @Unsigned int[] POLYNOMIALS = getCRC32Table();
 	
 	private File file;
-	public static final int ADDRESS = 0x80481AD0;
 	private final @Unsigned byte[] data;
 	
 	public CRCTester(File file) throws FileNotFoundException, IOException {
@@ -48,35 +45,35 @@ public class CRCTester {
 		int pointer = 0;
 		
 		int length = data.length;
-		int leftoverBytes;
-		int bytesEvaluated;
-		@Unsigned int uVar11 = CRCCommand.POLYNOMIAL; //set the initial value to 0x690ce0ee
+		@Unsigned int crc = POLYNOMIALS[128]; //set the initial value to 0x690ce0ee
+		
+		System.out.println("Length: " + Integer.toHexString(data.length));
 		
 		if(3 < length) { //if the data to be CRC'd is 4 bytes or more, instead set the initial value by the inverse of the first 4 byte word
-			uVar11 = ~(((int)data[0] << 0x18 | (int)data[1] << 0x10 | (int)data[2] << 8 | (int)data[3]));
+			crc = ~((int)data[0] << 0x18 | (int)data[1] << 0x10 | (int)data[2] << 8 | (int)data[3]);
+			System.out.println(Integer.toHexString(~crc));
+			System.out.println(Integer.toHexString(crc));
 			pointer = pointer + 4;
 			length = length - 4;
-			System.out.println("First word was " + Integer.toHexString(~uVar11));
 		}
 	
-		bytesEvaluated = 0;
-
-		leftoverBytes = length - bytesEvaluated;
-		if(bytesEvaluated < length) {
-			do {
-				byte b = data[pointer];
-				pointer = pointer + 1;
-				uVar11 = (int)((uVar11 << 8 | b) ^ (POLYNOMIALS[toUnsignedByte((byte)uVar11)]));
-				leftoverBytes = leftoverBytes - 1;
-			}
-			while (leftoverBytes != 0);
+	while(pointer < length) {
+		
+		byte b = data[pointer];
+		@Unsigned int index = toUnsignedByte((byte)(crc >> 24));
+		crc = (crc << 8) | ((byte)length & b);
+		crc = crc ^ (POLYNOMIALS[index]);
+		
+		pointer = pointer + 1;
+		if(pointer == 5 && crc != 0x18a09933) {
+			throw new AssertionError(Integer.toHexString(crc) + " != " + "18a09933");
 		}
-
-		return ~uVar11;
 	}
+
+return ~crc;
+}
 	
 	private static @Unsigned int toUnsignedByte(@Signed byte b) {
-		System.out.println(b & 0xff);
 		return b & 0xFF;
 	}
 
