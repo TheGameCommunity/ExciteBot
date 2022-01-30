@@ -41,10 +41,9 @@ public class CRCTester {
 		this.data = data;
 	}
 	
-	public int test() {
+	public int test(int length) {
 		int pointer = 0;
-		
-		int length = data.length;
+		length = data.length;
 		@Unsigned int crc = POLYNOMIALS[128]; //set the initial value to 0x690ce0ee
 		
 		System.out.println("Length: " + Integer.toHexString(data.length));
@@ -54,21 +53,36 @@ public class CRCTester {
 			System.out.println(Integer.toHexString(~crc));
 			System.out.println(Integer.toHexString(crc));
 			pointer = pointer + 4;
-			length = length - 4;
 		}
 	
-	while(pointer < length) {
+		System.out.println("----");
+		
+	while(pointer < data.length && pointer < length) {
 		
 		byte b = data[pointer];
 		@Unsigned int index = toUnsignedByte((byte)(crc >> 24));
-		crc = (crc << 8) | ((byte)length & b);
+		crc = (crc << 8 | b);
 		crc = crc ^ (POLYNOMIALS[index]);
+		
+		System.out.println(Integer.toHexString(crc));
 		
 		pointer = pointer + 1;
 		if(pointer == 5 && crc != 0x18a09933) {
 			throw new AssertionError(Integer.toHexString(crc) + " != " + "18a09933");
 		}
+		if(pointer == 6 && crc != 0xca8005f9) {
+			throw new AssertionError(Integer.toHexString(crc) + " != " + "ca8005f9");
+		}
+		if(pointer == 7 && crc != 0xf205bf50) {
+			throw new AssertionError(Integer.toHexString(crc) + " != " + "f205bf50");
+		}
+		if(pointer == 8 && crc != 0x85896e0) {
+			throw new AssertionError(Integer.toHexString(crc) + " != " + "0x85896e0");
+		}
 	}
+
+	System.out.println("----");
+	
 
 return ~crc;
 }
