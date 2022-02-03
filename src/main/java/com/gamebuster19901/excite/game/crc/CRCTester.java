@@ -40,7 +40,7 @@ public class CRCTester {
 			pointer = pointer + 4;
 		}
 		
-		int bytesRemaining = length / 8;
+		int bytesRemaining = (length - pointer) / 8;
 		
 		while(bytesRemaining > 0 && pointer < length) { //CRC in chunks of 8 bytes, doing the first 3 bytes stupidly (shift 24), and the last 5 even more stupidly (shift 22 / 4).
 			crc = (crc << 8 | toUnsignedByte(bytes[pointer++])) ^ POLYNOMIALS[crc >>> 24];
