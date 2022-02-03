@@ -15,7 +15,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.commons.io.IOUtils;
 
 import com.gamebuster19901.excite.bot.command.ArchiveCommand.WorkerStatus;
-import com.gamebuster19901.excite.crc.CRCTester;
+import com.gamebuster19901.excite.game.crc.CRCTester;
 import com.gamebuster19901.excite.util.StacktraceUtil;
 import com.gamebuster19901.excite.util.ThreadService;
 import com.gamebuster19901.excite.util.TimeUtils;

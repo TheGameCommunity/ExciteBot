@@ -4,7 +4,7 @@ import java.io.File;
 import java.nio.file.Paths;
 
 import com.gamebuster19901.excite.bot.server.emote.Emote;
-import com.gamebuster19901.excite.crc.CRCTester;
+import com.gamebuster19901.excite.game.crc.CRCTester;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
 
