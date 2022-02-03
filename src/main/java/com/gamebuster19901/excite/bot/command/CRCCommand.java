@@ -68,7 +68,7 @@ public class CRCCommand {
 		
 		if(context.isOperator()) {
 			if(expected != null) {
-				if(crc == expected) {
+				if(crc.equals(expected)) {
 					context.sendMessage(Emote.getEmote("verified") + fromFile(fromFile) + "`" + data + "` matches " + asHexInfo(expected));
 				}
 				else {
