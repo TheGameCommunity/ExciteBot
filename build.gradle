@@ -48,6 +48,12 @@ dependencies {
 	implementation group: 'org.ow2.asm', name: 'asm-util', version: '7.2'
 	
 	/*
+	* Testing
+	*/
+	
+	testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.8.2'
+	
+	/*
 	*
 	* CVE-2021-44228 DO NOT REMOVE
 	*
