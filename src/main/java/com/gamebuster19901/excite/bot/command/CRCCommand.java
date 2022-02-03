@@ -1,6 +1,7 @@
 package com.gamebuster19901.excite.bot.command;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.nio.file.Paths;
 
 import com.gamebuster19901.excite.bot.server.emote.Emote;
@@ -54,7 +55,7 @@ public class CRCCommand {
 		Integer crc = null;
 		try {
 			if(f.exists()) {
-				crc = new CRCTester(f).test();
+				crc = new CRCTester(new FileInputStream(f)).test();
 				fromFile = true;
 			}
 		}
