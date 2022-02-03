@@ -27,9 +27,9 @@ public class CRCTester {
 	 * 
 	 * also, why the FUCK was it implemented like this.
 	 * 
-	 * @return the Excitebots CRC of the input.
+	 * @return the Excitebots CRC of the input, as an unsigned integer.
 	 */
-	public int test() {
+	public @Unsigned int test() {
 		int pointer = 0;
 		int length = bytes.length;
 		@Unsigned int crc = POLYNOMIALS[128]; //set the initial value to 0x690ce0ee
