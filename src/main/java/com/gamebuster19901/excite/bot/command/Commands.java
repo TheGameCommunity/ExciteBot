@@ -41,7 +41,6 @@ public class Commands {
 		ChangelogCommand.register(dispatcher);
 		InsertCommand.register(dispatcher);
 		ArchiveCommand.register(dispatcher);
-		BruteForceCommand.register(dispatcher);
 		CRCCommand.register(dispatcher);
 	}
 	
