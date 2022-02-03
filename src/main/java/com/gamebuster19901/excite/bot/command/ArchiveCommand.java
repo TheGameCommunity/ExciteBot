@@ -268,10 +268,11 @@ public class ArchiveCommand {
 		NOT_STARTED,
 		WORKING,
 		COMPLETE,
+		CANCELLED,
 		ERRORED;
 		
 		public boolean finished() {
-			return this == COMPLETE || this == ERRORED;
+			return this == COMPLETE || this == ERRORED || this == CANCELLED;
 		}
 	}
 	
