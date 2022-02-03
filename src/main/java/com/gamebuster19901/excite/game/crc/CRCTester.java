@@ -1,91 +1,74 @@
-package com.gamebuster19901.excite.crc;
+package com.gamebuster19901.excite.game.crc;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Base64;
 
+import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.io.IOUtils;
 
 public class CRCTester {
+	
 	public static final @Unsigned int[] POLYNOMIALS = getCRC32Table();
-	
-	private File file;
-	private final @Unsigned byte[] data;
-	
-	public CRCTester(File file) throws FileNotFoundException, IOException {
-		this(new FileInputStream(file));
-		this.file = new File(file.getAbsolutePath() + ".decoded");
-		if(this.file != null) {
-			try (FileOutputStream f = new FileOutputStream(this.file))
-			{
-				if(!this.file.exists()) {
-					this.file.createNewFile();
-				}
-				f.write(data);
-			}
-			catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-	}
+
+	private final @Unsigned byte[] bytes;
 	
 	public CRCTester(InputStream inputStream) throws IOException {
 		this(Base64.getMimeDecoder().decode(IOUtils.toByteArray(inputStream)));
 	}
 	
-	public CRCTester(byte[] data) {
-		this.data = data;
+	public CRCTester(byte[] bytes) {
+		this.bytes = bytes;
 	}
 	
-	public int test(int length) {
+	
+	/**
+	 * Obtains the Excitebots CRC of the input.
+	 * 
+	 * also, why the FUCK was it implemented like this.
+	 * 
+	 * @return the Excitebots CRC of the input.
+	 */
+	public int test() {
 		int pointer = 0;
-		length = data.length;
+		int length = bytes.length;
 		@Unsigned int crc = POLYNOMIALS[128]; //set the initial value to 0x690ce0ee
+
 		
-		System.out.println("Length: " + Integer.toHexString(data.length));
-		
-		if(3 < length) { //if the data to be CRC'd is 4 bytes or more, instead set the initial value by the inverse of the first 4 byte word
-			crc = ~((int)data[0] << 0x18 | (int)data[1] << 0x10 | (int)data[2] << 8 | (int)data[3]);
-			System.out.println(Integer.toHexString(~crc));
-			System.out.println(Integer.toHexString(crc));
+		if(3 < length) { //if the bytes to be CRC'd is 4 bytes or more, instead set the initial value by the inverse of the first 4 byte word
+			crc = ~((int)bytes[0] << 0x18 | (int)bytes[1] << 0x10 | (int)bytes[2] << 8 | (int)bytes[3]);
 			pointer = pointer + 4;
 		}
-	
-		System.out.println("----");
 		
-	while(pointer < data.length && pointer < length) {
+		int bytesRemaining = length / 8;
 		
-		byte b = data[pointer];
-		@Unsigned int index = toUnsignedByte((byte)(crc >> 24));
-		crc = (crc << 8 | b);
-		crc = crc ^ (POLYNOMIALS[index]);
+		while(bytesRemaining > 0 && pointer < length) { //CRC in chunks of 8 bytes, doing the first 3 bytes stupidly (shift 24), and the last 5 even more stupidly (shift 22 / 4).
+			crc = (crc << 8 | toUnsignedByte(bytes[pointer++])) ^ POLYNOMIALS[crc >>> 24];
+			crc = (crc << 8 | toUnsignedByte(bytes[pointer++])) ^ POLYNOMIALS[crc >>> 24];
+			crc = (crc << 8 | toUnsignedByte(bytes[pointer++])) ^ POLYNOMIALS[crc >>> 24];
+			crc = (crc << 8 | toUnsignedByte(bytes[pointer++])) ^ POLYNOMIALS[(crc >>> 22) / 4];
+			crc = (crc << 8 | toUnsignedByte(bytes[pointer++])) ^ POLYNOMIALS[(crc >>> 22) / 4];
+			crc = (crc << 8 | toUnsignedByte(bytes[pointer++])) ^ POLYNOMIALS[(crc >>> 22) / 4];
+			crc = (crc << 8 | toUnsignedByte(bytes[pointer++])) ^ POLYNOMIALS[(crc >>> 22) / 4];
+			crc = (crc << 8 | toUnsignedByte(bytes[pointer++])) ^ POLYNOMIALS[(crc >>> 22) / 4];
+			bytesRemaining--;
+		}
+		while(pointer < length) { //CRC any remaining bytes that won't fit in chunks of 8 bytes using but shift 24
+			crc = (crc << 8 | toUnsignedByte(bytes[pointer++])) ^ POLYNOMIALS[crc >>> 24];
+		}
 		
-		System.out.println(Integer.toHexString(crc));
-		
-		pointer = pointer + 1;
-		if(pointer == 5 && crc != 0x18a09933) {
-			throw new AssertionError(Integer.toHexString(crc) + " != " + "18a09933");
-		}
-		if(pointer == 6 && crc != 0xca8005f9) {
-			throw new AssertionError(Integer.toHexString(crc) + " != " + "ca8005f9");
-		}
-		if(pointer == 7 && crc != 0xf205bf50) {
-			throw new AssertionError(Integer.toHexString(crc) + " != " + "f205bf50");
-		}
-		if(pointer == 8 && crc != 0x85896e0) {
-			throw new AssertionError(Integer.toHexString(crc) + " != " + "0x85896e0");
-		}
+		return ~crc;
 	}
-
-	System.out.println("----");
 	
-
-return ~crc;
-}
+	@SuppressWarnings("unused")
+	private String toHexString(byte b) { //for testing
+		return Hex.encodeHexString(new byte[] {b});
+	}
+	
+	@SuppressWarnings("unused")
+	private String toHexString(int i) { //for testing
+		return Integer.toHexString(i);
+	}
 	
 	private static @Unsigned int toUnsignedByte(@Signed byte b) {
 		return b & 0xFF;
