@@ -43,6 +43,7 @@ public class NamedArgumentType implements ArgumentType<Named> {
 	@Override
 	public Named parse(StringReader reader) throws CommandSyntaxException {
 		DiscordUser.getDiscordUsersWithUsernameOrID(ConsoleContext.INSTANCE, reader.readQuotedString());
+		return null;
 	}
 
 }

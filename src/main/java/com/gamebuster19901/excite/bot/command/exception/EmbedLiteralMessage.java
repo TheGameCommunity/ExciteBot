@@ -14,7 +14,7 @@ public class EmbedLiteralMessage extends LiteralMessage {
 	
 	@Override
 	public String getString() {
-		
+		return null;
 	}
 
 }

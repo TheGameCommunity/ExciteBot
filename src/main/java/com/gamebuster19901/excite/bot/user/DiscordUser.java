@@ -28,7 +28,6 @@ import com.gamebuster19901.excite.bot.database.Table;
 import com.gamebuster19901.excite.bot.database.sql.PreparedStatement;
 import com.gamebuster19901.excite.bot.server.DiscordServer;
 import com.gamebuster19901.excite.transaction.CurrencyType;
-import com.gamebuster19901.excite.transaction.Transaction.WalletType;
 import com.gamebuster19901.excite.util.StacktraceUtil;
 import com.gamebuster19901.excite.util.TimeUtils;
 
@@ -331,7 +330,7 @@ public class DiscordUser implements Banee {
 	}
 	
 	public long getBalance(CurrencyType currency) {
-		if(currency == )
+		return -999;
 	}
 	
 	public boolean sendDetailedPM() {
