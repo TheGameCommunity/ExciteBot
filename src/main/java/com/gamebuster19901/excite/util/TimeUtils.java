@@ -72,7 +72,7 @@ public final class TimeUtils {
 		int k = 0;
 		
 		if(duration.equals(ChronoUnit.FOREVER.getDuration())) {
-			return " forever";
+			return "forever";
 		}
 		
 		if(duration.isNegative()) {
@@ -122,6 +122,10 @@ public final class TimeUtils {
 			return "0 " + smallestUnit;
 		}
 		return time;
+	}
+	
+	public static String fullReadableDuration(Duration duration) {
+		return readableDuration(duration, true, true, true, true, true, true, true);
 	}
 	
 	public static Instant fromNow(Duration duration) {

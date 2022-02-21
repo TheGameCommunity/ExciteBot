@@ -60,7 +60,7 @@ public class MailAudit extends Audit {
 		
 		try {
 			st = Insertion.insertInto(Table.MAIL)
-			.setColumns(AUDIT_ID, SENDER, RECEIVER, INCOMING, MAIL_TYPE, FILE)
+			.setColumns(AUDIT_ID, SENDER, RECIPIENT, INCOMING, MAIL_TYPE, FILE)
 			.to(parent.getID(), from.getEmail(), to.getEmail(), incoming, mailType, file.getAbsolutePath())
 			.prepare(context, true);
 			
@@ -98,7 +98,7 @@ public class MailAudit extends Audit {
 		
 		try {
 			st = Insertion.insertInto(Table.MAIL)
-			.setColumns(AUDIT_ID, SENDER, RECEIVER, INCOMING, MAIL_TYPE, FILE)
+			.setColumns(AUDIT_ID, SENDER, RECIPIENT, INCOMING, MAIL_TYPE, FILE)
 			.to(parent.getID(), from.getEmail(), to.getEmail(), incoming, mailType, file.getAbsolutePath())
 			.prepare(context, true);
 			

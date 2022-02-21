@@ -24,6 +24,8 @@ public enum AuditType {
 	MAIL_AUDIT(MailAudit.class, MAIL),
 	WII_REGISTRATION_AUDIT(WiiRegistrationAudit.class, AUDIT_WII_REGISTER),
 	
+	TRANSACTION_AUDIT(TransactionAudit.class, AUDIT_TRANSACTIONS)
+	
 	;
 
 	private Class<? extends Audit> type;
