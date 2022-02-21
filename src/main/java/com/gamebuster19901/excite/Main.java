@@ -123,7 +123,7 @@ public class Main {
 					wiimmfi.update();
 					if(error == null) {
 						if(prevError != null) {
-							LOGGER.log(Level.SEVERE, "Error resolved.");
+							//LOGGER.log(Level.SEVERE, "Error resolved.");
 						}
 					}
 					else {
