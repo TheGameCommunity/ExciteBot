@@ -53,11 +53,6 @@ public class Main {
 	
 	@SuppressWarnings("rawtypes")
 	public static void main(String[] args) throws InterruptedException, ClassNotFoundException, IOException, SQLException {
-		ClassLoader classloader = Address.class.getClassLoader();
-		if(!(classloader.getClass().getName().equals("cpw.mods.modlauncher.TransformingClassLoader"))) {
-			System.out.println(Address.class.getClassLoader().getClass().getName());
-			throw new LinkageError("Incorrect classloader. Mixins are not loaded. " + Address.class.getClassLoader());
-		}
 		if(args.length % 2 != 0) {
 			throw new IllegalArgumentException("Must be started with an even number of arguments!");
 		}
