@@ -18,7 +18,7 @@ public class TextualMailResponse extends MailReplyResponse {
 	
 	private String text = "";
 	
-	public TextualMailResponse(Wii responder, EmailAddress respondee, MimeMessage message) throws MessagingException {
+	public TextualMailResponse(Wii responder, ElectronicAddress respondee, MimeMessage message) throws MessagingException {
 		super(responder, respondee, message);
 	}
 	

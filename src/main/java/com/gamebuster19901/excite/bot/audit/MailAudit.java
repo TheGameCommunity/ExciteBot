@@ -21,6 +21,7 @@ import com.gamebuster19901.excite.bot.database.Row;
 import com.gamebuster19901.excite.bot.database.Table;
 import com.gamebuster19901.excite.bot.database.sql.PreparedStatement;
 import com.gamebuster19901.excite.bot.mail.AddFriendResponse;
+import com.gamebuster19901.excite.bot.mail.ElectronicAddress;
 import com.gamebuster19901.excite.bot.mail.EmailAddress;
 import com.gamebuster19901.excite.bot.mail.MailReplyResponse;
 import com.gamebuster19901.excite.bot.mail.Mailbox;
@@ -36,8 +37,8 @@ public class MailAudit extends Audit {
 
 	@SuppressWarnings("rawtypes")
 	public static MailAudit addMailAudit(MessageContext context, MimeMessage message, boolean incoming, File file) throws AddressException, MessagingException {
-		EmailAddress from = (EmailAddress)(Object)message.getFrom()[0];
-		EmailAddress to = (EmailAddress)(Object)new InternetAddress(message.getHeader("To")[0]);
+		ElectronicAddress from = new EmailAddress(message.getFrom()[0]);
+		ElectronicAddress to = new EmailAddress(new InternetAddress(message.getHeader("To")[0]));
 		String description = from.getEmail() + " sent mail to " + to.getEmail();
 		String[] appIDHeader = message.getHeader(Mailbox.APP_ID_HEADER);
 		String mailType = "GENERIC";
@@ -79,8 +80,8 @@ public class MailAudit extends Audit {
 	
 	@SuppressWarnings("rawtypes")
 	public static MailAudit addMailAudit(MessageContext context, MailReplyResponse message, boolean incoming, File file) {
-		EmailAddress from = message.getResponder();
-		EmailAddress to = message.getRespondee();
+		ElectronicAddress from = message.getResponder();
+		ElectronicAddress to = message.getRespondee();
 		String description = from.getEmail() + " sent mail to " + to.getEmail();
 		String mailType = "GENERIC";
 		if(message instanceof AddFriendResponse) {

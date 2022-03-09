@@ -1,15 +1,27 @@
 package com.gamebuster19901.excite.bot.mail;
 
-public interface EmailAddress {
+import javax.mail.Address;
 
-	public abstract String getType();
+public class EmailAddress implements ElectronicAddress {
+
+	private final String email;
 	
-	public abstract boolean equals(Object o);
-	
-	public abstract String toString();
-	
-	public default String getEmail() {
-		return toString();
+	public EmailAddress(String address) {
+		this.email = address;
 	}
 	
+	public EmailAddress(Address address) {
+		this(address.toString());
+	}
+
+	@Override
+	public String getType() {
+		return "rfc822";
+	}
+	
+	@Override
+	public String toString() {
+		return email;
+	}
+
 }

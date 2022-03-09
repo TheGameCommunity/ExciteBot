@@ -16,7 +16,7 @@ import com.gamebuster19901.excite.bot.command.MessageContext;
 import com.gamebuster19901.excite.bot.database.Comparison;
 import com.gamebuster19901.excite.bot.database.Result;
 import com.gamebuster19901.excite.bot.database.Table;
-import com.gamebuster19901.excite.bot.mail.EmailAddress;
+import com.gamebuster19901.excite.bot.mail.ElectronicAddress;
 import com.gamebuster19901.excite.bot.mail.MailResponse;
 import com.gamebuster19901.excite.bot.mail.Mailbox;
 import com.gamebuster19901.excite.bot.mail.TextualMailResponse;
@@ -31,7 +31,7 @@ import static com.gamebuster19901.excite.bot.database.Column.*;
 import static com.gamebuster19901.excite.bot.database.Table.WIIS;
 import static com.gamebuster19901.excite.bot.user.DesiredProfile.validPasswordChars;
 
-public class Wii implements Named, Owned<DiscordUser>, EmailAddress {
+public class Wii implements Named, Owned<DiscordUser>, ElectronicAddress {
 	
 	private static final String EMAIL_SUFFIX = "@rc24.xyz";
 	private static final Pattern PATTERN = Pattern.compile("^\\d{16}$");
@@ -151,7 +151,7 @@ public class Wii implements Named, Owned<DiscordUser>, EmailAddress {
 		embed.setColor(Color.GREEN);
 		embed.setTitle("Registration Successful");
 		embed.setDescription("You have succesfully registered the following wii:\n\n" + this.getIdentifierName());
-		EmailAddress exciteEmail = Mailbox.ADDRESS;
+		ElectronicAddress exciteEmail = Mailbox.ADDRESS;
 		owner.sendMessage(embed.build());
 		LinkedHashSet<MailResponse> wiiMail = Mailbox.packResponses(
 				new TextualMailResponse((Wii)exciteEmail, this, null).setText(

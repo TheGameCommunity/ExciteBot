@@ -66,7 +66,7 @@ public class Mailbox {
 	public static final File INBOX_ERRORED;
 	public static final File OUTBOX;
 	public static final File OUTBOX_ERRORED;
-	public static final EmailAddress ADDRESS;
+	public static final ElectronicAddress ADDRESS;
 	static {
 		MAILBOX = new File("./run/Mailbox");
 		INBOX = new File("./run/Mailbox/Inbox");
@@ -276,7 +276,7 @@ public class Mailbox {
 			return responses;
 		}
 		
-		EmailAddress senderEmail = (EmailAddress)(Object)prompt.getFrom()[0];
+		ElectronicAddress senderEmail = new EmailAddress(prompt.getFrom()[0]);
 		Wii sender = Wii.getWii(senderEmail.toString());
 		if(sender instanceof InvalidWii) {
 			LOGGER.log(Level.FINEST, "Ignoring non-wii mail");
