@@ -277,7 +277,7 @@ public class Mailbox {
 		}
 		
 		ElectronicAddress senderEmail = new EmailAddress(prompt.getFrom()[0]);
-		Wii sender = Wii.getWii(senderEmail.toString());
+		Wii sender = Wii.getWii(senderEmail);
 		if(sender instanceof InvalidWii) {
 			LOGGER.log(Level.FINEST, "Ignoring non-wii mail");
 			responses.add(new NoResponse(prompt));

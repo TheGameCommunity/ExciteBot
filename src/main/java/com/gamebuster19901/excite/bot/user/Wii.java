@@ -172,6 +172,10 @@ public class Wii implements Named, Owned<DiscordUser>, ElectronicAddress {
 		return new InvalidWii(wiiCode);
 	}
 	
+	public static Wii getWii(ElectronicAddress address) {
+		return getWii(address.getEmail().toString());
+	}
+	
 	@Nullable
 	public static WiiCode getWiiCode(String code) {
 		return new WiiCode(code);
