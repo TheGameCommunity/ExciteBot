@@ -179,24 +179,7 @@ public class ArchiveCommand {
 												for(Attachment attachment : attachments) {
 													File attachmentFile = new File(file.getParentFile().getPath() + "/attach" + attachment.getIdLong() + attachment.getFileName());
 													CompletableFuture<File> future = attachment.downloadToFile(attachmentFile);
-													future.exceptionally(error -> {
-														int i = 0;
-														source.sendMessage("Encountered " + error.getClass().getSimpleName() + " while downloading " + attachmentFile + " retrying... (" + i++ + "/4)");
-														while(i < 4) {
-															try {
-																future.get();
-																i++;
-															} catch (Throwable t) {
-																if(t instanceof InterruptedException) {
-																	throw new ThreadDeath();
-																}
-																if(i < 4) {
-																	source.sendMessage("Encountered " + t.getClass().getSimpleName() + " while downloading " + attachmentFile + " retrying... (" + i + "/4)");
-																}
-															}
-														}
-														return null;
-													}).get();
+													future.get();
 													write(fileWriter, attachment.getId() + attachmentFile.getName());
 													estimatedSize += attachment.getSize();
 													attachmentsArchived++;
