@@ -113,14 +113,14 @@ public class ArchiveCommand {
 										embed.addField(estimatedSizeField = new Field("Estimated size:", FileUtils.humanReadableByteCount(estimatedSize), true, true));
 										embed.addField(timeElapsedField = new Field ("Time elapsed:", TimeUtils.readableDuration(Duration.between(start, now)), true, true));
 										embed.setTimestamp(now);
-										message.editMessage(embed.build()).complete();
+										message.editMessageEmbeds(embed.build()).complete();
 									}
 									Thread.sleep(2500);
 								} catch (InterruptedException e) {
 									currentStatus = ERRORED;
 									embed.setTitle("Archive failed");
 									embed.setColor(Color.RED);
-									message.editMessage(embed.build()).complete();
+									message.editMessageEmbeds(embed.build()).complete();
 									System.out.println("Monitor thread interrupted... stopping!");
 									return;
 								}
@@ -132,7 +132,7 @@ public class ArchiveCommand {
 							embed.addField(estimatedSizeField = new Field("Estimated size:", FileUtils.humanReadableByteCount(estimatedSize), true, true));
 							embed.addField(timeElapsedField = new Field ("Time elapsed:", TimeUtils.readableDuration(Duration.between(start, now)), true, true));
 							embed.setTimestamp(now);
-							message.editMessage(embed.build()).complete();
+							message.editMessageEmbeds(embed.build()).complete();
 							if(currentStatus == COMPLETE) {
 								embed.setColor(Color.GREEN);
 								embed.setTitle("Archive complete");
@@ -143,7 +143,7 @@ public class ArchiveCommand {
 								embed.setTitle("Archive failed");
 								source.sendMessage(source.getDiscordAuthor().getJDAUser().getAsMention() + " Archive FAILED.");
 							}
-							message.editMessage(embed.build()).complete();
+							message.editMessageEmbeds(embed.build()).complete();
 						}});
 						
 						String date = TimeUtils.getDBDate(Instant.now());

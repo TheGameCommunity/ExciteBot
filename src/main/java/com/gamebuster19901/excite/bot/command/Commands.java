@@ -13,8 +13,7 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 
-import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
-import net.dv8tion.jda.api.events.message.priv.PrivateMessageReceivedEvent;
+import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 
 @SuppressWarnings("rawtypes")
 public class Commands {
@@ -64,11 +63,14 @@ public class Commands {
 		}
 	}
 	
-	public void handleCommand(GuildMessageReceivedEvent e) {
-		MessageContext<GuildMessageReceivedEvent> context = new MessageContext<GuildMessageReceivedEvent>(e);
+	public void handleCommand(MessageReceivedEvent e) {
+		MessageContext<MessageReceivedEvent> context = new MessageContext<MessageReceivedEvent>(e);
 		try {
 			String message = e.getMessage().getContentRaw();
-			String prefix = context.getServer().getPrefix();
+			String prefix = "";
+			if(context.isGuildMessage()) {
+				prefix = context.getServer().getPrefix();
+			}
 			if(message.startsWith(prefix)) {
 				message = StringUtils.replaceOnce(message, prefix, "");
 				DiscordUser sender = DiscordUser.getDiscordUser(ConsoleContext.INSTANCE, e.getAuthor().getIdLong());
@@ -90,32 +92,6 @@ public class Commands {
 				context.sendMessage(t.getClass().getCanonicalName());
 				throw t;
 			}
-			context.sendMessage(StacktraceUtil.getStackTrace(t));
-			if(!context.isConsoleMessage()) {
-				t.printStackTrace();
-			}
-			if(t instanceof Error) {
-				throw t;
-			}
-		}
-	}
-	
-	public void handleCommand(PrivateMessageReceivedEvent e) {
-		MessageContext<PrivateMessageReceivedEvent> context = new MessageContext<PrivateMessageReceivedEvent>(e);
-		String message = e.getMessage().getContentRaw();
-		try {
-			DiscordUser sender = DiscordUser.getDiscordUser(ConsoleContext.INSTANCE, e.getAuthor().getIdLong());
-			if(!sender.isBanned()) {
-				if(!sender.isBanned()) {
-					CommandAudit.addCommandAudit(context, message);
-					this.dispatcher.execute(message, context);
-				}
-			}
-		}
-		catch (CommandSyntaxException ex) {
-			context.sendMessage(ex.getMessage());
-		}
-		catch(Throwable t) {
 			context.sendMessage(StacktraceUtil.getStackTrace(t));
 			if(!context.isConsoleMessage()) {
 				t.printStackTrace();

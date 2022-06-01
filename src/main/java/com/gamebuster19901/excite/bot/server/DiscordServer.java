@@ -13,6 +13,7 @@ import com.gamebuster19901.excite.bot.database.Comparison;
 import com.gamebuster19901.excite.bot.database.Result;
 import com.gamebuster19901.excite.bot.database.Table;
 import com.gamebuster19901.excite.bot.database.sql.PreparedStatement;
+import com.gamebuster19901.excite.util.Named;
 
 import static com.gamebuster19901.excite.bot.database.Column.*;
 
@@ -21,7 +22,7 @@ import static com.gamebuster19901.excite.bot.database.Table.DISCORD_SERVERS;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Role;
 
-public class DiscordServer {
+public class DiscordServer implements Named {
 	
 	protected final long id;
 	
@@ -54,14 +55,14 @@ public class DiscordServer {
 	}
 
 	public Guild getGuild() {
-		return Main.discordBot.jda.getGuildById(getId());
+		return Main.discordBot.jda.getGuildById(getID());
 	}
 	
 	public Role getRoleById(long id) {
 		return getGuild().getRoleById(id);
 	}
 	
-	public long getId() {
+	public long getID() {
 		return id;
 	}
 	
@@ -72,12 +73,12 @@ public class DiscordServer {
 	@SuppressWarnings("deprecation")
 	public String getName() {
 		try {
-			Result result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, SERVER_NAME, DISCORD_SERVERS, new Comparison(SERVER_ID, EQUALS, getId()));
+			Result result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, SERVER_NAME, DISCORD_SERVERS, new Comparison(SERVER_ID, EQUALS, getID()));
 			if(result.next()) {
 				return result.getString(SERVER_NAME);
 			}
 			else {
-				throw new AssertionError("Could not find name for server " + getId());
+				throw new AssertionError("Could not find name for server " + getID());
 			}
 		} catch (SQLException e) {
 			throw new IOError(e);
@@ -86,7 +87,7 @@ public class DiscordServer {
 	
 	public void setName(String name) {
 		try {
-			Table.updateWhere(ConsoleContext.INSTANCE, DISCORD_SERVERS, SERVER_NAME, name, new Comparison(SERVER_ID, EQUALS, getId()));
+			Table.updateWhere(ConsoleContext.INSTANCE, DISCORD_SERVERS, SERVER_NAME, name, new Comparison(SERVER_ID, EQUALS, getID()));
 		} catch (SQLException e) {
 			throw new IOError(e);
 		}
@@ -95,12 +96,12 @@ public class DiscordServer {
 	@SuppressWarnings("deprecation")
 	public String getPrefix() {
 		try {
-			Result result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, SERVER_PREFIX, DISCORD_SERVERS, new Comparison(SERVER_ID, EQUALS, getId()));
+			Result result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, SERVER_PREFIX, DISCORD_SERVERS, new Comparison(SERVER_ID, EQUALS, getID()));
 			if(result.next()) {
 				return result.getString(SERVER_PREFIX);
 			}
 			else {
-				throw new AssertionError("Could not find prefix for server " + getId());
+				throw new AssertionError("Could not find prefix for server " + getID());
 			}
 		} catch (SQLException e) {
 			throw new IOError(e);
@@ -109,19 +110,19 @@ public class DiscordServer {
 	
 	public void setPrefix(String prefix) {
 		try {
-			Table.updateWhere(ConsoleContext.INSTANCE, DISCORD_SERVERS, SERVER_PREFIX, prefix, new Comparison(SERVER_ID, EQUALS, getId()));
+			Table.updateWhere(ConsoleContext.INSTANCE, DISCORD_SERVERS, SERVER_PREFIX, prefix, new Comparison(SERVER_ID, EQUALS, getID()));
 		} catch (SQLException e) {
 			throw new IOError(e);
 		}
 	}
 	
 	public boolean isLoaded() {
-		return Main.discordBot.jda.getGuildById(getId()) != null;
+		return Main.discordBot.jda.getGuildById(getID()) != null;
 	}
 	
 	@Override
 	public int hashCode() {
-		return Long.valueOf(getId()).hashCode();
+		return Long.valueOf(getID()).hashCode();
 	}
 	
 	@Override
@@ -133,7 +134,7 @@ public class DiscordServer {
 	}
 	
 	public String toString() {
-		return getName() + " (" + getId() + ")";
+		return getName() + " (" + getID() + ")";
 	}
 	
 	@SuppressWarnings("rawtypes")

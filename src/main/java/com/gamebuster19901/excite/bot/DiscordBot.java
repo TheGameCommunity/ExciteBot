@@ -79,12 +79,12 @@ public class DiscordBot {
 	
 	public void setLoading() {
 		Presence presence = jda.getPresence();
-		presence.setPresence(OnlineStatus.IDLE, Activity.of(ActivityType.DEFAULT, "Loading..."));
+		presence.setPresence(OnlineStatus.IDLE, Activity.of(ActivityType.WATCHING, "Loading..."));
 	}
 	
 	public void setNoDB() {
 		Presence presence = jda.getPresence();
-		presence.setPresence(OnlineStatus.DO_NOT_DISTURB, Activity.of(ActivityType.DEFAULT, "No Database!"));
+		presence.setPresence(OnlineStatus.DO_NOT_DISTURB, Activity.of(ActivityType.STREAMING, "No Database!"));
 	}
 	
 	public void updatePresence() {
@@ -105,8 +105,8 @@ public class DiscordBot {
 			}
 		}
 		else {
-			if(presence.getStatus() != OnlineStatus.DO_NOT_DISTURB || presence.getActivity().getType() != ActivityType.DEFAULT) {
-				presence.setPresence(OnlineStatus.DO_NOT_DISTURB, Activity.of(ActivityType.DEFAULT, "Bot offline"));
+			if(presence.getStatus() != OnlineStatus.DO_NOT_DISTURB) {
+				presence.setPresence(OnlineStatus.DO_NOT_DISTURB, Activity.of(ActivityType.WATCHING, "Bot offline"));
 			}
 		}
 	}

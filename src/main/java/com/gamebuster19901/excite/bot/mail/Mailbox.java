@@ -39,7 +39,6 @@ import org.apache.http.impl.client.HttpClients;
 import com.gamebuster19901.excite.bot.audit.MailAudit;
 import com.gamebuster19901.excite.bot.command.ConsoleContext;
 import com.gamebuster19901.excite.bot.database.Insertion;
-import com.gamebuster19901.excite.bot.user.UnknownDiscordUser;
 import com.gamebuster19901.excite.bot.user.Wii;
 import com.gamebuster19901.excite.bot.user.Wii.InvalidWii;
 import com.gamebuster19901.excite.game.challenge.InvalidChallenge;
@@ -304,8 +303,8 @@ public class Mailbox {
 				attachment = analyzeIngameMail(prompt, sender);
 			}
 			
-			if(sender.getOwner() instanceof UnknownDiscordUser) { //if wii is not registered
-				if(app.equals(FRIEND_REQUEST) && !wasKnown) {
+			//if(sender.getOwner() instanceof UnknownDiscordUser) { //if wii is not registered
+//				if(app.equals(FRIEND_REQUEST) /*&& !wasKnown*/) {
 					MailResponse friendResponse = new AddFriendResponse(responder, sender, prompt);
 					LOGGER.finest("Sending friend request to " + sender.getEmail());
 					MailResponse codeResponse = new DiscordCodeResponse(responder, sender, prompt);
@@ -313,17 +312,17 @@ public class Mailbox {
 					
 					responses.add(friendResponse);
 					responses.add(codeResponse);
-				}
+//				}
 
 				if(attachment.getReward() > 0) {
 					//responses.add(new RefundResponse(responder, prompt, attachment));
 				}
 				
-			}
-			else { //excitebot is not currently accepting mail from anything other than Excitebots
+			//}
+			/*else { //excitebot is not currently accepting mail from anything other than Excitebots
 				LOGGER.log(Level.FINEST, "Excitebot is not currently accepting mail from anything other than Excitebots");
 				responses.add(new NoResponse(prompt));
-			}
+			}*/
 		}
 		
 		return responses;
@@ -339,19 +338,20 @@ public class Mailbox {
 		String password;
 		HttpPost request;
 		BufferedReader fileReader = null;
-		String s = "String uninitialized";
+		String s = "UNINITIALIZED PAYLOAD";
 		try {
 			File secretFile = new File("./mail.secret");
 			fileReader = new BufferedReader(new FileReader(secretFile));
 			wiiID = fileReader.readLine();
 			password = fileReader.readLine();
-			request = new HttpPost("https://mtw." + SERVER + "/cgi-bin/send.cgi?mlid=" + wiiID + "&passwd=" + password + "&maxsize=11534336");
+			String authenticationPayload = "mlid=" + wiiID + "&passwd=" + password + "&maxsize=11534336";
+			request = new HttpPost("https://mtw." + SERVER + "/cgi-bin/send.cgi?" + authenticationPayload);
 			request.addHeader("Content-Type", "multipart/form-data; boundary=" + BOUNDARY);
-			s = 					
-				"Content-Disposition: form-data; name=\"mlid\"\n"
-				+ "mlid="+wiiID+"\n"
-				+ "passwd="+password+"\n"
-				+ "--" + BOUNDARY + "\n";
+			request.addHeader("Content-Length", authenticationPayload.length() + "");
+			request.addHeader("Content-Disposition", "form-data; name=\"mlid\"");
+			s = "";
+			s = s + authenticationPayload + "\n";
+			s = s + "--" + BOUNDARY + "\n";
 			
 			int i = 1;
 			for(MailResponse response : responses) {
@@ -382,6 +382,8 @@ public class Mailbox {
 			s = s.trim() 
 				+ "--";
 			
+			System.out.println(s);
+			
 			StringEntity e = new StringEntity(s);
 			request.setEntity(e);
 			
@@ -397,7 +399,7 @@ public class Mailbox {
 			if(response != null) {
 				ByteArrayOutputStream logStream = new ByteArrayOutputStream();
 				response.getEntity().writeTo(logStream);
-				LOGGER.log(Level.FINEST, logStream.toString());
+				LOGGER.log(Level.INFO, logStream.toString());
 				logStream.close();
 			}
 		}
