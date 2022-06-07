@@ -4,25 +4,21 @@ import com.gamebuster19901.excite.bot.command.Commands;
 import com.gamebuster19901.excite.bot.server.DiscordServer;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
 
-import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
-import net.dv8tion.jda.api.events.message.priv.PrivateMessageReceivedEvent;
+import net.dv8tion.jda.api.entities.MessageChannel;
+import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 
 public class EventReceiver extends ListenerAdapter {
 
 	@Override
-	public void onGuildMessageReceived(GuildMessageReceivedEvent e) {
-		DiscordServer.addServer(e.getGuild());
-		DiscordUser.addUser(e.getAuthor());
-		if(!e.getAuthor().isBot()) {
-			Commands.DISPATCHER.handleCommand(e);
+	public void onMessageReceived(MessageReceivedEvent e) {
+		MessageChannel channel = e.getChannel();
+		if(e.getChannel() instanceof TextChannel) {
+			DiscordServer.addServer(e.getGuild());
 		}
-	}
-	
-	@Override
-	public void onPrivateMessageReceived(PrivateMessageReceivedEvent e) {
 		DiscordUser.addUser(e.getAuthor());
-		if(!e.getAuthor().isBot()) {
+		if(!e.getAuthor().isBot() && !e.getAuthor().isSystem()) {
 			Commands.DISPATCHER.handleCommand(e);
 		}
 	}

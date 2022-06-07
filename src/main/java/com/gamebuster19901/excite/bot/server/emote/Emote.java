@@ -50,7 +50,7 @@ public class Emote {
 				List<net.dv8tion.jda.api.entities.Emote> emotes = server.getGuild().getEmotesByName(name, false);
 				if(emotes.size() > 0) {
 					LOGGER.info("Found emote :" + name + ": " + " in " + server);
-					return new Emote(name, server.getId(), emotes.get(0).getAsMention());
+					return new Emote(name, server.getID(), emotes.get(0).getAsMention());
 				}
 			}
 		}

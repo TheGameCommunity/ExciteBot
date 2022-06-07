@@ -14,11 +14,15 @@ import com.gamebuster19901.excite.bot.user.DiscordUser;
 import com.gamebuster19901.excite.util.MessageUtil;
 import com.gamebuster19901.excite.util.Named;
 
+import net.dv8tion.jda.api.entities.BaseGuildMessageChannel;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.entities.MessageEmbed;
-import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
-import net.dv8tion.jda.api.events.message.priv.PrivateMessageReceivedEvent;
+import net.dv8tion.jda.api.entities.NewsChannel;
+import net.dv8tion.jda.api.entities.PrivateChannel;
+import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.entities.ThreadChannel;
+import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 
 public class MessageContext<E>{
 	
@@ -26,7 +30,7 @@ public class MessageContext<E>{
 	private AbnormalMessage message;
 	
 	public MessageContext(E e) {
-		if(e instanceof GuildMessageReceivedEvent || e instanceof PrivateMessageReceivedEvent || e instanceof DiscordUser || e instanceof Player) {
+		if(e instanceof MessageReceivedEvent || e instanceof DiscordUser || e instanceof Player) {
 			this.event = e;
 		}
 		else {
@@ -37,11 +41,8 @@ public class MessageContext<E>{
 	public MessageContext(E e, String message) {
 		this(e);
 		long id = 0;
-		if(e instanceof GuildMessageReceivedEvent) {
-			id = ((GuildMessageReceivedEvent) e).getMessageIdLong();
-		}
-		if(e instanceof PrivateMessageReceivedEvent) {
-			id = ((PrivateMessageReceivedEvent) e).getMessageIdLong();
+		if(e instanceof MessageReceivedEvent) {
+			id = ((MessageReceivedEvent) e).getMessageIdLong();
 		}
 		this.message = new AbnormalMessage(message, id);
 	}
@@ -51,12 +52,28 @@ public class MessageContext<E>{
 		this.event = (E) Main.CONSOLE;
 	}
 	
+	public boolean isDiscordContext() {
+		return event instanceof MessageReceivedEvent;
+	}
+	
 	public boolean isGuildMessage() {
-		return event instanceof GuildMessageReceivedEvent;
+		return getChannel() instanceof BaseGuildMessageChannel;
+	}
+	
+	public boolean isStandardGuildMessage() {
+		return getChannel() instanceof TextChannel;
+	}
+	
+	public boolean isNewsMessage() {
+		return getChannel() instanceof NewsChannel;
+	}
+	
+	public boolean isThreadMessage() {
+		return getChannel() instanceof ThreadChannel;
 	}
 	
 	public boolean isPrivateMessage() {
-		return event instanceof PrivateMessageReceivedEvent || event instanceof DiscordUser;
+		return getChannel() instanceof PrivateChannel || event instanceof DiscordUser;
 	}
 	
 	public boolean isConsoleMessage() {
@@ -81,11 +98,8 @@ public class MessageContext<E>{
 	}
 	
 	public DiscordUser getDiscordAuthor() {
-		if(event instanceof GuildMessageReceivedEvent) {
-			return DiscordUser.getDiscordUser(ConsoleContext.INSTANCE, ((GuildMessageReceivedEvent)event).getMessage().getAuthor().getIdLong());
-		}
-		else if (event instanceof PrivateMessageReceivedEvent) {
-			return DiscordUser.getDiscordUser(ConsoleContext.INSTANCE, ((PrivateMessageReceivedEvent)event).getMessage().getAuthor().getIdLong());
+		if(event instanceof MessageReceivedEvent) {
+			return DiscordUser.getDiscordUser(ConsoleContext.INSTANCE, ((MessageReceivedEvent)event).getMessage().getAuthor().getIdLong());
 		}
 		else if (event instanceof DiscordUser) {
 			return (DiscordUser) event;
@@ -112,42 +126,32 @@ public class MessageContext<E>{
 	}
 	
 	public Message sendMessage(MessageEmbed message) {
-		if(!isConsoleMessage()) {
-			if(event instanceof GuildMessageReceivedEvent) {
-				return ((GuildMessageReceivedEvent)event).getChannel().sendMessage(message).complete();
-			}
-			else if (event instanceof PrivateMessageReceivedEvent) {
-				return ((PrivateMessageReceivedEvent)event).getChannel().sendMessage(message).complete();
-			}
-			else if (event instanceof DiscordUser) {
-				return ((DiscordUser) event).sendMessage(message);
-			}
+		if(isDiscordContext()) {
+			return ((MessageReceivedEvent)event).getChannel().sendMessageEmbeds(message).complete();
 		}
 		else if (isConsoleMessage()) {
 			throw new UnsupportedOperationException("Cannot send an embed to the console");
 		}
-		if(isIngameEvent()) {
+		else if (event instanceof DiscordUser) {
+			return ((DiscordUser) event).sendMessage(message);
+		}
+		else if(isIngameEvent()) {
 			throw new UnsupportedOperationException();
 		}
 		return null;
 	}
 	
 	public void sendMessage(String message) {
-		if(!isConsoleMessage()) {
-			if(event instanceof GuildMessageReceivedEvent) {
+		if(isDiscordContext()) {
+			if(event instanceof MessageReceivedEvent) {
 				for(String submessage : MessageUtil.toMessages(message)) {
-					((GuildMessageReceivedEvent)event).getChannel().sendMessage(submessage).complete();
+					((MessageReceivedEvent)event).getChannel().sendMessage(submessage).complete();
 				}
 			}
-			else if (event instanceof PrivateMessageReceivedEvent) {
-				for(String submessage : MessageUtil.toMessages(message)) {
-					((PrivateMessageReceivedEvent)event).getChannel().sendMessage(submessage).complete();
-				}
-			}
-			else if (event instanceof DiscordUser) {
-				for(String submessage : MessageUtil.toMessages(message)) {
-					((DiscordUser) event).sendMessage(submessage);
-				}
+		}
+		else if (event instanceof DiscordUser) {
+			for(String submessage : MessageUtil.toMessages(message)) {
+				((DiscordUser) event).sendMessage(submessage);
 			}
 		}
 		else if (isConsoleMessage()) {
@@ -182,11 +186,8 @@ public class MessageContext<E>{
 		if(event instanceof DiscordUser) {
 			return getDiscordAuthor().getID();
 		}
-		if(event instanceof GuildMessageReceivedEvent) {
-			return ((GuildMessageReceivedEvent) event).getAuthor().getIdLong();
-		}
-		if(event instanceof PrivateMessageReceivedEvent) {
-			return ((PrivateMessageReceivedEvent)event).getAuthor().getIdLong();
+		if(event instanceof MessageReceivedEvent) {
+			return ((MessageReceivedEvent) event).getAuthor().getIdLong();
 		}
 		if (event instanceof Player) {
 			return ((Player) event).getID();
@@ -195,18 +196,15 @@ public class MessageContext<E>{
 	}
 	
 	public DiscordServer getServer() {
-		if(event instanceof GuildMessageReceivedEvent) {
-			return DiscordServer.getServer(ConsoleContext.INSTANCE, ((GuildMessageReceivedEvent)event).getMessage().getGuild().getIdLong());
+		if(event instanceof MessageReceivedEvent) {
+			return DiscordServer.getServer(ConsoleContext.INSTANCE, ((MessageReceivedEvent)event).getMessage().getGuild().getIdLong());
 		}
 		return null;
 	}
 	
 	public MessageChannel getChannel() {
-		if (event instanceof GuildMessageReceivedEvent) {
-			return ((GuildMessageReceivedEvent) event).getChannel();
-		}
-		if (event instanceof PrivateMessageReceivedEvent) {
-			return ((PrivateMessageReceivedEvent) event).getChannel();
+		if (event instanceof MessageReceivedEvent) {
+			return ((MessageReceivedEvent) event).getChannel();
 		}
 		return null;
 	}
@@ -217,11 +215,8 @@ public class MessageContext<E>{
 	
 	@Nullable
 	public Message getMessage() {
-		if(event instanceof GuildMessageReceivedEvent) {
-			return ((GuildMessageReceivedEvent) event).getMessage();
-		}
-		if(event instanceof PrivateMessageReceivedEvent) {
-			return ((PrivateMessageReceivedEvent) event).getMessage();
+		if(event instanceof MessageReceivedEvent) {
+			return ((MessageReceivedEvent) event).getMessage();
 		}
 		
 		return message;

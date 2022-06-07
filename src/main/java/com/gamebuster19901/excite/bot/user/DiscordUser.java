@@ -43,7 +43,7 @@ import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.PrivateChannel;
 import net.dv8tion.jda.api.entities.User;
-import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
+import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.exceptions.ErrorResponseException;
 
 public class DiscordUser implements Banee {
@@ -391,7 +391,7 @@ public class DiscordUser implements Banee {
 			if(!getJDAUser().isBot()) {
 				PrivateChannel privateChannel = getJDAUser().openPrivateChannel().complete();
 				try {
-					return privateChannel.sendMessage(message).complete();
+					return privateChannel.sendMessageEmbeds(message).complete();
 				}
 				catch(ErrorResponseException e) {
 					System.out.println(this.toDetailedString());
@@ -420,10 +420,10 @@ public class DiscordUser implements Banee {
 	@SuppressWarnings("rawtypes")
 	public void sendMessage(MessageContext context, String message) {
 		if(context.isGuildMessage()) {
-			GuildMessageReceivedEvent e = (GuildMessageReceivedEvent) context.getEvent();
+			MessageReceivedEvent e = (MessageReceivedEvent) context.getEvent();
 			User receiver = this.getJDAUser();
 			if(e.getGuild().isMember(receiver)) {
-				if(e.getChannel().canTalk(e.getGuild().getMember(receiver))) {
+				if(e.getChannel().canTalk()) {
 					e.getChannel().sendMessage(message).complete();
 					return;
 				}

@@ -56,6 +56,8 @@ public class Main {
 			throw new IllegalArgumentException("Must be started with an even number of arguments!");
 		}
 		
+		LOGGER.setLevel(Level.FINEST);
+		
 		for(int i = 0; i < args.length; i++) {
 			if(args[i].equals("-owner")) {
 				botOwner = Long.parseLong(args[++i]);
@@ -176,7 +178,7 @@ public class Main {
 		catch(Throwable t) {
 			t.printStackTrace();
 			if(discordBot != null) {
-				discordBot.jda.getPresence().setPresence(OnlineStatus.DO_NOT_DISTURB, Activity.of(ActivityType.DEFAULT, "Bot Crashed"));
+				discordBot.jda.getPresence().setPresence(OnlineStatus.DO_NOT_DISTURB, Activity.of(ActivityType.WATCHING, "Bot Crashed"));
 				if(botOwner != -1) {
 					try {
 						DiscordUser user = DiscordUser.getDiscordUserIncludingUnknown(ConsoleContext.INSTANCE, botOwner);
