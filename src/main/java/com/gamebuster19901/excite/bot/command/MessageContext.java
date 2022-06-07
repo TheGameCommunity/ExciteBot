@@ -11,6 +11,7 @@ import com.gamebuster19901.excite.bot.database.sql.DatabaseConnection;
 import com.gamebuster19901.excite.bot.server.DiscordServer;
 import com.gamebuster19901.excite.bot.user.ConsoleUser;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
+import com.gamebuster19901.excite.bot.user.Nobody;
 import com.gamebuster19901.excite.util.MessageUtil;
 import com.gamebuster19901.excite.util.Named;
 
@@ -104,7 +105,7 @@ public class MessageContext<E>{
 		else if (event instanceof DiscordUser) {
 			return (DiscordUser) event;
 		}
-		return null;
+		return Nobody.INSTANCE;
 	}
 	
 	public Player getPlayerAuthor() {
@@ -139,6 +140,13 @@ public class MessageContext<E>{
 			throw new UnsupportedOperationException();
 		}
 		return null;
+	}
+	
+	public void sendMessage(MessageChannel channel, String message) {
+		if(isIngameEvent()) {
+			throw new UnsupportedOperationException();
+		}
+		channel.sendMessage(message).complete();
 	}
 	
 	public void sendMessage(String message) {

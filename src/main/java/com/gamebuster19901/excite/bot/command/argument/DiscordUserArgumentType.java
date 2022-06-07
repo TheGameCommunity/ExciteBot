@@ -27,7 +27,7 @@ public class DiscordUserArgumentType implements ArgumentType<DiscordUser> {
 	
 	@Override
 	public DiscordUser parse(StringReader reader) throws CommandSyntaxException {
-		String input = reader.readQuotedString();
+		String input = reader.readString();
 		DiscordUser[] users = DiscordUser.getDiscordUsersWithUsernameOrID(ConsoleContext.INSTANCE, input);
 		if(users.length == 0) {
 			if(allowUnknown) {

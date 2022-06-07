@@ -18,6 +18,22 @@ public interface ParseExceptions {
 	public Dynamic2CommandExceptionType DISCORD_AMBIGUITY = new Dynamic2CommandExceptionType((input, found) -> new LiteralMessage("`" + input + "` matches " + ((DiscordUser[])found).length + " users, supply a discriminator or specify an ID"));
 	
 	/**
+	 * CHANNEL
+	 */
+	public Dynamic2CommandExceptionType TEXT_CHANNEL_REQUIRED = new Dynamic2CommandExceptionType((server, channel) -> new LiteralMessage(channel + " in " + server + " is not a text channel."));
+	public DynamicCommandExceptionType PUBLIC_CHANNEL_REQUIRED = new DynamicCommandExceptionType((channel) -> new LiteralMessage(channel + " in is not a public channel."));
+	public DynamicCommandExceptionType CHANNEL_NOT_FOUND = new DynamicCommandExceptionType(channel -> new LiteralMessage("Could not find channel " + channel + " in any server"));
+	public Dynamic2CommandExceptionType CHANNEL_NOT_FOUND_IN_SERVER = new Dynamic2CommandExceptionType((server, channel) -> new LiteralMessage("Could not find channel " + channel + " in " + server));
+	public Dynamic2CommandExceptionType INSUFFICIENT_BOT_PERMISSION = new Dynamic2CommandExceptionType((action, requiredPermission) -> {
+		if(requiredPermission != null) {
+			return new LiteralMessage("I do not have permission to " + action + ". (" + requiredPermission + ") required.");
+		}
+		else {
+			return new LiteralMessage("I do not have permission to " + action);
+		}
+	});
+	
+	/**
 	 * PLAYER
 	 */
 	public DynamicCommandExceptionType PLAYER_NOT_FOUND = new DynamicCommandExceptionType(input -> new LiteralMessage("Could not find a profile using the input `" + input + "`"));
