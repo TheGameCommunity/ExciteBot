@@ -14,7 +14,7 @@ public class EventReceiver extends ListenerAdapter {
 	@Override
 	public void onMessageReceived(MessageReceivedEvent e) {
 		MessageChannel channel = e.getChannel();
-		if(e.getTextChannel() instanceof TextChannel) {
+		if(e.getChannel() instanceof TextChannel) {
 			DiscordServer.addServer(e.getGuild());
 		}
 		DiscordUser.addUser(e.getAuthor());
