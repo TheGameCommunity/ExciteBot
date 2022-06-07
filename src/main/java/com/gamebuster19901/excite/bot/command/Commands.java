@@ -8,6 +8,7 @@ import com.gamebuster19901.excite.bot.user.DiscordUser;
 import com.gamebuster19901.excite.util.StacktraceUtil;
 
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
@@ -41,6 +42,7 @@ public class Commands {
 		InsertCommand.register(dispatcher);
 		ArchiveCommand.register(dispatcher);
 		CRCCommand.register(dispatcher);
+		Debug.register(dispatcher);
 	}
 	
 	public void handleCommand(String command) {
@@ -139,6 +141,14 @@ public class Commands {
 			}
 		}
 		return true;
+	}
+	
+	public static String readString(StringReader reader) {
+		StringBuilder ret = new StringBuilder("");
+		while(reader.canRead() && !Character.isSpaceChar(reader.peek())) {
+			ret.append(reader.read());
+		}
+		return ret.toString();
 	}
 	
 }

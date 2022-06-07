@@ -2,8 +2,10 @@ package com.gamebuster19901.excite.bot.command.argument;
 
 import java.time.Duration;
 
+import com.gamebuster19901.excite.bot.command.Commands;
 import com.gamebuster19901.excite.bot.command.exception.ParseExceptions;
 import com.gamebuster19901.excite.util.TimeUtils;
+import com.gamebuster19901.excite.util.TimeUtils.DurationBuilder;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
@@ -29,40 +31,63 @@ public class DurationArgumentType implements ArgumentType<Duration>{
 	
 	@Override
 	public Duration parse(StringReader reader) throws CommandSyntaxException {
-		String part1 = reader.readStringUntil(' ');
-		if(part1.equalsIgnoreCase("forever ")) {
+		int initCursor = reader.getCursor();
+		String part1 = Commands.readString(reader);
+		DurationBuilder duration = new DurationBuilder(min, max);
+		if(part1.equalsIgnoreCase("forever")) {
 			if(max.compareTo(TimeUtils.FOREVER) < 0) {
 				throw ParseExceptions.DURATION_TOO_LONG.create("forever", max);
 			}
 			return TimeUtils.FOREVER;
 		}
-		try {
-			int amount = Integer.parseInt(part1);
-			String part2 = reader.readStringUntil(' ');
-			Duration duration = TimeUtils.computeDuration(amount, part2);
-			if(duration != null) {
-				int compare = Duration.ZERO.compareTo(duration);
-				if(compare == 0) {
-					throw ParseExceptions.ZERO_DURATION.createWithContext(reader);
+		
+		reader.setCursor(initCursor);
+		if(reader.canRead()) {
+			int firstAmount = reader.readInt();
+			if(reader.canRead(2)) {
+				reader.skip();
+				String firstTimeUnit = Commands.readString(reader);
+				if (duration.canAccept(firstAmount, firstTimeUnit)) {
+					duration.add(firstAmount, firstTimeUnit);
 				}
-				else if (compare > 0) {
-					throw ParseExceptions.NEGATIVE_DURATION.createWithContext(reader, duration);
+				else {
+					throw ParseExceptions.INVALID_TIMEUNIT.create(firstTimeUnit);
 				}
-				compare = min.compareTo(duration);
-				if(compare > 0) {
-					throw ParseExceptions.DURATION_TOO_SHORT.createWithContext(reader, duration, min);
-				}
-				compare = max.compareTo(duration);
-				if(compare < 0) {
-					throw ParseExceptions.DURATION_TOO_LONG.createWithContext(reader, duration, max);
-				}
-				return duration;
 			}
-			throw ParseExceptions.INVALID_TIMEUNIT.createWithContext(reader, part2);
+			else {
+				throw ParseExceptions.INVALID_DURATION.create(firstAmount);
+			}
 		}
-		catch(NumberFormatException e) {
-			throw CommandSyntaxException.BUILT_IN_EXCEPTIONS.readerInvalidInt().createWithContext(reader, part1);
+		
+		int prevCursor = reader.getCursor();
+		while(reader.canRead()) {
+			reader.skip();
+			int firstAmount;
+			try {
+				firstAmount = reader.readInt();
+			}
+			catch(CommandSyntaxException e) {
+				reader.setCursor(reader.getCursor() - 1);
+				break;
+			}
+			if(reader.canRead(2)) {
+				reader.skip();
+				String firstTimeUnit = Commands.readString(reader);
+				if (duration.canAccept(firstAmount, firstTimeUnit)) {
+					duration.add(firstAmount, firstTimeUnit);
+				}
+				else {
+					reader.setCursor(prevCursor - 1);
+					break;
+				}
+			}
+			else {
+				reader.setCursor(prevCursor - 1);
+				break;
+			}
 		}
+		return duration.getDuration();
+		
 	}
 
 }

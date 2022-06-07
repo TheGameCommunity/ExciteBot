@@ -12,7 +12,10 @@ import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalAccessor;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Locale;
+
+import static com.gamebuster19901.excite.util.TimeUtils.TimeUnit.*;
 
 public final class TimeUtils {
 	public static final DateTimeFormatter DB_DATE_FORMATTER = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM).withLocale(Locale.US).withZone(ZoneId.of("UTC"));
@@ -141,27 +144,55 @@ public final class TimeUtils {
 		return Duration.between(instant, Instant.now());
 	}
 	
+	@Deprecated
 	public static Duration computeDuration(int amount, String timeUnit) {
 		Duration duration = null;
-		if(isSeconds(timeUnit)) {
+		if(SECONDS.matches(timeUnit)) {
 			duration = Duration.ofSeconds(amount);
 		}
-		else if(isMinutes(timeUnit)) {
+		else if(MINUTES.matches(timeUnit)) {
 			duration = Duration.ofMinutes(amount);
 		}
-		else if (isHours(timeUnit)) {
+		else if (HOURS.matches(timeUnit)) {
 			duration = Duration.ofHours(amount);
 		}
-		else if (isDays(timeUnit)) {
+		else if (DAYS.matches(timeUnit)) {
 			duration = Duration.ofDays(amount);
 		}
-		else if (isWeeks(timeUnit)) {
+		else if (WEEKS.matches(timeUnit)) {
 			duration = Duration.ofDays(amount * 7);
 		}
-		else if (isMonths(timeUnit)) {
+		else if (MONTHS.matches(timeUnit)) {
 			duration = Duration.ofDays(amount * 30);
 		}
-		else if (isYears(timeUnit)) {
+		else if (YEARS.matches(timeUnit)) {
+			duration = Duration.ofDays(amount * 365);
+		}
+		return duration;
+	}
+	
+	@Deprecated
+	public static Duration computeDuration(int amount, TimeUnit timeUnit) {
+		Duration duration = null;
+		if(timeUnit == SECONDS) {
+			duration = Duration.ofSeconds(amount);
+		}
+		else if(timeUnit == MINUTES) {
+			duration = Duration.ofMinutes(amount);
+		}
+		else if (timeUnit == HOURS) {
+			duration = Duration.ofHours(amount);
+		}
+		else if (timeUnit == DAYS) {
+			duration = Duration.ofDays(amount);
+		}
+		else if (timeUnit == WEEKS) {
+			duration = Duration.ofDays(amount * 7);
+		}
+		else if (timeUnit == MONTHS) {
+			duration = Duration.ofDays(amount * 30);
+		}
+		else if (timeUnit == YEARS) {
 			duration = Duration.ofDays(amount * 365);
 		}
 		return duration;
@@ -195,31 +226,87 @@ public final class TimeUtils {
 		return date.getMonth();
 	}
 	
-	private static boolean isSeconds(String timeUnit) {
-		return timeUnit.equalsIgnoreCase("s") || timeUnit.equalsIgnoreCase("sec") || timeUnit.equalsIgnoreCase("secs") || timeUnit.equalsIgnoreCase("second") || timeUnit.equalsIgnoreCase("seconds");
+	public static enum TimeUnit {
+		SECONDS("s", "sec", "secs", "second", "seconds"),
+		MINUTES("m", "min", "mins", "minute", "minutes"),
+		HOURS("h", "hr", "hrs", "hour", "hours"),
+		DAYS("d", "day", "days"),
+		WEEKS("w", "week", "weeks"),
+		MONTHS("mo", "month", "months"),
+		YEARS("y", "yr", "yrs", "year", "years")
+		;
+		
+		private final HashSet<String> aliases = new HashSet<String>();
+		
+		private TimeUnit(String... aliases) {
+			this.aliases.addAll(Arrays.asList(aliases));
+		}
+		
+		public boolean matches(String timeUnit) {
+			for(String s : aliases) {
+				if(s.equalsIgnoreCase(timeUnit)) {
+					return true;
+				}
+			}
+			return false;
+		}
+		
+		public static boolean isValidTimeUnit(String timeUnit) {
+			for(TimeUnit unit : values()) {
+				if(unit.matches(timeUnit)) {
+					return true;
+				}
+			}
+			return false;
+		}
+		
+		public static TimeUnit getTimeUnit(String timeUnit) {
+			for(TimeUnit unit : values()) {
+				if(unit.matches(timeUnit)) {
+					return unit;
+				}
+			}
+			throw new IllegalArgumentException(timeUnit);
+		}
 	}
 	
-	private static boolean isMinutes(String timeUnit) {
-		return timeUnit.equalsIgnoreCase("m") || timeUnit.equalsIgnoreCase("min") || timeUnit.equalsIgnoreCase("mins") ||  timeUnit.equalsIgnoreCase("minute") || timeUnit.equalsIgnoreCase("minutes");
-	}
-	
-	private static boolean isHours(String timeUnit) {
-		return timeUnit.equalsIgnoreCase("h") || timeUnit.equalsIgnoreCase("hr") || timeUnit.equalsIgnoreCase("hrs") ||  timeUnit.equalsIgnoreCase("hour") || timeUnit.equalsIgnoreCase("hours");
-	}
-	
-	private static boolean isDays(String timeUnit) {
-		return timeUnit.equalsIgnoreCase("d") || timeUnit.equalsIgnoreCase("day") || timeUnit.equalsIgnoreCase("days");
-	}
-	
-	private static boolean isWeeks(String timeUnit) {
-		return timeUnit.equalsIgnoreCase("w") || timeUnit.equalsIgnoreCase("week") || timeUnit.equalsIgnoreCase("weeks");
-	}
-	
-	private static boolean isMonths(String timeUnit ) {
-		return timeUnit.equalsIgnoreCase("mo") || timeUnit.equalsIgnoreCase("month") || timeUnit.equalsIgnoreCase("months");
-	}
-	
-	private static boolean isYears(String timeUnit) {
-		return timeUnit.equalsIgnoreCase("y") || timeUnit.equalsIgnoreCase("yr") || timeUnit.equalsIgnoreCase("yrs") || timeUnit.equalsIgnoreCase("year") || timeUnit.equalsIgnoreCase("years");
+	public static class DurationBuilder {
+		private Duration duration;
+		private Duration min;
+		private Duration max;
+		
+		public DurationBuilder(Duration min, Duration max) {
+			this.min = min;
+			this.max = max;
+			this.duration = Duration.ZERO;
+		}
+		
+		public DurationBuilder add(int i, String timeUnit) {
+			return add(i, TimeUnit.getTimeUnit(timeUnit));
+		}
+		
+		public DurationBuilder add(int i, TimeUnit timeUnit) {
+			duration = duration.plus(computeDuration(i, timeUnit));
+			return this;
+		}
+		
+		public boolean canAccept(int i, String timeUnit) {
+			if(i > 0 && TimeUnit.isValidTimeUnit(timeUnit)) {
+				return true;
+			}
+			return false;
+		}
+		
+		public boolean canAccept(int i, TimeUnit timeUnit) {
+			return i > 0;
+		}
+		
+		public boolean isValid() {
+			return duration.compareTo(min) >= 0 && duration.compareTo(max) <= 0;
+		}
+		
+		public Duration getDuration() {
+			return duration;
+		}
 	}
 }
