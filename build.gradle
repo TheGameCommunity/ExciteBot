@@ -11,13 +11,7 @@ repositories {
 		url 'https://m2.dv8tion.net/releases'
 	}
 	maven {
-		url "https://libraries.minecraft.net"
-	}
-	maven {
 		url "https://repo.spongepowered.org/maven/"
-	}
-	maven {
-		url "https://files.minecraftforge.net/maven/"
 	}
 }
 
@@ -34,7 +28,9 @@ dependencies {
 	shadow group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.13'
 	shadow group: 'org.apache.httpcomponents', name: 'httpmime', version: '4.5.13'
 	shadow ('net.dv8tion:JDA:5.0.0-alpha.12')
-	shadow 'com.mojang:brigadier:1.0.18'
+	implementation ('net.dv8tion:JDA:5.0.0-alpha.12')
+	shadow group: 'com.thegamecommunity', name:'brigadier', version: 'TGC-1.1.0.0'
+	implementation group: 'com.thegamecommunity', name:'brigadier', version: 'TGC-1.1.0.0'
 	shadow group: 'mysql', name: 'mysql-connector-java', version: '8.0.28'
 	
 	/*
