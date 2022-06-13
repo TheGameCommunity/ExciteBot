@@ -54,6 +54,7 @@ shadowJar {
 }
 
 jar {
+	duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 	manifest {
 		attributes(
 			'Class-Path': configurations.runtimeClasspath.collect { it.getName() }.join(' '),
