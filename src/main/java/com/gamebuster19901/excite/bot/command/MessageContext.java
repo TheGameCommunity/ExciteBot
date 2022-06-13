@@ -90,10 +90,15 @@ public class MessageContext<E>{
 	}
 	
 	public Named getAuthor() {
-		Named author;
-		author = getDiscordAuthor();
-		if(author == null) {
+		Named author = null;
+		if(isIngameEvent()) {
 			author = getPlayerAuthor();
+		}
+		else if (isDiscordContext() || isConsoleMessage()) {
+			author = getDiscordAuthor();
+		}
+		if(author == null) {
+			throw new AssertionError(author + " is not from ingame, discord, or the console?!");
 		}
 		return author;
 	}

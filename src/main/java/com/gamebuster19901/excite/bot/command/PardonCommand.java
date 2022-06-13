@@ -4,62 +4,56 @@ import com.gamebuster19901.excite.Player;
 import com.gamebuster19901.excite.bot.audit.ban.Ban;
 import com.gamebuster19901.excite.bot.audit.ban.Banee;
 import com.gamebuster19901.excite.bot.audit.ban.Pardon;
+import com.gamebuster19901.excite.bot.command.argument.DiscordUserArgumentType;
+import com.gamebuster19901.excite.bot.command.argument.DiscordUserArgumentType.UnknownType;
+import com.gamebuster19901.excite.bot.command.argument.PlayerArgumentType;
+import com.gamebuster19901.excite.bot.command.argument.UserObtainer;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.LongArgumentType;
-import com.mojang.brigadier.arguments.StringArgumentType;
 
 public class PardonCommand {
 
 	@SuppressWarnings("rawtypes")
 	public static void register(CommandDispatcher<MessageContext> dispatcher) {
-		dispatcher.register(Commands.literal("pardon").then(Commands.argument("baneeOrBanID", LongArgumentType.longArg()).executes((context) -> {
-			return pardon(context.getSource(), context.getArgument("baneeOrBanID", Long.class));
-			}).then(Commands.argument("banID", LongArgumentType.longArg()).executes((context) -> {
-				return pardon(context.getSource(), context.getArgument("baneeOrBanID", Long.class), context.getArgument("banID", Long.class));
+		
+		dispatcher.register(Commands.literal("pardon")
+				
+			.then(Commands.argument("discord", DiscordUserArgumentType.user().of(UserObtainer.UNCHANGED).setUnknown(UnknownType.KNOWN_ID))
+				.executes((context) -> {
+					return pardon(context.getSource(), context.getArgument("discord", DiscordUser.class));
+				})	
+			).then(Commands.argument("banID", LongArgumentType.longArg()).executes((context) -> {
+				return pardon(context.getSource(), context.getArgument("discord", DiscordUser.class), context.getArgument("banID", Long.class));
 			}))
-		.then(Commands.argument("banee", StringArgumentType.greedyString()).executes((context) -> {
-			return pardon(context.getSource(), context.getArgument("banee", String.class));
-		}))
-		));
+			
+			.then(Commands.argument("player", PlayerArgumentType.player().allowUnknown())
+				.executes((context) -> {
+					return pardon(context.getSource(), context.getArgument("player", Player.class));
+				})
+			).then(Commands.argument("banID", LongArgumentType.longArg()).executes((context) -> {
+				return pardon(context.getSource(), context.getArgument("player", Player.class), context.getArgument("banID", Long.class));
+			}))
+			
+			.then(Commands.argument("banID", LongArgumentType.longArg()).executes((context) -> {
+				return pardon(context.getSource(), context.getArgument("banID", Long.class));
+			}))
+			
+		);
+		
 	}
 	
 	@SuppressWarnings("rawtypes")
-	private static final int pardon(MessageContext context, String name) {
+	private static final int pardon(MessageContext context, long banID) {
 		if(context.isAdmin()) {
-			Banee banee = Banee.getBanee(context, name);
-			if(banee != null) {
-				return pardon(context, banee);
-			}
-		}
-		else {
-			context.sendMessage("You do not have permission to execute this command");
-		}
-		return 1;
-	}
-	
-	@SuppressWarnings("rawtypes")
-	private static final int pardon(MessageContext context, long baneeOrBanID) {
-		if(context.isAdmin()) {
-			Ban ban = Ban.getBanByAuditId(context, baneeOrBanID);
+			Ban ban = Ban.getBanByAuditId(context, banID);
 			if(ban != null) {
 				return pardon(context, ban);
 			}
-			Banee banee = Banee.getBanee(context, baneeOrBanID);
-			return pardon(context, banee);
-		}
-		else {
-			context.sendMessage("You do not have permission to execute this command");
-		}
-		return 1;
-	}
-	
-	@SuppressWarnings("rawtypes")
-	private static final int pardon(MessageContext context, long baneeID, long banId) {
-		if(context.isAdmin()) {
-			Banee banee = Banee.getBanee(context, baneeID);
-			return pardon(context, banee, banId);
+			else {
+				context.sendMessage("Could not find ban #" + banID);
+			}
 		}
 		else {
 			context.sendMessage("You do not have permission to execute this command");

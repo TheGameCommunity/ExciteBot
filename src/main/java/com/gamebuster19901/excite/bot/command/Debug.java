@@ -2,12 +2,14 @@ package com.gamebuster19901.excite.bot.command;
 
 import java.time.Duration;
 
+import com.gamebuster19901.excite.Player;
 import com.gamebuster19901.excite.bot.command.argument.ChannelArgumentType;
+import com.gamebuster19901.excite.bot.command.argument.DiscordUserArgumentType;
 import com.gamebuster19901.excite.bot.command.argument.DurationArgumentType;
-import com.gamebuster19901.excite.bot.command.argument.MessageChannelObtainer;
+import com.gamebuster19901.excite.bot.command.argument.PlayerArgumentType;
+import com.gamebuster19901.excite.bot.user.DiscordUser;
 import com.gamebuster19901.excite.util.TimeUtils;
 import com.mojang.brigadier.CommandDispatcher;
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
 
 import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.entities.TextChannel;
@@ -29,7 +31,7 @@ public class Debug {
 				
 					.then((Commands.argument("channel", new ChannelArgumentType()).executes(
 							(context) -> {
-								MessageChannel channel = getMessageChannel(context.getSource(), context.getArgument("channel", MessageChannelObtainer.class));
+								MessageChannel channel = context.getArgument("channel", MessageChannel.class);
 								context.getSource().sendMessage("argument was read as " + channel.getAsMention() + "\n\n(Literally): ```" + channel.getAsMention() + "```\n\nname: " + channel.getName() ); return 1;})))
 				)
 				.then(Commands.literal("time")
@@ -50,12 +52,24 @@ public class Debug {
 										)
 								)
 				))
+				.then(Commands.literal("user")
+					.then(Commands.argument("user", DiscordUserArgumentType.user())
+						.executes((context)	-> {
+							relayUser(context.getSource(), context.getArgument("user", DiscordUser.class));
+							return 1;
+						})
+					)
+				)
+				.then(Commands.literal("player")
+					.then(Commands.argument("player", PlayerArgumentType.player())
+						.executes((context) -> {
+							relayPlayer(context.getSource(), context.getArgument("player", Player.class));
+							return 1;
+						})
+					)	
+				)
 		);
 		
-	}
-	
-	private static MessageChannel getMessageChannel(MessageContext context, MessageChannelObtainer channel) throws CommandSyntaxException {
-		return channel.obtain(context);
 	}
 	
 	private static int setDebugOutput(MessageContext context, MessageChannel channel) {
@@ -72,6 +86,14 @@ public class Debug {
 			context.sendMessage("You do not have permission to execute that command");
 		}
 		return 1;
+	}
+	
+	public static void relayUser(MessageContext context, DiscordUser user) {
+		context.sendMessage("Your argument appears to be " + user.getIdentifierName());
+	}
+	
+	public static void relayPlayer(MessageContext context, Player player) {
+		context.sendMessage("Your argument appears to be " + player.getIdentifierName());
 	}
 	
 }

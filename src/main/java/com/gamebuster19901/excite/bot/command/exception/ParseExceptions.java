@@ -17,6 +17,10 @@ public interface ParseExceptions {
 	public DynamicCommandExceptionType DISCORD_NOT_FOUND = new DynamicCommandExceptionType(input -> new LiteralMessage("Could not find a discord user using the input `" + input + "`"));
 	public Dynamic2CommandExceptionType DISCORD_AMBIGUITY = new Dynamic2CommandExceptionType((input, found) -> new LiteralMessage("`" + input + "` matches " + ((DiscordUser[])found).length + " users, supply a discriminator or specify an ID"));
 	
+	public SimpleCommandExceptionType DISCORD_CONTEXT_REQUIRED = new SimpleCommandExceptionType(new LiteralMessage("Command must be executed via discord."));
+	public SimpleCommandExceptionType DISCORD_CHANNEL_REQUIRED = new SimpleCommandExceptionType(new LiteralMessage("Command must be executed in a discord server."));
+	public SimpleCommandExceptionType PRIVATE_CHANNEL_REQUIRED = new SimpleCommandExceptionType(new LiteralMessage("Command must be executed via private message."));
+	
 	/**
 	 * CHANNEL
 	 */
@@ -50,6 +54,11 @@ public interface ParseExceptions {
 	public Dynamic2CommandExceptionType INVALID_DURATION_2 = new Dynamic2CommandExceptionType((amount, timeUnit) -> new LiteralMessage("`" + amount + " " + timeUnit + "` is not a valid duration."));
 	public Dynamic2CommandExceptionType DURATION_TOO_SHORT = new Dynamic2CommandExceptionType((duration, shortest) -> new LiteralMessage(handleDurationParam(duration) + " is too short, the minumum duration allowed is " + handleDurationParam(shortest)));
 	public Dynamic2CommandExceptionType DURATION_TOO_LONG = new Dynamic2CommandExceptionType((duration, longest) -> new LiteralMessage(handleDurationParam(duration) + " is too long, the maximum duration allowed is " + handleDurationParam(longest)));
+	
+	/**
+	 * WII
+	 */
+	public DynamicCommandExceptionType WII_NOT_FOUND = new DynamicCommandExceptionType(wii -> new LiteralMessage("Unable to find wii `" + wii + '`'));
 	
 	static String handleDurationParam(Object o) {
 		return "`" + (o instanceof Duration ? TimeUtils.fullReadableDuration((Duration) o) : o.toString()) + "`";

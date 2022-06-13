@@ -152,4 +152,13 @@ public class Ban extends Audit{
 		return null;
 	}
 	
+	public String toString() {
+		StringBuilder builder = new StringBuilder();
+		builder.append("User: ").append(getBannedUsername()).append('\n')
+		.append("User ID: " ).append(getBannedID()).append('\n')
+		.append("Ban ID: " ).append(this.getID()).append('\n')
+		.append("Reason: ").append(this.getDescription()).append('\n');
+		return builder.toString();
+	}
+	
 }

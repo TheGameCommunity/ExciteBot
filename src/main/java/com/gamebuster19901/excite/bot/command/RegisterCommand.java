@@ -1,11 +1,11 @@
 package com.gamebuster19901.excite.bot.command;
 
 import java.sql.SQLException;
-import java.util.HashSet;
 
 import javax.mail.MessagingException;
 
 import com.gamebuster19901.excite.Player;
+import com.gamebuster19901.excite.bot.command.argument.PlayerArgumentType;
 import com.gamebuster19901.excite.bot.database.Column;
 import com.gamebuster19901.excite.bot.database.Comparator;
 import com.gamebuster19901.excite.bot.database.Comparison;
@@ -23,9 +23,9 @@ public class RegisterCommand {
 	public static void register(CommandDispatcher<MessageContext> dispatcher) {
 		dispatcher.register(Commands.literal("register")
 			.then(Commands.literal("profile")
-				.then(Commands.argument("player", StringArgumentType.greedyString())
+				.then(Commands.argument("player", PlayerArgumentType.player())
 					.executes(context -> {
-						requestRegistration(context.getSource(), context.getArgument("player", String.class));
+						requestRegistration(context.getSource(), context.getArgument("player", Player.class));
 						return 1;
 					})	
 				)
@@ -41,8 +41,7 @@ public class RegisterCommand {
 	}
 	
 	@SuppressWarnings("rawtypes")
-	private static void requestRegistration(MessageContext context, String player) {
-		HashSet<Player> players = new HashSet<Player>();
+	private static void requestRegistration(MessageContext context, Player desiredProfile) {
 		DiscordUser discordUser = context.getDiscordAuthor();
 		if(context.isConsoleMessage()) {
 			context.sendMessage("This command must be executed from discord.");
@@ -52,39 +51,14 @@ public class RegisterCommand {
 			context.sendMessage("You are already trying to register a profile! Please wait until registration is complete or the registration code expires.");
 			return;
 		}
-		
-		try {
-			int pid = Integer.parseInt(player);
-			players.add(Player.getPlayerByID(ConsoleContext.INSTANCE, pid));
-		}
-		catch(NumberFormatException e) {
-			for(Player p : Player.getPlayersByName(ConsoleContext.INSTANCE, player)) {
-				players.add(p);
-			}
-		}
 
-		switch(players.size()) {
-			case 0:
-				context.sendMessage("Could not find a player with name or PID of " + player);
-				break;
-			case 1:
-				Player desiredProfile = players.toArray(new Player[]{})[0];
-				if(desiredProfile.isBanned()) {
-					context.sendMessage("You cannot register a banned profile.");
-					return;
-				}
-				String securityCode = discordUser.requestRegistration(desiredProfile);
-				sendInfo(context, discordUser, desiredProfile, securityCode);
-				break;
-			default:
-				String ambiguities = "";
-				for(Player p : players) {
-					ambiguities += p.toFullString() + "\n";
-				}
-				context.sendMessage(player + " is ambiguous as there is more than one profile known with that name. Please supply your account's PID instead of it's name." 
-					+ "\n\nAmbiguities:\n\n" + ambiguities);
-				break;
+		if(desiredProfile.isBanned()) {
+			context.sendMessage("You cannot register a banned profile.");
+			return;
 		}
+		
+		String securityCode = discordUser.requestRegistration(desiredProfile);
+		sendInfo(context, discordUser, desiredProfile, securityCode);
 	}
 	
 	@SuppressWarnings("rawtypes")

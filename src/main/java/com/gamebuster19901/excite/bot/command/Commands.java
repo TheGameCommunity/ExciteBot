@@ -31,10 +31,8 @@ public class Commands {
 		NotifyCommand.register(dispatcher);
 		StopCommand.register(dispatcher);
 		HelpCommand.register(dispatcher);
-//		BanlistCommand.register(dispatcher);
 		RestartCommand.register(dispatcher);
 		IconDumpCommand.register(dispatcher);
-//		VideoCommand.register(dispatcher);
 		GameDataCommand.register(dispatcher);
 		RankCommand.register(dispatcher);
 		PrefixCommand.register(dispatcher);
@@ -147,6 +145,31 @@ public class Commands {
 		StringBuilder ret = new StringBuilder("");
 		while(reader.canRead() && !Character.isSpaceChar(reader.peek())) {
 			ret.append(reader.read());
+		}
+		return ret.toString();
+	}
+	
+	public static String readQuotedString(StringReader reader) throws CommandSyntaxException {
+		StringBuilder ret = new StringBuilder("");
+		if(reader.canRead()) {
+			if(reader.peek() == '"') {
+				reader.read();
+			}
+			else {
+				throw CommandSyntaxException.BUILT_IN_EXCEPTIONS.readerExpectedStartOfQuote().createWithContext(reader);
+			}
+		}
+		boolean foundEndQuote = false;
+		while(reader.canRead()) {
+			char c = reader.read();
+			if(c == '"') {
+				foundEndQuote = true;
+				break;
+			}
+			ret.append(c);
+		}
+		if(!foundEndQuote) {
+			throw CommandSyntaxException.BUILT_IN_EXCEPTIONS.readerExpectedEndOfQuote().createWithContext(reader);
 		}
 		return ret.toString();
 	}

@@ -1,5 +1,7 @@
 package com.gamebuster19901.excite.bot.command;
 
+import com.gamebuster19901.excite.bot.command.argument.DiscordUserArgumentType;
+import com.gamebuster19901.excite.bot.command.argument.DiscordUserArgumentType.UnknownType;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
 import com.gamebuster19901.excite.bot.user.UnknownDiscordUser;
 import com.mojang.brigadier.CommandDispatcher;
@@ -12,17 +14,17 @@ public class RankCommand {
 		dispatcher.register(Commands.literal("rank")
 				.then(Commands.literal("add")
 						.then(Commands.argument("rank", StringArgumentType.word())
-								.then(Commands.argument("user", StringArgumentType.greedyString())
+								.then(Commands.argument("user", DiscordUserArgumentType.user().setUnknown(UnknownType.FULLY_KNOWN))
 									.executes(context -> {
-										return addRank(context.getSource(), context.getArgument("user", String.class), context.getArgument("rank", String.class));
+										return addRank(context.getSource(), context.getArgument("user", DiscordUser.class), context.getArgument("rank", String.class));
 									})
 								)
 						)
 				).then(Commands.literal("remove")
 						.then(Commands.argument("rank", StringArgumentType.word())
-								.then(Commands.argument("user", StringArgumentType.greedyString())
+								.then(Commands.argument("user", DiscordUserArgumentType.user().setUnknown(UnknownType.FULLY_KNOWN))
 									.executes(context -> {
-										return removeRank(context.getSource(), context.getArgument("user", String.class), context.getArgument("rank", String.class));
+										return removeRank(context.getSource(), context.getArgument("user", DiscordUser.class), context.getArgument("rank", String.class));
 									})
 								)
 						)
@@ -31,7 +33,7 @@ public class RankCommand {
 	}
 	
 	@SuppressWarnings("rawtypes")
-	private static int addRank(MessageContext context, String user, String rank) {
+	private static int addRank(MessageContext context, DiscordUser user, String rank) {
 		if(context.isOperator()) {
 			if(rank.equalsIgnoreCase("admin")) {
 				return addAdmin(context, user);
@@ -47,7 +49,7 @@ public class RankCommand {
 	}
 	
 	@SuppressWarnings("rawtypes")
-	private static int removeRank(MessageContext context, String user, String rank) {
+	private static int removeRank(MessageContext context, DiscordUser user, String rank) {
 		if(context.isOperator()) {
 			if(rank.equalsIgnoreCase("admin")) {
 				return removeAdmin(context, user);
@@ -63,97 +65,68 @@ public class RankCommand {
 	}
 	
 	@SuppressWarnings("rawtypes")
-	private static int addAdmin(MessageContext context, String user) {
-		DiscordUser discordUser;
-		try {
-			discordUser = DiscordUser.getDiscordUserIncludingUnknown(ConsoleContext.INSTANCE, Long.parseLong(user));
-		}
-		catch(NumberFormatException e) {
-			discordUser = DiscordUser.getDiscordUserIncludingUnknown(ConsoleContext.INSTANCE, user);
-		}
-		
-		if(discordUser instanceof UnknownDiscordUser) {
+	private static int addAdmin(MessageContext context, DiscordUser user) {		
+		if(user instanceof UnknownDiscordUser) {
 			context.sendMessage("Unknown user: " + user);
 			return 1;
 		}
 		
-		if(discordUser.isAdmin()) {
+		if(user.isAdmin()) {
 			context.sendMessage(user + " is already a bot admin");
 		}
 		else {
-			discordUser.setAdmin(context, true);
+			user.setAdmin(context, true);
 		}
 		return 1;
 	}
 	
 	@SuppressWarnings("rawtypes")
-	private static int removeAdmin(MessageContext context, String user) {
-		DiscordUser discordUser;
-		try {
-			discordUser = DiscordUser.getDiscordUserIncludingUnknown(ConsoleContext.INSTANCE, Long.parseLong(user));
-		}
-		catch(NumberFormatException e) {
-			discordUser = DiscordUser.getDiscordUser(ConsoleContext.INSTANCE, user);
-		}
+	private static int removeAdmin(MessageContext context, DiscordUser user) {
 		
-		if(discordUser instanceof UnknownDiscordUser) {
+		if(user instanceof UnknownDiscordUser) {
 			context.sendMessage("Unknown user: " + user);
 			return 1;
 		}
 		
-		if(!discordUser.isAdmin()) {
+		if(!user.isAdmin()) {
 			context.sendMessage(user + " is already not an admin");
 		}
 		else {
-			discordUser.setAdmin(context, false);
+			user.setAdmin(context, false);
 		}
 		return 1;
 	}
 	
 	@SuppressWarnings("rawtypes")
-	private static int addOperator(MessageContext context, String user) {
-		DiscordUser discordUser;
-		try {
-			discordUser = DiscordUser.getDiscordUserIncludingUnknown(ConsoleContext.INSTANCE, Long.parseLong(user));
-		}
-		catch(NumberFormatException e) {
-			discordUser = DiscordUser.getDiscordUserIncludingUnknown(ConsoleContext.INSTANCE, user);
-		}
+	private static int addOperator(MessageContext context, DiscordUser user) {
 		
-		if(discordUser instanceof UnknownDiscordUser) {
+		if(user instanceof UnknownDiscordUser) {
 			context.sendMessage("Unknown user: " + user);
 			return 1;
 		}
 		
-		if(discordUser.isOperator()) {
+		if(user.isOperator()) {
 			context.sendMessage(user + " is already a bot operator");
 		}
 		else {
-			discordUser.setOperator(context, true);
+			user.setOperator(context, true);
 		}
+
 		return 1;
 	}
 	
 	@SuppressWarnings("rawtypes")
-	private static int removeOperator(MessageContext context, String user) {
-		DiscordUser discordUser;
-		try {
-			discordUser = DiscordUser.getDiscordUserIncludingUnknown(ConsoleContext.INSTANCE, Long.parseLong(user));
-		}
-		catch(NumberFormatException e) {
-			discordUser = DiscordUser.getDiscordUserIncludingUnknown(ConsoleContext.INSTANCE, user);
-		}
-		
-		if(discordUser instanceof UnknownDiscordUser) {
+	private static int removeOperator(MessageContext context, DiscordUser user) {
+		if(user instanceof UnknownDiscordUser) {
 			context.sendMessage("Unknown user: " + user);
 			return 1;
 		}
 		
-		if(!discordUser.isOperator()) {
+		if(!user.isOperator()) {
 			context.sendMessage(user + " is already not a bot operator");
 		}
 		else {
-			discordUser.setOperator(context, false);
+			user.setOperator(context, false);
 		}
 		return 1;
 	}

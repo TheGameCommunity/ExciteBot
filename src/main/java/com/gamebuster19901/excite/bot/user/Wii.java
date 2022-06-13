@@ -197,6 +197,7 @@ public class Wii implements Named, Owned<DiscordUser>, ElectronicAddress {
 				code = code.substring(1);
 			}
 			code = code.replace("-", "");
+			code = code.replace(" ", "");
 			code = code.replace(EMAIL_SUFFIX, "");
 			
 			isValid = PATTERN.matcher(code).matches() ? true : false;

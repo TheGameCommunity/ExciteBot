@@ -30,7 +30,7 @@ public class DurationArgumentType implements ArgumentType<Duration>{
 	}
 	
 	@Override
-	public Duration parse(StringReader reader) throws CommandSyntaxException {
+	public <S> Duration parse(S source, StringReader reader) throws CommandSyntaxException {
 		int initCursor = reader.getCursor();
 		String part1 = Commands.readString(reader);
 		DurationBuilder duration = new DurationBuilder(min, max);

@@ -4,7 +4,6 @@ import java.io.IOError;
 import java.sql.SQLException;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -62,6 +61,13 @@ public class DiscordUser implements Banee {
 		this.discordId = userId;
 	}
 	
+	protected DiscordUser(User user) {
+		this.discordId = user.getIdLong();
+	}
+	
+	protected DiscordUser(Member member) {
+		this.discordId = member.getIdLong();
+	}
 	
 	public static void addUser(User user) {
 		if(getDiscordUserIncludingUnknown(ConsoleContext.INSTANCE, user.getIdLong()) instanceof UnknownDiscordUser) {
@@ -69,6 +75,16 @@ public class DiscordUser implements Banee {
 				addDiscordUser(ConsoleContext.INSTANCE, user.getIdLong(), user.getAsTag());
 			} catch (SQLException e) {
 				throw new AssertionError("Unable to add new discord user " + user.getAsTag() + "(" + user.getIdLong() + ")", e);
+			}
+		}
+	}
+	
+	public static void addUser(Member member) {
+		if(getDiscordUserIncludingUnknown(ConsoleContext.INSTANCE, member.getIdLong()) instanceof UnknownDiscordUser) {
+			try {
+				addDiscordUser(ConsoleContext.INSTANCE, member.getIdLong(), member.getUser().getAsTag());
+			} catch (SQLException e) {
+				throw new AssertionError("Unable to add new discord user " + member.getUser().getAsTag() + "(" + member.getIdLong() + ")", e);
 			}
 		}
 	}
@@ -94,7 +110,13 @@ public class DiscordUser implements Banee {
 	
 	@Nullable
 	public User getJDAUser() {
-		User user = Main.discordBot.jda.retrieveUserById(discordId).complete();
+		User user;
+		try {
+			user = Main.discordBot.jda.retrieveUserById(discordId).complete();
+		}
+		catch(ErrorResponseException e) {
+			throw new AssertionError(discordId);
+		}
 		if(user == null) {
 			System.out.println("Could not find JDA user for " + discordId);
 		}
@@ -113,8 +135,8 @@ public class DiscordUser implements Banee {
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public Ban ban(MessageContext context, Duration duration, String reason) {
 		Ban discordBan = Ban.addBan(context, this, reason, duration);
-		sendMessage(context, this.toDetailedString() + " has been banned for " + TimeUtils.readableDuration(duration) + " with the reason: \n\n\"" + reason + "\"");
-		sendMessage(new MessageContext(this), this.getName() + " " + reason);
+		sendMessage(context, this.getJDAUser().getAsMention() + " has been banned for " + TimeUtils.readableDuration(duration) + " with the reason: \n\n\"" + reason + "\"");
+		sendMessage(new MessageContext(this), this.getJDAUser().getAsMention() + " " + reason);
 		return discordBan;
 	}
 	
@@ -173,13 +195,18 @@ public class DiscordUser implements Banee {
 		else {
 			Table.removeAdmin(promoter, this);
 		}
+		if(admin == false && this.isOperator()) {
+			setOperator(promoter, false);
+		}
 		RankChangeAudit.addRankChange(promoter, this, "admin", admin);
 	}
 	
 	@SuppressWarnings("rawtypes")
 	public void setOperator(MessageContext promoter, boolean operator) {
 		if(operator) {
-			setAdmin(promoter, operator);
+			if(!isAdmin()) {
+				setAdmin(promoter, operator);
+			}
 			Table.addOperator(promoter, this);
 		}
 		else {
@@ -381,11 +408,6 @@ public class DiscordUser implements Banee {
 		}
 	}
 	
-	@SuppressWarnings("rawtypes")
-	public void sentCommand(MessageContext context, int amount) {
-		
-	}
-	
 	public Message sendMessage(MessageEmbed message) {
 		if(Main.discordBot != null && !getJDAUser().equals(Main.discordBot.jda.getSelfUser())) {
 			if(!getJDAUser().isBot()) {
@@ -459,10 +481,6 @@ public class DiscordUser implements Banee {
 		return this + " (" + discordId + ")";
 	}
 	
-	public String getMySQLUsername() {
-		return "DiscordUser#" + discordId;
-	}
-	
 	public static final User getJDAUser(long id) {
 		return Main.discordBot.jda.retrieveUserById(id).complete();
 	}
@@ -501,17 +519,11 @@ public class DiscordUser implements Banee {
 	@Deprecated
 	@SuppressWarnings("rawtypes")
 	public static final DiscordUser getDiscordUser(MessageContext context, long id) {
-		try {
-			Result results = Table.selectAllFromWhere(context, DISCORD_USERS, new Comparison(DISCORD_ID, EQUALS, id));
-			
-			if(results.next()) {
-				return new DiscordUser(results.getLong(DISCORD_ID));
-			}
-			return null;
+		User user = Main.discordBot.jda.getUserById(id);
+		if(user != null) {
+			return new DiscordUser(user.getIdLong());
 		}
-		catch(SQLException e) {
-			throw new IOError(e);
-		}
+		return null;
 	}
 	
 	@SuppressWarnings("rawtypes")
@@ -526,9 +538,10 @@ public class DiscordUser implements Banee {
 	
 	@SuppressWarnings("rawtypes")
 	public static final DiscordUser getDiscordUserIncludingUnknown(MessageContext context, String discriminator) {
+		final HashSet<User> users;
+		users = getUsers(context, discriminator);
 		DiscordUser user;
-		user = getDiscordUser(context, discriminator);
-		if(user == null) {
+		if(users.size() == 0) {
 			if(discriminator.contains("#")) {
 				user = new UnknownDiscordUser(discriminator.substring(0, discriminator.indexOf('#')), discriminator.substring(discriminator.indexOf('#') + 1, discriminator.length()));
 			}
@@ -536,6 +549,13 @@ public class DiscordUser implements Banee {
 				user = new UnknownDiscordUser(discriminator, "????");
 			}
 		}
+		if(users.size() == 1) {
+			user = new DiscordUser(users.iterator().next().getIdLong());
+		}
+		else {
+			throw new IllegalArgumentException("Multiple users known as " + discriminator + " supply an ID instead");
+		}
+
 		return user;
 	}
 	
@@ -550,71 +570,119 @@ public class DiscordUser implements Banee {
 	}
 	
 	@SuppressWarnings("rawtypes")
-	public static final DiscordUser getDiscordUser(MessageContext context, String username) {
-		try {
-			Result results = Table.selectAllFromWhere(context, DISCORD_USERS, new Comparison(DISCORD_NAME, EQUALS, Table.makeSafe(username)));
-			if(results.next()) {
-				return new DiscordUser(results.getLong(DISCORD_ID));
-			}
-			return null;
-		} catch (SQLException e) {
-			throw new IOError(e);
+	public static final HashSet<DiscordUser> getDiscordUser(MessageContext context, String username) {
+		HashSet<DiscordUser> users = new HashSet<DiscordUser>();
+		if(isFullDiscordTag(username)) {
+			getUsers(context, username).forEach((u) -> {
+				System.out.println(u.getDiscriminator() + " equals" + getDiscriminator(username));
+				if(u.getDiscriminator().equals(getDiscriminator(username))) {
+					users.add(new DiscordUser(u.getIdLong()));
+				}
+			});
 		}
+		else {
+			getUsers(context, username).forEach((u) -> {users.add(new DiscordUser(u.getIdLong()));});
+		}
+		return users;
+	}
+	
+	@SuppressWarnings("rawtypes")
+	public static final HashSet<User> getUsers(MessageContext context, String username) {
+		boolean fullTag = isFullDiscordTag(username);
+		HashSet<User> users = new HashSet<User>();
+		if(context.getServer() != null) {
+			HashSet<Member> members = new HashSet<>();
+			if(fullTag) {
+				members.addAll(context.getServer().getGuild().getMembersByEffectiveName(username.substring(0, username.lastIndexOf('#')), true));
+			}
+			else {
+				members.addAll(context.getServer().getGuild().getMembersByEffectiveName(username, true));
+			}
+			members.forEach((m) -> {users.add(m.getUser());});
+		}
+		else {
+			if(fullTag) {
+				users.addAll(Main.discordBot.jda.getUsersByName(username.substring(0, username.lastIndexOf('#')), true));
+			}
+			else {
+				users.addAll(Main.discordBot.jda.getUsersByName(username, true));
+			}
+		}
+		return users;
 	}
 	
 	@SuppressWarnings("rawtypes")
 	public static final DiscordUser getDiscordUser(MessageContext context, String username, String discriminator) {
-		try {
-			Result results = Table.selectAllFromWhere(context, DISCORD_USERS, new Comparison(DISCORD_NAME, EQUALS, Table.makeSafe(username) + "#" + Table.makeSafe(discriminator)));
-			if(results.next()) {
-				return new DiscordUser(results.getLong(DISCORD_ID));
-			}
-			return null;
-		} catch (SQLException e) {
-			throw new IOError(e);
+		if(discriminator.startsWith("#")) {
+			discriminator = discriminator.substring(discriminator.indexOf('#'));
 		}
+		final String discrim = discriminator;
+		if(context.getServer() != null) {
+			HashSet<Member> members = new HashSet<>();
+			DiscordUser user = Nobody.INSTANCE;
+			for(Member member : context.getServer().getGuild().getMembersByEffectiveName(username, false)) {
+				if(member.getEffectiveName().equals(username)) {
+					if(member.getUser().getDiscriminator().equals(discriminator)) {
+						return new DiscordUser(member);
+					}
+				}
+			}
+		}
+		else {
+			User user = Main.discordBot.jda.getUserByTag(username, discriminator);
+			if(user != null) {
+				return new DiscordUser(user);
+			}
+		}
+		return Nobody.INSTANCE;
+	}
+	
+	@SuppressWarnings("rawtypes")
+	public static final HashSet<DiscordUser> getDiscordUsers(MessageContext context, String username, String discriminator) {
+		if(discriminator.startsWith("#")) {
+			discriminator = discriminator.substring(discriminator.indexOf('#'));
+		}
+		final String discrim = discriminator;
+		HashSet<DiscordUser> users = new HashSet<DiscordUser>();
+		if(context.getServer() != null) {
+			context.getServer().getGuild().getMembersByEffectiveName(username, true)
+			.forEach((m) -> {
+				if(m.getUser().getDiscriminator().equals(discrim)) {
+					users.add(new DiscordUser(m));
+				}
+			});
+		}
+		else {
+			users.add(new DiscordUser(Main.discordBot.jda.getUserByTag(username, discriminator)));
+		}
+		return users;
 	}
 	
 	@Deprecated
 	@SuppressWarnings("rawtypes")
 	public static final DiscordUser[] getDiscordUsersWithUsername(MessageContext context, String username) {
-		try {
-			ArrayList<DiscordUser> users = new ArrayList<DiscordUser>();
-			Result results = Table.selectAllFromWhere(context, DISCORD_USERS, new Comparison(DISCORD_NAME, LIKE, Table.makeSafe(username) + "_____"));
-			while(results.next()) {
-				users.add(new DiscordUser(results));
-			}
-			return users.toArray(new DiscordUser[]{});
-		}
-		catch(SQLException e) {
-			throw new IOError(e);
-		}
+		HashSet<DiscordUser> ret = new HashSet<DiscordUser>();
+		HashSet<User> users = new HashSet<User>();
+		users.addAll(Main.discordBot.jda.getUsersByName(username, true));
+		context.getServer().getGuild().getMembersByNickname(username, true).forEach((m) -> {users.add(m.getUser());});
+		users.forEach((u) -> {ret.add(new DiscordUser(u.getIdLong()));});
+		return ret.toArray(new DiscordUser[]{});
 	}
 	
 	@SuppressWarnings("rawtypes")
 	public static final DiscordUser[] getDiscordUsersWithUsernameOrID(MessageContext context, String usernameOrID) {
 		try {
-			if(usernameOrID.indexOf("#") != -1) {
-				if(usernameOrID.length() > usernameOrID.indexOf('#')) {
-					String name = usernameOrID.substring(0, usernameOrID.indexOf('#'));
-					String discriminator = usernameOrID.substring(usernameOrID.indexOf('#') + 1, usernameOrID.length());
-					DiscordUser user = getDiscordUser(context, name, discriminator);
-					if(user != null) {
-						return new DiscordUser[] {user};
-					}
-				}
-				return new DiscordUser[0];
+			long id = Long.parseLong(usernameOrID);
+			DiscordUser user = getDiscordUserTreatingUnknownsAsNobody(context, id);
+			if(user != Nobody.INSTANCE) {
+				return new DiscordUser[] {user};
 			}
-			ArrayList<DiscordUser> users = new ArrayList<DiscordUser>();
-			Result results = Table.selectAllFromWhere(context, DISCORD_USERS, new Comparison(DISCORD_NAME, LIKE, Table.makeSafe(usernameOrID) + "_____").or(new Comparison(DISCORD_ID, EQUALS, Table.makeSafe(usernameOrID))));
-			while(results.next()) {
-				users.add(new DiscordUser(results));
-			}
-			return users.toArray(new DiscordUser[]{});
 		}
-		catch(SQLException e) {
-			throw new IOError(e);
+		catch(NumberFormatException e) {
+			//swallowed
 		}
+		HashSet<DiscordUser> users = getDiscordUser(context, usernameOrID);
+		return users.toArray(new DiscordUser[]{});
 	}
 	
 	public static final void messageAllAdmins(String message) {
@@ -720,4 +788,12 @@ public class DiscordUser implements Banee {
 		}
 	}
 	
+	public static boolean isFullDiscordTag(String userString) {
+		return userString.length() > 4 && userString.charAt(userString.length() - 5) == '#';
+	}
+	
+	public static String getDiscriminator(String fullDiscordTag) {
+		System.out.println(fullDiscordTag.substring(fullDiscordTag.lastIndexOf('#') + 1));
+		return fullDiscordTag.substring(fullDiscordTag.lastIndexOf('#') + 1);
+	}
 }
