@@ -210,7 +210,9 @@ public class MessageContext<E>{
 	
 	public DiscordServer getServer() {
 		if(event instanceof MessageReceivedEvent) {
-			return DiscordServer.getServer(ConsoleContext.INSTANCE, ((MessageReceivedEvent)event).getMessage().getGuild().getIdLong());
+			if(((MessageReceivedEvent) event).isFromGuild()) {
+				return DiscordServer.getServer(ConsoleContext.INSTANCE, ((MessageReceivedEvent)event).getMessage().getGuild().getIdLong());
+			}
 		}
 		return null;
 	}
