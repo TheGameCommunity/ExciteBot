@@ -13,7 +13,11 @@ public class UnloadedDiscordUser extends DiscordUser{
 	
 	@SuppressWarnings("rawtypes")
 	@Override
-	public void sendMessage(MessageContext context, String message) {}
+	public void sendMessage(MessageContext context, String message) {
+		if(context.getEvent() != this) {
+			super.sendMessage(context, message);
+		}
+	}
 	
 	@Override
 	public String toString() {

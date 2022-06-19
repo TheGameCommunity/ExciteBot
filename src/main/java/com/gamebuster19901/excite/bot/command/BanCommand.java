@@ -85,7 +85,7 @@ public class BanCommand {
 	private static int banDiscordUser(MessageContext context, DiscordUser user, Duration duration, String reason) {
 		if(context.isAdmin()) {
 			Ban ban = user.ban(context, duration, reason);
-			String message = "Banned discord user " + user + ": \n\n" + ban;
+			String message = "Banned discord user " + user.getAsMention() + ": \n\n" + ban;
 			if(context.isConsoleMessage()) {
 				context.sendMessage(message);
 			}

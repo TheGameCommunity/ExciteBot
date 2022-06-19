@@ -135,8 +135,8 @@ public class DiscordUser implements Banee {
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public Ban ban(MessageContext context, Duration duration, String reason) {
 		Ban discordBan = Ban.addBan(context, this, reason, duration);
-		sendMessage(context, this.getJDAUser().getAsMention() + " has been banned for " + TimeUtils.readableDuration(duration) + " with the reason: \n\n\"" + reason + "\"");
-		sendMessage(new MessageContext(this), this.getJDAUser().getAsMention() + " " + reason);
+		context.sendMessage(this.getAsMention() + " has been banned for " + TimeUtils.readableDuration(duration) + " with the reason: \n\n\"" + reason + "\"");
+		sendMessage(new MessageContext(this), this.getAsMention() + ", " + reason);
 		return discordBan;
 	}
 	
@@ -454,6 +454,13 @@ public class DiscordUser implements Banee {
 		sendMessage(message);
 	}
 	
+	public String getAsMention() {
+		if(this instanceof UnloadedDiscordUser) {
+			return "<@" + this.discordId + ">";
+		}
+		return this.getJDAUser().getAsMention();
+	}
+	
 	@Override
 	public int hashCode() {
 		return Long.valueOf(discordId).hashCode();
@@ -673,9 +680,12 @@ public class DiscordUser implements Banee {
 	public static final DiscordUser[] getDiscordUsersWithUsernameOrID(MessageContext context, String usernameOrID) {
 		try {
 			long id = Long.parseLong(usernameOrID);
-			DiscordUser user = getDiscordUserTreatingUnknownsAsNobody(context, id);
-			if(user != Nobody.INSTANCE) {
+			DiscordUser user = getDiscordUser(context, id);
+			if(user != null) {
 				return new DiscordUser[] {user};
+			}
+			else {
+				return new UnknownDiscordUser[] {new UnknownDiscordUser(id)};
 			}
 		}
 		catch(NumberFormatException e) {
