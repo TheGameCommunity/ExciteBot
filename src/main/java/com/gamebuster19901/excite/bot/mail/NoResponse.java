@@ -1,6 +1,5 @@
 package com.gamebuster19901.excite.bot.mail;
 
-import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 
 public class NoResponse extends MailResponse {
@@ -10,7 +9,7 @@ public class NoResponse extends MailResponse {
 	}
 	
 	@Override
-	public String getResponse() throws MessagingException {
+	public String getResponse() {
 		return null;
 	}
 

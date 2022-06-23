@@ -30,7 +30,7 @@ public abstract class MailReplyResponse extends MailResponse {
 	}
 	
 	@Override
-	public String getResponse() throws MessagingException {
+	public String getResponse() {
 		return response;
 	}
 	

@@ -1,6 +1,5 @@
 package com.gamebuster19901.excite.bot.mail;
 
-import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 
 public abstract class MailResponse {
@@ -11,6 +10,6 @@ public abstract class MailResponse {
 		this.prompt = prompt;
 	}
 	
-	public abstract String getResponse() throws MessagingException;
+	public abstract String getResponse();
 	
 }

@@ -1,55 +1,32 @@
 package com.gamebuster19901.excite.bot.mail;
 
-import org.apache.http.HttpEntity;
-import org.apache.http.StatusLine;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.StringEntity;
-
 import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOError;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.sql.SQLException;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.LinkedHashSet;
-import java.util.Properties;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.mail.Address;
 import javax.mail.MessagingException;
-import javax.mail.Session;
 import javax.mail.internet.MimeMessage;
+import javax.security.auth.login.LoginException;
 
-import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.impl.client.HttpClients;
 
-import com.gamebuster19901.excite.bot.audit.MailAudit;
-import com.gamebuster19901.excite.bot.command.ConsoleContext;
-import com.gamebuster19901.excite.bot.database.Insertion;
 import com.gamebuster19901.excite.bot.user.Wii;
-import com.gamebuster19901.excite.bot.user.Wii.InvalidWii;
 import com.gamebuster19901.excite.game.challenge.InvalidChallenge;
 import com.gamebuster19901.excite.game.challenge.Rewardable;
-import com.gamebuster19901.excite.util.StacktraceUtil;
-import com.gamebuster19901.excite.util.TimeUtils;
-
 import java.io.File;
-
-import static com.gamebuster19901.excite.bot.database.Table.*;
-import static com.gamebuster19901.excite.bot.database.Column.*;
 
 public class Mailbox {
 	static final Logger LOGGER = Logger.getLogger(Mailbox.class.getName());
@@ -113,327 +90,84 @@ public class Mailbox {
 		}
 	}
 	
-	public static void receive() throws IOException, MessagingException {
-		File secretFile = new File("./mail.secret");
-		String wiiID;
-		String password;
-		HttpGet request;
-		BufferedReader fileReader = null;
-		InputStreamReader mailReader = null;
-		CloseableHttpClient client = null;
-		try {
-			fileReader = new BufferedReader(new FileReader(secretFile));
-			wiiID = fileReader.readLine();
-			password = fileReader.readLine();
-			client = HttpClients.createDefault();
-			request = new HttpGet("https://mtw." + SERVER + "/cgi-bin/receive.cgi?mlid=" + wiiID + "&passwd=" + password + "&maxsize=11534336");
-			
-			CloseableHttpResponse response = client.execute(request);
-			StatusLine line = response.getStatusLine();
-			if(line != null) {
-				int statusCode = line.getStatusCode();
-				if(statusCode >= 300) {
-					LOGGER.warning("Unexpected status code " + statusCode + ". Skipping mail retrieval.");
-					return;
-				}
-			}
-			else {
-				LOGGER.severe("Did not receive a status response?! Skipping mail retrieval.");
-				return;
-			}
-			LOGGER.log(Level.FINEST, "Sent mail fetch request");
-			HttpEntity entity = response.getEntity();
-			if(entity != null) {
-				InputStream contentStream = entity.getContent();
-				mailReader = new InputStreamReader(contentStream);
-				char[] data = new char[1];
-				StringBuilder content = new StringBuilder();
-				while(mailReader.read(data) != -1) {
-					content.append(data);
-				}
-				String mailData = content.toString();
-				LOGGER.log(Level.FINEST, mailData);
-				if(mailData.contains("cd=0") || mailData.contains("cd=100")) {
-					parseMail(mailData);
-				}
-				else {
-					LOGGER.warning("Could not parse incoming mail, received the following from rc24:\n\n" + mailData);
-				}
-			}
-			else {
-				LOGGER.log(Level.FINEST, "Response was null");
-			}
-		}
-		catch (IOException e) {
-			LOGGER.warning("IOException... Skipping mail retrieval");
-			e.printStackTrace();
-		}
-		finally {
-			wiiID = null;
-			password = null;
-			request = null;
-			try {
-				if(fileReader != null) {
-					try {
-						fileReader.close();
-					}
-					finally {
-						if(mailReader != null) {
-							mailReader.close();
-						}
-					}
-				}
-			}
-			catch(Throwable t) {
-				LOGGER.log(Level.SEVERE, "An exception occurred when closing readers", t);
-			}
-			finally {
-				if(client != null) {
-					try {
-						client.close();
-					}
-					catch(Throwable t) {
-						LOGGER.log(Level.SEVERE, "An exception occurred when closing the HTTP connection to mail server", t);
-					}
-				}
-			}
-		}
-	}
-	
-	private static void parseMail(String mailData) throws MessagingException, IOException {
-		String delimiter;
-		try {
-			delimiter = mailData.substring(0, mailData.indexOf('\r'));
-		}
-		catch(Throwable t) {
-			FileWriter f = new FileWriter(new File("./badMail.email"));
-			f.write(mailData);
-			f.close();
-			LOGGER.severe(mailData);
-			throw t;
-		}
-		LOGGER.log(Level.FINEST, "Delimiter is: " + delimiter);
-		ArrayList<String> emails = new ArrayList<String>();
-		emails.addAll(Arrays.asList(mailData.split(delimiter)));
-		emails.removeIf((predicate) -> {return predicate.trim().isEmpty() || predicate.equals("--");});
-		LinkedHashSet<MailResponse> responses = new LinkedHashSet<MailResponse>();
-		int i = 1;
-		for(String content : emails) {
-			FileOutputStream writer = null;
-			MimeMessage message = new MimeMessage(null, new ByteArrayInputStream(content.getBytes()));
-			MimeMessage innerMessage1 = new MimeMessage(null, message.getInputStream());
-			MimeMessage innerMessage2 = new MimeMessage(null, innerMessage1.getInputStream());
-			ByteArrayOutputStream stringStream = new ByteArrayOutputStream();
-			innerMessage2.writeTo(stringStream);
-			String email = new String(stringStream.toByteArray()).trim();
-			if(email.isEmpty() || email.contains("This part is ignored.") && email.contains("cd=100")) {
-				continue;
-			}
-			
-			/*
-				for(javax.mail.Header header : Collections.list(innerMessage2.getAllHeaders())) {
-					System.out.println(header.getName() + ": " + header.getValue());
-				}
-			*/
-			
-			LinkedHashSet<MailResponse> response = null;
-			try {
-				response = analyzeMail(Wii.getWii("1056185520598803"), innerMessage2);
-				if(response != null) {
-					responses.addAll(response);
-				}
-				Address from = innerMessage2.getFrom() != null ? innerMessage2.getFrom()[0] : null;
-				
-				File file = new File(INBOX.getAbsolutePath() + "/" + from + "/" + TimeUtils.getDBDate(Instant.now()) + "(" + i++ + ")" + ".email");
-				file.getParentFile().mkdirs();
-				writer = new FileOutputStream(file);
-				innerMessage2.writeTo(writer);
-				MailAudit.addMailAudit(ConsoleContext.INSTANCE, innerMessage2, true, file);
-			}
-			catch(Exception e) {
-				LOGGER.log(Level.WARNING, "Couldn't analayze a mail item: \"" + content + "\"", e);
-				continue;
-			}
-			finally {
-				if(writer != null) {
-					writer.close();
-				}
-			}
-		}
-		sendResponses(responses);
+	public static void receive() throws IOException, MessagingException, LoginException {
+		HttpClient client = HttpClients.createDefault();
+		HttpPost request = new HttpPost("https://mtw.rc24.xyz/cgi-bin/receive.cgi");
 		
-	}
-	
-	private static LinkedHashSet<MailResponse> analyzeMail(Wii responder, MimeMessage prompt) throws MessagingException {
-		LinkedHashSet<MailResponse> responses = new LinkedHashSet<MailResponse>();
-		Session session = Session.getInstance(new Properties());
+		MultipartEntityBuilder builder = MultipartEntityBuilder.create();
+		String[] credentials = credentials();
+		builder.addTextBody("mlid", credentials[0]);
+		builder.addTextBody("passwd", credentials[1]);
+		builder.addTextBody("maxsize", "11534336");
+		credentials[0] = null; credentials[1] = null; credentials = null;
 		
-		Address[] from = prompt.getFrom();
-		LOGGER.log(Level.FINEST, "Analyzing mail from: " + (from != null ? from[0] : from));
-		if(from == null) {
-			responses.add(new NoResponse(prompt));
-			return responses;
-		}
+		HttpEntity e = builder.build();
+		request.setEntity(e);
 		
-		ElectronicAddress senderEmail = new EmailAddress(prompt.getFrom()[0]);
-		Wii sender = Wii.getWii(senderEmail);
-		if(sender instanceof InvalidWii) {
-			LOGGER.log(Level.FINEST, "Ignoring non-wii mail");
-			responses.add(new NoResponse(prompt));
-			return responses;
+		try (InputStream s = e.getContent()) {
+			parseMail(new String(s.readAllBytes(), StandardCharsets.UTF_8));
 		}
-		else {
-			boolean wasKnown;
-			if(!(wasKnown = sender.isKnown())) {
-				try {
-					Insertion.insertInto(WIIS).setColumns(WII_ID).to(sender.getWiiCode().toString()).prepare(ConsoleContext.INSTANCE).execute();
-				} catch (SQLException e) {
-					throw new MessagingException("Database error", e);
-				}
-			}
-			
-			
-			String[] appheaders = prompt.getHeader(APP_ID_HEADER);
-			String app = "";
-			if(appheaders.length > 0) {
-				app = appheaders[0];
-			}
-			Rewardable attachment = InvalidChallenge.INSTANCE;
-			if(app.equals(EXCITEBOTS)) {
-				attachment = analyzeIngameMail(prompt, sender);
-			}
-			
-			//if(sender.getOwner() instanceof UnknownDiscordUser) { //if wii is not registered
-//				if(app.equals(FRIEND_REQUEST) /*&& !wasKnown*/) {
-					MailResponse friendResponse = new AddFriendResponse(responder, sender, prompt);
-					LOGGER.finest("Sending friend request to " + sender.getEmail());
-					MailResponse codeResponse = new DiscordCodeResponse(responder, sender, prompt);
-					LOGGER.finest("Sending verification discord code to " + sender.getEmail());
-					
-					responses.add(friendResponse);
-					responses.add(codeResponse);
-//				}
 
-				if(attachment.getReward() > 0) {
-					//responses.add(new RefundResponse(responder, prompt, attachment));
-				}
-				
-			//}
-			/*else { //excitebot is not currently accepting mail from anything other than Excitebots
-				LOGGER.log(Level.FINEST, "Excitebot is not currently accepting mail from anything other than Excitebots");
-				responses.add(new NoResponse(prompt));
-			}*/
-		}
+	}
+	
+	private static void parseMail(String mailData) throws MessagingException, IOException, LoginException {
+		LinkedHashSet<MailResponse> responses = new LinkedHashSet<MailResponse>();
+
 		
-		return responses;
+		sendResponses(responses);
 	}
 	
 	/**
 	 * We try to send all of the mail at once.
+	 * 
 	 * @param responses
+	 * @throws LoginException 
+	 * @throws IOException 
+	 * @throws ClientProtocolException 
 	 */
-	public static void sendResponses(LinkedHashSet<MailResponse> responses) {
-		CloseableHttpClient client = HttpClients.createDefault();
-		String wiiID;
-		String password;
-		HttpPost request;
-		BufferedReader fileReader = null;
-		String s = "UNINITIALIZED PAYLOAD";
-		try {
-			File secretFile = new File("./mail.secret");
-			fileReader = new BufferedReader(new FileReader(secretFile));
-			wiiID = fileReader.readLine();
-			password = fileReader.readLine();
-			String authenticationPayload = "mlid=" + wiiID + "&passwd=" + password + "&maxsize=11534336";
-			request = new HttpPost("https://mtw." + SERVER + "/cgi-bin/send.cgi?" + authenticationPayload);
-			request.addHeader("Content-Type", "multipart/form-data; boundary=" + BOUNDARY);
-			request.addHeader("Content-Length", authenticationPayload.length() + "");
-			request.addHeader("Content-Disposition", "form-data; name=\"mlid\"");
-			s = "";
-			s = s + authenticationPayload + "\n";
-			s = s + "--" + BOUNDARY + "\n";
-			
-			int i = 1;
-			for(MailResponse response : responses) {
-				FileOutputStream writer;
-				LOGGER.finest(response.getClass().getName());
-				if(response instanceof MailReplyResponse) {
-					MailReplyResponse reply = (MailReplyResponse) response;
-					reply.initVars();
-					File file = new File(OUTBOX.getAbsolutePath() + "/" + reply.getResponder().getEmail() + "/" + reply.getRespondee().getEmail() + "/" + TimeUtils.getDBDate(Instant.now()) + "(" + i +")" + ".email");
-					file.getParentFile().mkdirs();
-					writer = new FileOutputStream(file);
-					writer.write(reply.getResponse().getBytes());
-					MailAudit.addMailAudit(ConsoleContext.INSTANCE, (MailReplyResponse)response, false, file);
-					
-
-					reply.setVar("mailNumber", "m" + i++);
-					
-					
-					s = s + response.getResponse() + "\n";
-				}
-			}
-			
-			if(i == 1) {
-				//System.out.println("No responses.");
-				return;
-			}
-			
-			s = s.trim() 
-				+ "--";
-			
-			System.out.println(s);
-			
-			StringEntity e = new StringEntity(s);
-			request.setEntity(e);
-			
-			/* debug code
-				org.apache.http.Header[] headers = request.getAllHeaders();
-				for(org.apache.http.Header header : headers) {
-					System.err.println(header.getName() + ": " + header.getValue());
-				}
-				System.err.println(s);
-			*/
-			
-			CloseableHttpResponse response = client.execute(request);
-			if(response != null) {
-				ByteArrayOutputStream logStream = new ByteArrayOutputStream();
-				response.getEntity().writeTo(logStream);
-				LOGGER.log(Level.INFO, logStream.toString());
-				logStream.close();
-			}
+	public static String sendResponses(LinkedHashSet<MailResponse> responses) throws LoginException, ClientProtocolException, IOException {
+		HttpClient client = HttpClients.createDefault();
+		HttpPost request = new HttpPost("https://mtw.rc24.xyz/cgi-bin/send.cgi");
+		MultipartEntityBuilder builder = MultipartEntityBuilder.create();
+		
+		String[] credentials = credentials();
+		builder.addTextBody("mlid", credentials[0]);
+		builder.addTextBody("passwd", credentials[1]);
+		credentials[0] = null; credentials[1] = null; credentials = null;
+		
+		int i = 1;
+		for(MailResponse response : responses) {
+			String text = response.getResponse();
+			builder.addTextBody("m" + i++,  text);
 		}
-		catch(Throwable t) {
-			LOGGER.log(Level.FINEST, "Failed to send emails", t);
-			File errored = new File(OUTBOX_ERRORED.getAbsolutePath() + "/" + TimeUtils.getDBDate(Instant.now()) + " " + t.getClass().getSimpleName() + ".email");
-			try {
-				errored.getParentFile().mkdirs();
-				FileWriter writer = new FileWriter(errored);
-				writer.write(s + "\n\n====STACKTRACE====\n\n" + StacktraceUtil.getStackTrace(t));
-				writer.close();
-			} catch (IOException e) {
-				throw new IOError(e);
-			}
+		
+		HttpEntity entity = builder.build();
+		request.setEntity(entity);
+		
+		HttpResponse response = client.execute(request);
+		try (InputStream s = entity.getContent()) {
+			return new String(s.readAllBytes(), StandardCharsets.UTF_8);
 		}
-		finally {
-			if(fileReader != null) {
-				try {
-					fileReader.close();
-				} catch (IOException e) {
-					throw new IOError(e);
-				}
-			}
-		}
-	}
-	
-	public static LinkedHashSet<MailResponse> packResponses(MailResponse...mailResponses) {
-		LinkedHashSet<MailResponse> responses = new LinkedHashSet<MailResponse>();
-		responses.addAll(Arrays.asList(mailResponses));
-		return responses;
+		
 	}
 	
 	public static Rewardable analyzeIngameMail(MimeMessage message, Wii wii) {
 		return InvalidChallenge.INSTANCE;
+	}
+	
+	private static final String[] credentials() throws LoginException {
+		try {
+			final File secretFile = new File("./mail.secret");
+			final BufferedReader fileReader = new BufferedReader(new FileReader(secretFile));
+			final String[] ret = new String[] {fileReader.readLine(), fileReader.readLine()};
+			fileReader.close();
+			return ret;
+		}
+		catch(Exception e) {
+			final LoginException loginException = new LoginException();
+			loginException.initCause(e);
+			throw loginException;
+		}
 	}
 	
 }
