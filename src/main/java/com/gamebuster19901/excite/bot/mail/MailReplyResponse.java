@@ -5,20 +5,19 @@ import javax.mail.internet.MimeMessage;
 
 import com.gamebuster19901.excite.bot.user.Wii;
 
-public abstract class MailReplyResponse extends MailResponse {
+public abstract class MailReplyResponse<T extends ElectronicAddress> extends MailResponse {
 	
-	protected Wii responder;
+	protected Wii responder = Mailbox.ADDRESS;
 	protected ElectronicAddress respondee;
 	protected String response = getResponseTemplate();
 	
-	public MailReplyResponse(Wii responder, ElectronicAddress respondee, MimeMessage message) {
-		super(message);
-		this.responder = responder;
-		this.respondee = respondee;
+	@SuppressWarnings("unchecked")
+	public MailReplyResponse(MimeMessage messageToReplyTo) throws MessagingException {
+		this((T) ElectronicAddress.getAddress(messageToReplyTo.getFrom()));
 	}
 	
-	public MailReplyResponse(Wii responder, MimeMessage message) throws MessagingException {
-		this(responder, Wii.getWii(message.getFrom()[0].toString()), message);
+	public MailReplyResponse(T recipient) {
+		this.respondee = recipient;
 	}
 	
 	public Wii getResponder() {
@@ -30,7 +29,7 @@ public abstract class MailReplyResponse extends MailResponse {
 	}
 	
 	@Override
-	public String getResponse() {
+	public String getResponse() throws MessagingException {
 		return response;
 	}
 	

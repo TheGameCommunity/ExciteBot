@@ -1,5 +1,3 @@
-Content-Disposition: form-data; name="%mailNumber%"
-
 MAIL_FROM: %from%
 RCPT TO: %to%
 From: %from%

@@ -6,12 +6,17 @@ import javax.mail.internet.MimeMessage;
 import com.gamebuster19901.excite.bot.user.Wii;
 import com.gamebuster19901.excite.game.challenge.Rewardable;
 
-public class RefundResponse extends MailReplyResponse implements Rewardable {
+public class RefundResponse extends MailReplyResponse<Wii> implements Rewardable {
 
 	private final Rewardable rewardable;
 	
-	public RefundResponse(Wii responder, MimeMessage message, Rewardable rewardable) throws MessagingException {
-		super(responder, message);
+	public RefundResponse(MimeMessage message, Rewardable rewardable) throws MessagingException {
+		super(message);
+		this.rewardable = rewardable;
+	}
+	
+	public RefundResponse(Wii wii, Rewardable rewardable) {
+		super(wii);
 		this.rewardable = rewardable;
 	}
 

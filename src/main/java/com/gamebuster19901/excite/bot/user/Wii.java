@@ -2,13 +2,17 @@ package com.gamebuster19901.excite.bot.user;
 
 import java.awt.Color;
 import java.io.IOError;
+import java.io.IOException;
 import java.sql.SQLException;
-import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Random;
 import java.util.regex.Pattern;
 
 import javax.annotation.Nullable;
 import javax.mail.MessagingException;
+import javax.security.auth.login.LoginException;
+
+import org.apache.http.client.ClientProtocolException;
 
 import com.gamebuster19901.excite.bot.audit.WiiRegistrationAudit;
 import com.gamebuster19901.excite.bot.command.ConsoleContext;
@@ -143,7 +147,7 @@ public class Wii implements Named, Owned<DiscordUser>, ElectronicAddress {
 		
 	}
 	
-	public void register(MessageContext owner) throws SQLException, MessagingException{
+	public void register(MessageContext owner) throws SQLException, MessagingException, LoginException, ClientProtocolException, IOException{
 		Table.updateWhere(owner, WIIS, DISCORD_ID, owner.getSenderId(), new Comparison(WII_ID, EQUALS, wiiCode.code));
 		Table.updateWhere(owner, WIIS, REGISTRATION_CODE, null, new Comparison(WII_ID, EQUALS, wiiCode.code));
 		WiiRegistrationAudit.addWiiRegistrationAudit(owner, this, false);
@@ -153,8 +157,8 @@ public class Wii implements Named, Owned<DiscordUser>, ElectronicAddress {
 		embed.setDescription("You have succesfully registered the following wii:\n\n" + this.getIdentifierName());
 		ElectronicAddress exciteEmail = Mailbox.ADDRESS;
 		owner.sendMessage(embed.build());
-		LinkedHashSet<MailResponse> wiiMail = Mailbox.packResponses(
-				new TextualMailResponse((Wii)exciteEmail, this, null).setText(
+		List<MailResponse> wiiMail = Mailbox.packResponses(
+				new TextualMailResponse<Wii>(this).setText(
 					"This wii has been registered with\n Excitebot.\n" +
 					"registrant: " + owner.getDiscordAuthor().getIdentifierName() + "\n\n" +
 					"If this is not you, contact a TCG\nadmin immediately.\n\n" +

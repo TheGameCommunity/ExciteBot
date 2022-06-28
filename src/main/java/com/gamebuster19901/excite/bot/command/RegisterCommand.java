@@ -1,8 +1,10 @@
 package com.gamebuster19901.excite.bot.command;
 
+import java.io.IOException;
 import java.sql.SQLException;
 
 import javax.mail.MessagingException;
+import javax.security.auth.login.LoginException;
 
 import com.gamebuster19901.excite.Player;
 import com.gamebuster19901.excite.bot.command.argument.PlayerArgumentType;
@@ -94,7 +96,7 @@ public class RegisterCommand {
 			else {
 				context.sendMessage("Unknown registration code.");
 			}
-		} catch (SQLException | MessagingException e) {
+		} catch (SQLException | MessagingException | LoginException | IOException e) {
 			context.sendMessage(StacktraceUtil.getStackTrace(e));
 		}
 	}

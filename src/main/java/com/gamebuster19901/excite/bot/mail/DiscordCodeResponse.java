@@ -5,20 +5,19 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.mail.MessagingException;
-import javax.mail.internet.MimeMessage;
 
 import com.gamebuster19901.excite.Main;
 import com.gamebuster19901.excite.bot.user.Wii;
 
-public class DiscordCodeResponse extends TextualMailResponse {
+public class DiscordCodeResponse extends TextualMailResponse<Wii> {
 
 	private static final Set<Wii> desiredWiis = Collections.newSetFromMap(new ConcurrentHashMap<Wii, Boolean>());
 	
 	final String registrationCode;
 	final boolean hadOldCode;
 	
-	public DiscordCodeResponse(Wii responder, Wii wiiToRegister, MimeMessage message) throws MessagingException {
-		super(responder, wiiToRegister, message);
+	public DiscordCodeResponse(Wii wiiToRegister) throws MessagingException {
+		super(wiiToRegister);
 		hadOldCode = (wiiToRegister.getRegistrationCode() != null) ? true : false;
 		registrationCode = wiiToRegister.getRegistrationCode();
 		desiredWiis.add(wiiToRegister);
