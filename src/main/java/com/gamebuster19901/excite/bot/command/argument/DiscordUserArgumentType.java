@@ -70,7 +70,7 @@ public class DiscordUserArgumentType implements ArgumentType<DiscordUser> {
 		else {
 			input = Commands.readString(reader);
 		}
-		DiscordUser[] users = DiscordUser.getDiscordUsersWithUsernameOrID((MessageContext)source, input);
+		DiscordUser[] users = DiscordUser.getUnknownDiscordUsersWithUsernameOrID((MessageContext)source, input);
 		if(users.length == 0) {
 			if(unknownType != FULLY_KNOWN) {
 				if(treatUnknownsAsNobody) {

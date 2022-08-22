@@ -85,6 +85,13 @@ public class MessageContext<E>{
 		return event instanceof Player;
 	}
 	
+	public String getPrefix() {
+		if (isGuildMessage()) {
+			return getServer().getPrefix();
+		}
+		return "";
+	}
+	
 	public E getEvent() {
 		return event;
 	}

@@ -12,7 +12,10 @@ import java.util.Set;
 import com.gamebuster19901.excite.Main;
 import com.gamebuster19901.excite.Player;
 import com.gamebuster19901.excite.Wiimmfi;
+import com.gamebuster19901.excite.bot.audit.ban.Ban;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
+import com.gamebuster19901.excite.bot.user.Nobody;
+import com.gamebuster19901.excite.bot.user.UnknownDiscordUser;
 import com.gamebuster19901.excite.bot.user.Wii;
 import com.gamebuster19901.excite.util.Named;
 import com.gamebuster19901.excite.util.TimeUtils;
@@ -59,7 +62,14 @@ public class WhoIsCommand {
 		boolean hasMembers = context.isGuildMessage();
 		if(wiimmfi.getError() == null) {
 			if(!lookingFor.isEmpty()) {
-				HashSet<DiscordUser> users = new HashSet<DiscordUser>() {{this.addAll(Arrays.asList(DiscordUser.getDiscordUsersWithUsernameOrID(context, lookingFor)));}};
+				HashSet<DiscordUser> users = new HashSet<DiscordUser>() {{this.addAll(Arrays.asList(DiscordUser.getUnknownDiscordUsersWithUsernameOrID(context, lookingFor)));}};
+				for(DiscordUser user : users) {
+					if(user instanceof UnknownDiscordUser) {
+						if(!user.inDatabase()) {
+							users.remove(user);
+						}
+					}
+				}
 				HashSet<Player> players = new HashSet<Player>() {{this.addAll(Arrays.asList(Player.getPlayersByAnyIdentifier(context, lookingFor)));}};
 				HashSet<Named> matches = new HashSet<Named>();
 				matches.addAll(users);
@@ -90,11 +100,13 @@ public class WhoIsCommand {
 						for(Wii wii : wiis) {
 							wiiList = wiiList + wii.getName() + "\n";
 						}
-						if(hasMembers && (member = user.getMember(context.getServer())) != null) {
+						if(hasMembers && user.getJDAUser() != null && (member = user.getMember(context.getServer())) != null) {
 							embed.setColor(member.getColor());
 							embed.setThumbnail(user.getJDAUser().getEffectiveAvatarUrl());
 							embed.addField("Username:", user.getJDAUser().getName(), false);
 							embed.addField("Discriminator", user.getJDAUser().getDiscriminator(), false);
+							embed.addField("Bans", Ban.getBansOf(ConsoleContext.INSTANCE, user).length + "", false);
+							embed.addField("Banned", user.isBanned() + "", false);
 							//embed.addField("Badges:", "", false);
 							embed.addField("ID:", "" + user.getID(), false);
 							embed.addField("Nickname:", member.getNickname() != null ? member.getNickname() : "##Not Nicknamed##", false);
@@ -109,6 +121,8 @@ public class WhoIsCommand {
 							embed.setThumbnail(user.getJDAUser().getEffectiveAvatarUrl());
 							embed.addField("Username:", user.getJDAUser().getName(), false);
 							embed.addField("Discriminator", user.getJDAUser().getDiscriminator(), false);
+							embed.addField("Bans", Ban.getBansOf(ConsoleContext.INSTANCE, user).length + "", false);
+							embed.addField("Banned", user.isBanned() + "", false);
 							embed.addField("ID:", "" + user.getID(), false);
 							embed.addField("Time Online:", readableDuration(timeOnline, true), false);
 							embed.addField(profiles.size() + " registered Profiles:", profileList, false);
@@ -118,7 +132,7 @@ public class WhoIsCommand {
 					}
 					else if (match instanceof Player) {
 						Player profile = (Player) match;
-						DiscordUser user = DiscordUser.getDiscordUserTreatingUnknownsAsNobody(context, profile.getDiscord());
+						DiscordUser user = profile.getOwner();
 						embed.addField("Name:", profile.getName(), false);
 						embed.addField("ID:", profile.getID() + "", false);
 						embed.addField("FC:", profile.getFriendCode(), false);
@@ -126,6 +140,14 @@ public class WhoIsCommand {
 						embed.addField("Time Online:", readableDuration(profile.getOnlineDuration(), true), false);
 						embed.addField("First Seen:", date.format(profile.getFirstSeen().toEpochMilli()), false);
 						embed.addField("Last Seen:", date.format(profile.getLastOnline().toEpochMilli()), false);
+						embed.addField("Bans:", Ban.getBansOf(ConsoleContext.INSTANCE, profile).length + "", false);
+						embed.addField("Banned:", profile.isBanned() + "", false);
+						if(user == Nobody.INSTANCE) {
+							embed.addField("Owner Banned:", "No owner", false);
+						}
+						else {
+							embed.addField("Owner Banned:", user.isBanned() + "", false);
+						}
 					}
 				}
 				else if (matches.size() == 0) {
@@ -143,7 +165,7 @@ public class WhoIsCommand {
 						String userList = "";
 						for(DiscordUser user : users) {
 							Member member;
-							if(hasMembers && (member = user.getMember(context.getServer())) != null && member.getNickname() != null) {
+							if(hasMembers && user.getJDAUser() != null && (member = user.getMember(context.getServer())) != null && member.getNickname() != null) {
 								userList = userList + user.toDetailedString() + " AKA " + member.getEffectiveName() + "#" + member.getIdLong() + "\n";
 							}
 							else {

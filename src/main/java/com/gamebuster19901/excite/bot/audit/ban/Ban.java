@@ -124,7 +124,7 @@ public class Ban extends Audit{
 	@SuppressWarnings("rawtypes")
 	public static Ban[] getBansOfID(MessageContext context, long id) {
 		if(id == -1 || id == -2) {
-			throw new AssertionError();
+			throw new AssertionError("Attempted to get bans of a fake banee");
 		}
 		Result results = Table.selectAllFromJoinedUsingWhere(new MessageContext(context.getAuthor()), AUDITS, AUDIT_BANS, AUDIT_ID, new Comparison(BANNED_ID, EQUALS, id));
 		ArrayList<Ban> bans = new ArrayList<Ban>();

@@ -110,12 +110,12 @@ public class DiscordUser implements Banee {
 	
 	@Nullable
 	public User getJDAUser() {
-		User user;
+		User user = null;
 		try {
 			user = Main.discordBot.jda.retrieveUserById(discordId).complete();
 		}
 		catch(ErrorResponseException e) {
-			throw new AssertionError(discordId);
+			//swallow
 		}
 		if(user == null) {
 			System.out.println("Could not find JDA user for " + discordId);
@@ -180,6 +180,16 @@ public class DiscordUser implements Banee {
 	public boolean isOperator() {
 		try {
 			Result result = Table.selectAllFromWhere(ConsoleContext.INSTANCE, Table.OPERATORS, new Comparison(DISCORD_ID, EQUALS, getID()));
+			return result.next();
+		}
+		catch(SQLException e) {
+			throw new IOError(e);
+		}
+	}
+	
+	public boolean inDatabase() {
+		try {
+			Result result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, DISCORD_ID, DISCORD_USERS, new Comparison(DISCORD_ID, EQUALS, getID()));
 			return result.next();
 		}
 		catch(SQLException e) {
@@ -677,7 +687,29 @@ public class DiscordUser implements Banee {
 	}
 	
 	@SuppressWarnings("rawtypes")
-	public static final DiscordUser[] getDiscordUsersWithUsernameOrID(MessageContext context, String usernameOrID) {
+	public static final DiscordUser[] getKnownDiscordUsersWithUsernameOrID(MessageContext context, String usernameOrID) {
+		try {
+			long id = Long.parseLong(usernameOrID);
+			if(id < 1000000000) { //must be a profile id
+				return new DiscordUser[0];
+			}
+			DiscordUser user = getDiscordUser(context, id);
+			if(user != null) {
+				return new DiscordUser[] {user};
+			}
+			else {
+				return new DiscordUser[0];
+			}
+		}
+		catch(NumberFormatException e) {
+			//swallowed
+		}
+		HashSet<DiscordUser> users = getDiscordUser(context, usernameOrID);
+		return users.toArray(new DiscordUser[]{});
+	}
+	
+	@SuppressWarnings("rawtypes")
+	public static final DiscordUser[] getUnknownDiscordUsersWithUsernameOrID(MessageContext context, String usernameOrID) {
 		try {
 			long id = Long.parseLong(usernameOrID);
 			DiscordUser user = getDiscordUser(context, id);

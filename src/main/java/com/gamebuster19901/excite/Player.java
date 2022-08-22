@@ -189,16 +189,12 @@ public class Player implements Banee, Owned<DiscordUser> {
 		if(isVerified()) {
 			suffix += Emote.getEmote(VERIFIED);
 			if(this.isBanned()) {
-				if(!isOnline()) {
-					suffix += Emote.getEmote(BANNED);
-				}
+				suffix += Emote.getEmote(BANNED);
 			}
 			return String.format(prefix + " " + name +  " - FC❲" + friendCode +  "❳ - PID❲"  + playerID + "❳ - Discord❲" + getPrettyDiscord() + "❳" + suffix);
 		}
 		else if(this.isBanned()) {
-			if(!isOnline()) {
-				suffix += Emote.getEmote(BANNED);
-			}
+			suffix += Emote.getEmote(BANNED);
 		}
 		if(!suffix.isEmpty()) {
 			suffix = suffix + " ";
@@ -331,6 +327,14 @@ public class Player implements Banee, Owned<DiscordUser> {
 	}
 
 	public boolean isBanned() {
+		DiscordUser owner = getOwner();
+		if(owner != Nobody.INSTANCE) {
+			for(Ban ban : Ban.getBansOf(ConsoleContext.INSTANCE, owner)) {
+				if(ban.isActive()) {
+					return true;
+				}
+			}
+		}
 		for(Ban ban : Ban.getBansOf(ConsoleContext.INSTANCE, this)) {
 			if(ban.isActive()) {
 				return true;
@@ -433,7 +437,7 @@ public class Player implements Banee, Owned<DiscordUser> {
 		try {
 			Result result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, DISCORD_ID, PLAYERS, new Comparison(PLAYER_ID, EQUALS, getID()));
 			if(result.next()) {
-				return DiscordUser.getDiscordUserTreatingUnknownsAsNobody(ConsoleContext.INSTANCE, getDiscord());
+				return DiscordUser.getDiscordUserIncludingUnknown(ConsoleContext.INSTANCE, getDiscord());
 			}
 			return Nobody.INSTANCE;
 		} catch (SQLException e) {

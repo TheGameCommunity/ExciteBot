@@ -94,6 +94,7 @@ public class Debug {
 	
 	public static void relayPlayer(MessageContext context, Player player) {
 		context.sendMessage("Your argument appears to be " + player.getIdentifierName());
+		context.sendMessage("Full descriptor: " + player.toFullString());
 	}
 	
 }

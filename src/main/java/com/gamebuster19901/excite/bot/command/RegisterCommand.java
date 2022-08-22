@@ -2,19 +2,27 @@ package com.gamebuster19901.excite.bot.command;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.ArrayList;
 
 import javax.mail.MessagingException;
 import javax.security.auth.login.LoginException;
 
 import com.gamebuster19901.excite.Player;
 import com.gamebuster19901.excite.bot.command.argument.PlayerArgumentType;
+import com.gamebuster19901.excite.bot.command.argument.WiiArgumentType;
 import com.gamebuster19901.excite.bot.database.Column;
 import com.gamebuster19901.excite.bot.database.Comparator;
 import com.gamebuster19901.excite.bot.database.Comparison;
 import com.gamebuster19901.excite.bot.database.Result;
 import com.gamebuster19901.excite.bot.database.Table;
+import com.gamebuster19901.excite.bot.mail.AddFriendResponse;
+import com.gamebuster19901.excite.bot.mail.DiscordCodeResponse;
+import com.gamebuster19901.excite.bot.mail.DiscordMessageResponse;
+import com.gamebuster19901.excite.bot.mail.MailResponse;
+import com.gamebuster19901.excite.bot.mail.Mailbox;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
 import com.gamebuster19901.excite.bot.user.Wii;
+import com.gamebuster19901.excite.bot.user.Wii.InvalidWii;
 import com.gamebuster19901.excite.util.StacktraceUtil;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
@@ -32,14 +40,20 @@ public class RegisterCommand {
 					})	
 				)
 			).then(Commands.literal("wii")
-				.then(Commands.argument("code", StringArgumentType.greedyString())
+				.then(Commands.argument("wii", WiiArgumentType.wii())
 					.executes(context -> {
-						registerWii(context.getSource(), context.getArgument("code", String.class));
+						requestWii(context.getSource(), context.getArgument("wii", Wii.class));
 						return 1;
 					})
+				))
+				.then(Commands.argument("code", StringArgumentType.string())
+					.executes((context -> {
+						registerWii(context.getSource(), context.getArgument("wii", Wii.class), context.getArgument("code", String.class));
+						return 1;
+					}
 				)
-			)
-		);
+			)))
+		;
 	}
 	
 	@SuppressWarnings("rawtypes")
@@ -77,7 +91,28 @@ public class RegisterCommand {
 	}
 	
 	@SuppressWarnings("rawtypes")
-	private static void registerWii(MessageContext context, String securityCode) {
+	private static void requestWii(MessageContext context, Wii wii) {
+		try {
+			if(wii instanceof InvalidWii) {
+				context.sendMessage(wii.getName() + " is not a valid wii");
+				return;
+			}
+			
+			ArrayList<MailResponse> messages = new ArrayList<MailResponse>();
+			messages.add(new AddFriendResponse(wii));
+			messages.add(new DiscordCodeResponse(wii));
+			messages.add(new DiscordMessageResponse(context, 
+					"Wii friend request sent the following wii:\n\n" 
+					+ wii.getName() 
+					+ "\n\nFurther instructions have been sent to " + wii.getName() + ". It may take several minutes for you to receive the instructions. If you need help, execute the following command: `" + context.getPrefix() + "help register wii`"));
+			Mailbox.sendResponses(messages);
+		}
+		catch(MessagingException | IOException | LoginException e) {
+			context.sendMessage(StacktraceUtil.getStackTrace(e));
+		}
+	}
+	
+	public static void registerWii(MessageContext context, Wii unused, String securityCode) {
 		if(context.isGuildMessage()) {
 			context.deletePromptingMessage(ConsoleContext.INSTANCE, context.getMention() + " - Woah! Send your code to me via direct message! Nobody else should be seeing your registration code!");
 			return;
@@ -87,7 +122,7 @@ public class RegisterCommand {
 			return;
 		}
 		try {
-			Result result = Table.selectColumnsFromWhere(context, Column.WII_ID, Table.WIIS, new Comparison(Column.REGISTRATION_CODE, Comparator.EQUALS, securityCode));
+			Result result = Table.selectColumnsFromWhere(context, Column.WII_ID, Table.WIIS, new Comparison(Column.REGISTRATION_CODE, Comparator.LIKE, securityCode));
 			if(result.hasNext()) {
 				result.next();
 				Wii wii = Wii.getWii(result.getString(Column.WII_ID));
