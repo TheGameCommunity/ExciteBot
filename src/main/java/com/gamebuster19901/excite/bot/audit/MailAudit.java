@@ -21,6 +21,7 @@ import com.gamebuster19901.excite.bot.database.Row;
 import com.gamebuster19901.excite.bot.database.Table;
 import com.gamebuster19901.excite.bot.database.sql.PreparedStatement;
 import com.gamebuster19901.excite.bot.mail.AddFriendResponse;
+import com.gamebuster19901.excite.bot.mail.Applications;
 import com.gamebuster19901.excite.bot.mail.ElectronicAddress;
 import com.gamebuster19901.excite.bot.mail.EmailAddress;
 import com.gamebuster19901.excite.bot.mail.MailReplyResponse;
@@ -28,6 +29,9 @@ import com.gamebuster19901.excite.bot.mail.Mailbox;
 import com.gamebuster19901.excite.bot.mail.RefundResponse;
 
 public class MailAudit extends Audit {
+	
+	private static final String EXCITEBOTS = Applications.EXCITEBOTS.header();
+	private static final String FRIEND_REQUEST = Applications.FRIEND_REQUEST.header();
 
 	Audit parentData;
 	
@@ -43,15 +47,13 @@ public class MailAudit extends Audit {
 		String[] appIDHeader = message.getHeader(Mailbox.APP_ID_HEADER);
 		String mailType = "GENERIC";
 		if(appIDHeader != null) {
-			switch(appIDHeader[0]) {
-				case Mailbox.FRIEND_REQUEST:
-					description = from + " sent a friend request to " + to;
-					mailType = "FRIEND_REQUEST";
-					break;
-				case Mailbox.EXCITEBOTS:
-					description = from + " sent a challenge to " + to;
-					mailType = "CHALLENGE";
-					break;
+			if(appIDHeader[0].equals(FRIEND_REQUEST)) {
+				description = from + " sent a friend request to " + to;
+				mailType = "FRIEND_REQUEST";
+			}
+			else if(appIDHeader[0].equals(EXCITEBOTS)) {
+				description = from + " sent a challenge to " + to;
+				mailType = "CHALLENGE";
 			}
 		}
 		

@@ -239,10 +239,7 @@ public class Mailbox {
 					//attachment = analyzeIngameMail(sender);
 					break;
 				case FRIEND_REQUEST:
-					AddFriendResponse friendResponse = new AddFriendResponse(wii);
-					DiscordCodeResponse codeResponse = new DiscordCodeResponse(wii);
-					ret.add(friendResponse);
-					ret.add(codeResponse);
+					ret.add(new NoResponse());
 					break;
 				case WII_MESSAGE:
 					if(wii.equals(ADDRESS)) { //just in case
@@ -290,9 +287,12 @@ public class Mailbox {
 				reply.setVar("mailNumber", "m" + ++i);
 
 				reply.initVars();
-				String text = response.getResponse();
-				System.out.println(response.getResponse());
+				String text = reply.getResponse();
+				System.out.println(reply.getResponse());
 				builder.addTextBody("m" + i,  text);
+			}
+			if(response instanceof NonWiiResponse) {
+				((NonWiiResponse) response).send();
 			}
 		}
 		

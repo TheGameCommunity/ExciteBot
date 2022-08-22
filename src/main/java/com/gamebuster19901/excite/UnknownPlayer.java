@@ -45,6 +45,14 @@ public class UnknownPlayer extends Player {
 	
 	@Override
 	public boolean isBanned() {
+		try {
+			if(this.getID() > 0) {
+				return super.isBanned();
+			}
+		}
+		catch(Throwable t) {
+			t.printStackTrace();
+		}
 		return false;
 	}
 	

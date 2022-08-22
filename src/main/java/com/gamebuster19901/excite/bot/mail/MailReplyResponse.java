@@ -28,7 +28,6 @@ public abstract class MailReplyResponse<T extends ElectronicAddress> extends Mai
 		return respondee;
 	}
 	
-	@Override
 	public String getResponse() throws MessagingException {
 		return response;
 	}

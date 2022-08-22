@@ -16,6 +16,10 @@ public enum Applications {
 		return this.id.equals(id);
 	}
 	
+	public final String header() {
+		return id;
+	}
+	
 	public static Applications getApplicaiton(String id) {
 		for(Applications app : values()) {
 			if(app.matches(id)) {
