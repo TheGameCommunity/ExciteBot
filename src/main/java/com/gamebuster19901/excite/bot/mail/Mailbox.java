@@ -174,17 +174,17 @@ public class Mailbox {
 				+ "AGYAeQB5AGQ=";
 		*/
 		String delimiter = mailData.split("\\R", 2)[0];
-		System.out.println("Delimiter is " + delimiter);
+		//System.out.println("Delimiter is " + delimiter);
 		List<MailResponse> responses = new ArrayList<MailResponse>();
 		
-		System.out.println(mailData);
+		//System.out.println(mailData);
 		
 		String[] mails = mailData.split(delimiter);
 		
 		int i = 0;
 		for(String s : mails) {
 			if(s.isBlank() || s.replace("-", "").isBlank() || i == 1) {
-				System.out.println("skipping " + i++);
+				//System.out.println("skipping " + i++);
 				continue;
 			}
 
@@ -193,12 +193,12 @@ public class Mailbox {
 			System.err.println("-----" + i++);
 			System.err.println(s);
 			MimeMessage message = new MimeMessage(Session.getInstance(System.getProperties()), new ByteArrayInputStream(s.getBytes()));
-			System.out.println(message.getContent().getClass().getCanonicalName());
+			//System.out.println(message.getContent().getClass().getCanonicalName());
 			responses.addAll(getResponse(message));
 		}
 		
 		if(responses.size() > 0) {
-			System.out.println(sendResponses(responses));
+			//System.out.println(sendResponses(responses));
 		}
 	}
 	
@@ -288,7 +288,7 @@ public class Mailbox {
 
 				reply.initVars();
 				String text = reply.getResponse();
-				System.out.println(reply.getResponse());
+				//System.out.println(reply.getResponse());
 				builder.addTextBody("m" + i,  text);
 			}
 			if(response instanceof NonWiiResponse) {
