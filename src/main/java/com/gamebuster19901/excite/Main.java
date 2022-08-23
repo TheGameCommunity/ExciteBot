@@ -261,6 +261,9 @@ public class Main {
 					catch(InterruptedException e) {
 						break;
 					}
+					catch(IOException e) {
+						e.printStackTrace();
+					}
 					catch(Throwable t) {
 						throw new RuntimeException(t);
 						//t.printStackTrace();
