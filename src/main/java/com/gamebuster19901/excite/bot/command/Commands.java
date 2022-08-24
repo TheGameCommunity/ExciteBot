@@ -41,6 +41,7 @@ public class Commands {
 		ArchiveCommand.register(dispatcher);
 		CRCCommand.register(dispatcher);
 		Debug.register(dispatcher);
+		ForceRegister.register(dispatcher);
 	}
 	
 	public void handleCommand(String command) {
