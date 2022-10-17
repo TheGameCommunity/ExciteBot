@@ -1,6 +1,6 @@
 package com.gamebuster19901.excite.util;
 
-public interface Named extends Identified {
+public interface Named<ID> extends Identified<ID> {
 
 	public String getName();
 	
@@ -16,5 +16,7 @@ public interface Named extends Identified {
 		return getName().equalsIgnoreCase(lookingFor) || lookingFor.equals(((Long)getID()).toString()) || getIdentifierName().equalsIgnoreCase(lookingFor) 
 				|| getLookingForMatch().equalsIgnoreCase(lookingFor);
 	}
+	
+	public boolean isValid();
 	
 }

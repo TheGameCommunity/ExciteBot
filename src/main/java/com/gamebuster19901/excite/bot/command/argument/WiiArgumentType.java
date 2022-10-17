@@ -3,6 +3,7 @@ package com.gamebuster19901.excite.bot.command.argument;
 import com.gamebuster19901.excite.bot.command.Commands;
 import com.gamebuster19901.excite.bot.command.exception.ParseExceptions;
 import com.gamebuster19901.excite.bot.user.Wii;
+import com.gamebuster19901.excite.bot.user.Wii.InvalidWii;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
@@ -35,6 +36,9 @@ public class WiiArgumentType implements ArgumentType<Wii> {
 		}
 		
 		Wii wii = Wii.getWii(input);
+		if(wii instanceof InvalidWii) {
+			throw ParseExceptions.WII_INVALID.create(input);
+		}
 		if(allowUnknown && !wii.isKnown()) {
 			throw ParseExceptions.WII_NOT_FOUND.create(wii.getWiiCode());
 		}

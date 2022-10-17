@@ -32,7 +32,7 @@ import static com.gamebuster19901.excite.bot.database.Column.*;
 
 import net.dv8tion.jda.api.entities.User;
 
-public class Player implements Banee, Owned<DiscordUser> {
+public class Player implements Banee, Owned<DiscordUser, Long> {
 	private static final Logger LOGGER = Logger.getLogger(Player.class.getName());
 	
 	public static final String validFCChars = "1234567890";
@@ -289,8 +289,8 @@ public class Player implements Banee, Owned<DiscordUser> {
 	}
 	
 	@Override
-	public long getID() {
-		return playerID;
+	public Long getID() {
+		return (long) playerID;
 	}
 	
 	public boolean isLegacy() {
@@ -299,6 +299,11 @@ public class Player implements Banee, Owned<DiscordUser> {
 	
 	public boolean isVerified() {
 		return getDiscord() != 0;
+	}
+	
+	@Override
+	public boolean isValid() {
+		return getClass() == Player.class;
 	}
 	
 	@SuppressWarnings("deprecation")
@@ -496,7 +501,7 @@ public class Player implements Banee, Owned<DiscordUser> {
 	
 	@Override
 	public int hashCode() {
-		return (int) getID();
+		return (int)(long)getID();
 	}
 	
 	@SuppressWarnings("rawtypes")

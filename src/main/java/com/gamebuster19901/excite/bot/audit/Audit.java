@@ -25,7 +25,7 @@ import static com.gamebuster19901.excite.bot.database.Table.AUDITS;
 import static com.gamebuster19901.excite.bot.database.Column.*;
 import static com.gamebuster19901.excite.bot.database.Comparator.EQUALS;
 
-public class Audit implements Identified{
+public class Audit implements Identified<Long>{
 	
 	private final long auditID;
 	private final AuditType type;
@@ -96,7 +96,7 @@ public class Audit implements Identified{
 	}
 	
 	@Override
-	public long getID() {
+	public Long getID() {
 		return auditID;
 	}
 	

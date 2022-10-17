@@ -7,7 +7,7 @@ import com.gamebuster19901.excite.bot.command.MessageContext;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
 import com.gamebuster19901.excite.util.Named;
 
-public interface Banee extends Named {
+public interface Banee extends Named<Long> {
 	
 	public String getName();
 	

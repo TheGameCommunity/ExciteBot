@@ -59,6 +59,7 @@ public interface ParseExceptions {
 	 * WII
 	 */
 	public DynamicCommandExceptionType WII_NOT_FOUND = new DynamicCommandExceptionType(wii -> new LiteralMessage("Unable to find wii `" + wii + '`'));
+	public DynamicCommandExceptionType WII_INVALID = new DynamicCommandExceptionType(wii -> new LiteralMessage("Invalid wii: `" + wii + '`'));
 	
 	static String handleDurationParam(Object o) {
 		return "`" + (o instanceof Duration ? TimeUtils.fullReadableDuration((Duration) o) : o.toString()) + "`";

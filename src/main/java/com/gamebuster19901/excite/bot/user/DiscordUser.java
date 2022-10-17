@@ -124,7 +124,7 @@ public class DiscordUser implements Banee {
 	}
 	
 	@Override
-	public long getID() {
+	public Long getID() {
 		return discordId;
 	}
 	
@@ -227,6 +227,11 @@ public class DiscordUser implements Banee {
 	
 	public String getName() {
 		return getJDAUser().getAsTag();
+	}
+	
+	@Override
+	public boolean isValid() {
+		return getClass() == DiscordUser.class;
 	}
 	
 	public int getNotifyThreshold() {
@@ -838,4 +843,5 @@ public class DiscordUser implements Banee {
 		System.out.println(fullDiscordTag.substring(fullDiscordTag.lastIndexOf('#') + 1));
 		return fullDiscordTag.substring(fullDiscordTag.lastIndexOf('#') + 1);
 	}
+
 }

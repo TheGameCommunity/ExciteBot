@@ -7,6 +7,7 @@ import com.gamebuster19901.excite.Main;
 import com.gamebuster19901.excite.bot.command.MessageContext;
 import com.gamebuster19901.excite.bot.database.sql.PreparedStatement;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
+import com.gamebuster19901.excite.bot.user.Wii;
 import com.gamebuster19901.excite.util.StacktraceUtil;
 
 import static com.gamebuster19901.excite.bot.database.Column.ALL_COLUMNS;
@@ -166,6 +167,16 @@ public enum Table {
 			demoter.sendMessage("could not revoke the operator permissions of " + user);
 			demoter.sendMessage(StacktraceUtil.getStackTrace(e));
 			throw new IOError(e);
+		}
+	}
+	
+	public static void addWii(MessageContext context, Wii wii) {
+		PreparedStatement st = null;
+		try {
+			st = Insertion.insertInto(WIIS).setColumns(Column.WII_ID).to(wii.getID()).prepare(context);
+			st.execute();
+		} catch(SQLException e) {
+			throw new RuntimeException(e);
 		}
 	}
 	

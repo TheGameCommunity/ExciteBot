@@ -2,6 +2,7 @@ package com.gamebuster19901.excite.bot.mail;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
@@ -118,9 +119,10 @@ public class Mailbox {
 		HttpResponse response = client.execute(request);
 		HttpEntity e = response.getEntity();
 		
-		try (InputStream s = e.getContent()) {
-			parseMail(new String(s.readAllBytes(), StandardCharsets.UTF_8));
-		}
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		e.writeTo(baos);
+		
+		parseMail(new String(baos.toByteArray()));
 
 	}
 	
@@ -177,7 +179,7 @@ public class Mailbox {
 		//System.out.println("Delimiter is " + delimiter);
 		List<MailResponse> responses = new ArrayList<MailResponse>();
 		
-		//System.out.println(mailData);
+		//System.err.println(mailData);
 		
 		String[] mails = mailData.split(delimiter);
 		
@@ -190,10 +192,11 @@ public class Mailbox {
 
 			s = CONTENT_PATTERN.matcher(s).replaceFirst(""); //remove content-type
 			s = s.trim();
-			System.err.println("-----" + i++);
-			System.err.println(s);
+			//System.err.println("-----" + i++);
+			//System.err.println(s);
 			MimeMessage message = new MimeMessage(Session.getInstance(System.getProperties()), new ByteArrayInputStream(s.getBytes()));
 			//System.out.println(message.getContent().getClass().getCanonicalName());
+			//System.out.println(message.getContent());
 			responses.addAll(getResponse(message));
 		}
 		
@@ -239,7 +242,7 @@ public class Mailbox {
 					//attachment = analyzeIngameMail(sender);
 					break;
 				case FRIEND_REQUEST:
-					ret.add(new NoResponse());
+					ret.add(new AddFriendResponse(wii));
 					break;
 				case WII_MESSAGE:
 					if(wii.equals(ADDRESS)) { //just in case
@@ -288,7 +291,7 @@ public class Mailbox {
 
 				reply.initVars();
 				String text = reply.getResponse();
-				//System.out.println(reply.getResponse());
+				////System.out.println(reply.getResponse());
 				builder.addTextBody("m" + i,  text);
 			}
 			if(response instanceof NonWiiResponse) {

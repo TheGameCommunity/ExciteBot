@@ -7,6 +7,7 @@ import com.gamebuster19901.excite.bot.database.Insertion;
 import com.gamebuster19901.excite.bot.database.Row;
 import com.gamebuster19901.excite.bot.database.Table;
 import com.gamebuster19901.excite.bot.database.sql.PreparedStatement;
+import com.gamebuster19901.excite.bot.user.DiscordUser;
 import com.gamebuster19901.excite.bot.user.Wii;
 
 import static com.gamebuster19901.excite.bot.database.Column.*;
@@ -24,13 +25,13 @@ public class WiiRegistrationAudit extends Audit {
 		super(result, AuditType.WII_REGISTRATION_AUDIT);
 	}
 	
-	public static WiiRegistrationAudit addWiiRegistrationAudit(MessageContext registrant, Wii wii, boolean unregister) {
+	public static WiiRegistrationAudit addWiiRegistrationAudit(MessageContext registrant, DiscordUser registree,  Wii wii, boolean unregister) {
 		Audit parent;
 		if(!unregister) {
-			parent = Audit.addAudit(registrant, AuditType.WII_REGISTRATION_AUDIT, registrant.getAuthor().getIdentifierName() + " registered " + wii.getWiiCode().hyphenate());
+			parent = Audit.addAudit(registrant, AuditType.WII_REGISTRATION_AUDIT, registrant.getAuthor().getIdentifierName() + " registered " + wii.getWiiCode().hyphenate() + " to " + registree);
 		}
 		else {
-			parent = Audit.addAudit(registrant, AuditType.WII_REGISTRATION_AUDIT, registrant.getAuthor().getIdentifierName() + " unregistered " + wii.getWiiCode().hyphenate());
+			parent = Audit.addAudit(registrant, AuditType.WII_REGISTRATION_AUDIT, registrant.getAuthor().getIdentifierName() + " unregistered " + wii.getWiiCode().hyphenate() + " from " + registree);
 		}
 		
 		PreparedStatement st;
@@ -38,7 +39,7 @@ public class WiiRegistrationAudit extends Audit {
 		try {
 			st = Insertion.insertInto(Table.AUDIT_WII_REGISTER)
 			.setColumns(AUDIT_ID, WII_ID, DISCORD_ID, UNREGISTER)
-			.to(parent.getID(), wii.getWiiCode().toString(), registrant.getSenderId(), unregister)
+			.to(parent.getID(), wii.getWiiCode().toString(), registree.getID(), unregister)
 			.prepare(true);
 			
 			st.execute();

@@ -42,6 +42,7 @@ public class Commands {
 		CRCCommand.register(dispatcher);
 		Debug.register(dispatcher);
 		ForceRegister.register(dispatcher);
+		FriendMeCommand.register(dispatcher);
 	}
 	
 	public void handleCommand(String command) {

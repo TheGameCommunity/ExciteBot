@@ -22,7 +22,7 @@ import static com.gamebuster19901.excite.bot.database.Table.DISCORD_SERVERS;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Role;
 
-public class DiscordServer implements Named {
+public class DiscordServer implements Named<Long> {
 	
 	protected final long id;
 	
@@ -62,7 +62,7 @@ public class DiscordServer implements Named {
 		return getGuild().getRoleById(id);
 	}
 	
-	public long getID() {
+	public Long getID() {
 		return id;
 	}
 	
@@ -163,6 +163,11 @@ public class DiscordServer implements Named {
 		catch (SQLException e) {
 			throw new IOError(e);
 		}
+	}
+
+	@Override
+	public boolean isValid() {
+		return true;
 	}
 
 }

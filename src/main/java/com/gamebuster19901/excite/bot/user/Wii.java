@@ -35,7 +35,7 @@ import static com.gamebuster19901.excite.bot.database.Column.*;
 import static com.gamebuster19901.excite.bot.database.Table.WIIS;
 import static com.gamebuster19901.excite.bot.user.DesiredProfile.validPasswordChars;
 
-public class Wii implements Named, Owned<DiscordUser>, ElectronicAddress {
+public class Wii implements Named<String>, Owned<DiscordUser, String>, ElectronicAddress {
 	
 	private static final String EMAIL_SUFFIX = "@rc24.xyz";
 	private static final Pattern PATTERN = Pattern.compile("^\\d{16}$");
@@ -45,6 +45,12 @@ public class Wii implements Named, Owned<DiscordUser>, ElectronicAddress {
 	
 	private Wii(WiiCode code) {
 		this.wiiCode = code;
+		if(!(this instanceof InvalidWii) && !isKnown()) {
+			if(this.getID() == "-1") {
+				throw new AssertionError();
+			}
+			Table.addWii(ConsoleContext.INSTANCE, this);
+		}
 	}
 	
 	public WiiCode getWiiCode() {
@@ -74,13 +80,8 @@ public class Wii implements Named, Owned<DiscordUser>, ElectronicAddress {
 	}
 	
 	@Override
-	public long getID() {
-		try {
-			return Integer.parseInt(wiiCode.toString());
-		}
-		catch(NumberFormatException e) {
-			return -1;
-		}
+	public String getID() {
+		return wiiCode.toString();
 	}
 
 	@Override
@@ -147,20 +148,25 @@ public class Wii implements Named, Owned<DiscordUser>, ElectronicAddress {
 		
 	}
 	
-	public void register(MessageContext owner) throws SQLException, MessagingException, LoginException, ClientProtocolException, IOException{
-		Table.updateWhere(owner, WIIS, DISCORD_ID, owner.getSenderId(), new Comparison(WII_ID, EQUALS, wiiCode.code));
-		Table.updateWhere(owner, WIIS, REGISTRATION_CODE, null, new Comparison(WII_ID, EQUALS, wiiCode.code));
-		WiiRegistrationAudit.addWiiRegistrationAudit(owner, this, false);
+	public void register(MessageContext owner) throws LoginException, ClientProtocolException, SQLException, MessagingException, IOException {
+		register(owner, owner.getDiscordAuthor());
+	}
+	
+	public void register(MessageContext context, DiscordUser owner) throws SQLException, MessagingException, LoginException, ClientProtocolException, IOException{
+		System.out.println(wiiCode.code);
+		Table.updateWhere(context, WIIS, DISCORD_ID, owner.getID(), new Comparison(WII_ID, EQUALS, wiiCode.code));
+		Table.updateWhere(context, WIIS, REGISTRATION_CODE, null, new Comparison(WII_ID, EQUALS, wiiCode.code));
+		WiiRegistrationAudit.addWiiRegistrationAudit(context, owner, this, false);
 		EmbedBuilder embed = new EmbedBuilder();
 		embed.setColor(Color.GREEN);
-		embed.setTitle("Registration Successful");
-		embed.setDescription("You have succesfully registered the following wii:\n\n" + this.getIdentifierName());
+		embed.setTitle("Wii Registered");
+		embed.setDescription("The following wii has been linked to your discord account:\n\n" + this.getIdentifierName());
 		ElectronicAddress exciteEmail = Mailbox.ADDRESS;
 		owner.sendMessage(embed.build());
 		List<MailResponse> wiiMail = Mailbox.packResponses(
 				new TextualMailResponse<Wii>(this).setText(
 					"This wii has been registered with\n Excitebot.\n" +
-					"registrant: " + owner.getDiscordAuthor().getIdentifierName() + "\n\n" +
+					"registrant: " + owner.getIdentifierName() + "\n\n" +
 					"If this is not you, contact a TCG\nadmin immediately.\n\n" +
 					"-The Game Community"
 				)
@@ -183,6 +189,11 @@ public class Wii implements Named, Owned<DiscordUser>, ElectronicAddress {
 	@Nullable
 	public static WiiCode getWiiCode(String code) {
 		return new WiiCode(code);
+	}
+	
+	@Override
+	public boolean isValid() {
+		return true;
 	}
 	
 	@SuppressWarnings("rawtypes")
@@ -252,6 +263,11 @@ public class Wii implements Named, Owned<DiscordUser>, ElectronicAddress {
 		
 		@Override
 		public boolean isKnown() {
+			return false;
+		}
+		
+		@Override
+		public boolean isValid() {
 			return false;
 		}
 	}

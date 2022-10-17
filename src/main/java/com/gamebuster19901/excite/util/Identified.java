@@ -1,8 +1,8 @@
 package com.gamebuster19901.excite.util;
 
-public interface Identified {
+public interface Identified<ID> {
 
-	public long getID();
+	public ID getID();
 	
 	public default boolean isKnown() {
 		return true;

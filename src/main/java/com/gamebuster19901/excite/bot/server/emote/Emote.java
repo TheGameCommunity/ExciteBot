@@ -18,20 +18,20 @@ public class Emote {
 	
 	private long discordServer = -1;
 	private String name;
-	private String format;
+	private final net.dv8tion.jda.api.entities.Emote emote;
 	
 	public Emote(String name) {
-		this(name, "?" + name + "?");
+		this.emote = getEmote(name).asDiscordEmote();
 		EMOTES.put(name, this);
 	}
 	
-	protected Emote(String name, String format) {
+	protected Emote(String name, net.dv8tion.jda.api.entities.Emote emote) {
 		this.name = name;
-		this.format = format;
+		this.emote = emote;
 	}
 	
-	public Emote(String name, long discordServer, String format) {
-		this(name, format);
+	public Emote(String name, long discordServer, net.dv8tion.jda.api.entities.Emote emote) {
+		this(name, emote);
 		this.discordServer = discordServer;
 	}
 	
@@ -50,7 +50,7 @@ public class Emote {
 				List<net.dv8tion.jda.api.entities.Emote> emotes = server.getGuild().getEmotesByName(name, false);
 				if(emotes.size() > 0) {
 					LOGGER.info("Found emote :" + name + ": " + " in " + server);
-					return new Emote(name, server.getID(), emotes.get(0).getAsMention());
+					return new Emote(name, server.getID(), emotes.get(0));
 				}
 			}
 		}
@@ -58,9 +58,18 @@ public class Emote {
 		return new Emote(name);
 	}
 	
+	public net.dv8tion.jda.api.entities.Emote asDiscordEmote() {
+		return emote;
+	}
+	
 	@Override
 	public String toString() {
-		return format;
+		try {
+			return emote.getAsMention();
+		}
+		catch(Throwable t) {
+			return "?" + name + "?"; 
+		}
 	}
 	
 }

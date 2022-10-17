@@ -7,7 +7,9 @@ import com.gamebuster19901.excite.bot.command.argument.ChannelArgumentType;
 import com.gamebuster19901.excite.bot.command.argument.DiscordUserArgumentType;
 import com.gamebuster19901.excite.bot.command.argument.DurationArgumentType;
 import com.gamebuster19901.excite.bot.command.argument.PlayerArgumentType;
+import com.gamebuster19901.excite.bot.command.argument.WiiArgumentType;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
+import com.gamebuster19901.excite.bot.user.Wii;
 import com.gamebuster19901.excite.util.TimeUtils;
 import com.mojang.brigadier.CommandDispatcher;
 
@@ -51,7 +53,8 @@ public class Debug {
 													}
 										)
 								)
-				))
+						)
+				)
 				.then(Commands.literal("user")
 					.then(Commands.argument("user", DiscordUserArgumentType.user())
 						.executes((context)	-> {
@@ -68,10 +71,22 @@ public class Debug {
 						})
 					)	
 				)
-		);
+				.then(Commands.literal("wii")
+					.then(Commands.argument("wii", WiiArgumentType.wii().allowUnknown())
+						.executes(((context) ->  {
+							relayWii(context.getSource(), context.getArgument("wii", Wii.class));
+							return 1;
+						})
+					)
+				)
+		));
 		
 	}
 	
+	private static void relayWii(MessageContext context, Wii argument) {
+		context.sendMessage("Your argument appears to be " + argument.getOwnershipString());
+	}
+
 	private static int setDebugOutput(MessageContext context, MessageChannel channel) {
 		if(context.isOperator()) {
 			if(channel instanceof TextChannel) {
