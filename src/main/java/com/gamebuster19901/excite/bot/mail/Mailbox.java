@@ -237,27 +237,32 @@ public class Mailbox {
 				app = Applications.getApplicaiton(appheaders[0]);
 			}
 			
-			switch(app) {
-				case EXCITEBOTS:
-					//attachment = analyzeIngameMail(sender);
-					break;
-				case FRIEND_REQUEST:
-					ret.add(new AddFriendResponse(wii));
-					break;
-				case WII_MESSAGE:
-					if(wii.equals(ADDRESS)) { //just in case
-						ret.add(new NoResponse());
-					}
-					else{
+			if(app != null) {
+				switch(app) {
+					case EXCITEBOTS:
+						//attachment = analyzeIngameMail(sender);
+						break;
+					case FRIEND_REQUEST:
+						ret.add(new AddFriendResponse(wii));
+						break;
+					case WII_MESSAGE:
+						if(wii.equals(ADDRESS)) { //just in case
+							ret.add(new NoResponse());
+						}
+						else{
+							TextualMailResponse<Wii> response = new TextualMailResponse<Wii>(message);
+							response.setText("You sent:\n\n" + message.getContent());
+							ret.add(response);
+						}
+						break;
+					default:
 						TextualMailResponse<Wii> response = new TextualMailResponse<Wii>(message);
-						response.setText("You sent:\n\n" + message.getContent());
-						ret.add(response);
-					}
-					break;
-				default:
-					TextualMailResponse<Wii> response = new TextualMailResponse<Wii>(message);
-					response.setText("Received mail for unknown game " + appheaders[0]);
-					break;
+						response.setText("Received mail for unknown game " + appheaders[0]);
+						break;
+				}
+			}
+			else {
+				ret.add(new NoResponse());
 			}
 			return ret;
 		}
