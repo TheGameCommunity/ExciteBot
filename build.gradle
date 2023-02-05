@@ -29,8 +29,8 @@ dependencies {
 	shadow group: 'org.apache.httpcomponents', name: 'httpmime', version: '4.5.13'
 	shadow ('net.dv8tion:JDA:5.0.0-alpha.12')
 	implementation ('net.dv8tion:JDA:5.0.0-alpha.12')
-	shadow group: 'com.thegamecommunity', name:'brigadier', version: 'TGC-1.1.0.0'
-	implementation group: 'com.thegamecommunity', name:'brigadier', version: 'TGC-1.1.0.0'
+	shadow group: 'com.thegamecommunity', name:'brigadier', version: 'TGC-1.2.2.0'
+	implementation group: 'com.thegamecommunity', name:'brigadier', version: 'TGC-1.2.2.0'
 	shadow group: 'mysql', name: 'mysql-connector-java', version: '8.0.28'
 	
 	/*
