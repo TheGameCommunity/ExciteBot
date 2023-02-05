@@ -16,7 +16,7 @@ import static com.gamebuster19901.excite.bot.command.argument.DiscordUserArgumen
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
 
-import net.dv8tion.jda.api.entities.PrivateChannel;
+import net.dv8tion.jda.api.entities.channel.concrete.PrivateChannel;
 
 public class BanCommand {
 

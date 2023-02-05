@@ -7,8 +7,9 @@ import java.util.LinkedHashSet;
 import java.util.Random;
 import java.util.regex.Pattern;
 
-import javax.annotation.Nullable;
 import javax.mail.MessagingException;
+
+import org.jetbrains.annotations.Nullable;
 
 import com.gamebuster19901.excite.bot.audit.WiiRegistrationAudit;
 import com.gamebuster19901.excite.bot.command.ConsoleContext;

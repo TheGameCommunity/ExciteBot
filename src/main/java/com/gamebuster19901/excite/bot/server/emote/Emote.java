@@ -9,6 +9,7 @@ import com.gamebuster19901.excite.bot.command.ConsoleContext;
 import com.gamebuster19901.excite.bot.server.DiscordServer;
 
 import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.emoji.RichCustomEmoji;
 
 public class Emote {
 	
@@ -47,7 +48,7 @@ public class Emote {
 		for(DiscordServer server : DiscordServer.getKnownDiscordServers()) {
 			Guild guild = server.getGuild();
 			if(guild != null) {
-				List<net.dv8tion.jda.api.entities.Emote> emotes = server.getGuild().getEmotesByName(name, false);
+				List<RichCustomEmoji> emotes = server.getGuild().getEmojisByName(name, false);
 				if(emotes.size() > 0) {
 					LOGGER.info("Found emote :" + name + ": " + " in " + server);
 					return new Emote(name, server.getID(), emotes.get(0).getAsMention());
