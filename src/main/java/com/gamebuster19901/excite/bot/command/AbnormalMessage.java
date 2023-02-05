@@ -32,4 +32,10 @@ public class AbnormalMessage extends AbstractMessage {
 		throw new UnsupportedOperationException();
 	}
 
+	@Override
+	public long getApplicationIdLong() {
+		unsupported();
+		return 0;
+	}
+
 }

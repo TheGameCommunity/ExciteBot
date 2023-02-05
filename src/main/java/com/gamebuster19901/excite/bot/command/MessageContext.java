@@ -2,7 +2,7 @@ package com.gamebuster19901.excite.bot.command;
 
 import java.sql.SQLException;
 
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 
 import com.gamebuster19901.excite.Main;
 import com.gamebuster19901.excite.Player;
@@ -15,14 +15,15 @@ import com.gamebuster19901.excite.bot.user.Nobody;
 import com.gamebuster19901.excite.util.MessageUtil;
 import com.gamebuster19901.excite.util.Named;
 
-import net.dv8tion.jda.api.entities.BaseGuildMessageChannel;
 import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.entities.MessageEmbed;
-import net.dv8tion.jda.api.entities.NewsChannel;
-import net.dv8tion.jda.api.entities.PrivateChannel;
-import net.dv8tion.jda.api.entities.TextChannel;
-import net.dv8tion.jda.api.entities.ThreadChannel;
+import net.dv8tion.jda.api.entities.channel.concrete.NewsChannel;
+import net.dv8tion.jda.api.entities.channel.concrete.PrivateChannel;
+import net.dv8tion.jda.api.entities.channel.concrete.ThreadChannel;
+import net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel;
+import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
+import net.dv8tion.jda.api.entities.channel.middleman.StandardGuildMessageChannel;
+import net.dv8tion.jda.api.entities.channel.unions.MessageChannelUnion;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 
 public class MessageContext<E>{
@@ -58,11 +59,11 @@ public class MessageContext<E>{
 	}
 	
 	public boolean isGuildMessage() {
-		return getChannel() instanceof BaseGuildMessageChannel;
+		return getChannel() instanceof GuildMessageChannel;
 	}
 	
 	public boolean isStandardGuildMessage() {
-		return getChannel() instanceof TextChannel;
+		return getChannel() instanceof StandardGuildMessageChannel;
 	}
 	
 	public boolean isNewsMessage() {
@@ -217,7 +218,7 @@ public class MessageContext<E>{
 		return null;
 	}
 	
-	public MessageChannel getChannel() {
+	public MessageChannelUnion getChannel() {
 		if (event instanceof MessageReceivedEvent) {
 			return ((MessageReceivedEvent) event).getChannel();
 		}

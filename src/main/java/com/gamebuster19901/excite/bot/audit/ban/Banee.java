@@ -1,6 +1,6 @@
 package com.gamebuster19901.excite.bot.audit.ban;
 
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 
 import com.gamebuster19901.excite.Player;
 import com.gamebuster19901.excite.bot.command.MessageContext;

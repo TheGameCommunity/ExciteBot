@@ -6,7 +6,7 @@ import com.gamebuster19901.excite.bot.server.DiscordServer;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.LongArgumentType;
 
-import net.dv8tion.jda.api.entities.Emote;
+import net.dv8tion.jda.api.entities.emoji.RichCustomEmoji;
 
 public class IconDumpCommand {
 
@@ -26,9 +26,9 @@ public class IconDumpCommand {
 		if(context.isOperator()) {
 			DiscordServer server = DiscordServer.getServer(ConsoleContext.INSTANCE, serverId);
 			if(server != null && server.isLoaded()) {
-				List<Emote> emotes = server.getGuild().getEmotes();
+				List<RichCustomEmoji> emotes = server.getGuild().getEmojis();
 				String ret = server.getName() + " has " + emotes.size() + " emotes:\n\n";
-				for(Emote emote : emotes) {
+				for(RichCustomEmoji emote : emotes) {
 					ret += emote.getName() + ": " + emote.getAsMention() + "\n";
 				}
 				context.sendMessage(ret);
