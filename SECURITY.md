@@ -2,4 +2,4 @@
 
 ## Reporting a Vulnerability
 
-Contact me privately on discord. Gamebuster#7461
+Report a vulnerability here: https://github.com/TheGameCommunity/ExciteBot/security
