@@ -27,6 +27,7 @@ import java.util.LinkedHashSet;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 
 import javax.mail.Address;
 import javax.mail.MessagingException;
@@ -214,7 +215,7 @@ public class Mailbox {
 		}
 		LOGGER.log(Level.FINEST, "Delimiter is: " + delimiter);
 		ArrayList<String> emails = new ArrayList<String>();
-		emails.addAll(Arrays.asList(mailData.split(delimiter)));
+		emails.addAll(Arrays.asList(mailData.split(Pattern.quote(delimiter))));
 		emails.removeIf((predicate) -> {return predicate.trim().isEmpty() || predicate.equals("--");});
 		LinkedHashSet<MailResponse> responses = new LinkedHashSet<MailResponse>();
 		int i = 1;
