@@ -25,7 +25,7 @@ dependencies {
 	shadow group: 'jakarta.activation', name: 'jakarta.activation-api', version: '2.1.1'
 	shadow group: 'org.apache.commons', name: 'commons-text', version: '1.9'
 	shadow group: 'commons-io', name: 'commons-io', version: '2.11.0'
-	shadow group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.13'
+	shadow group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.14'
 	shadow group: 'org.apache.httpcomponents', name: 'httpmime', version: '4.5.14'
 	shadow ('net.dv8tion:JDA:5.0.0-alpha.12')
 	implementation ('net.dv8tion:JDA:5.0.0-alpha.12')
