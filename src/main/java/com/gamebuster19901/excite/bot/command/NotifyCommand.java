@@ -11,7 +11,7 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 public class NotifyCommand {
 
 	@SuppressWarnings("rawtypes")
-	public static void register(CommandDispatcher<MessageContext> dispatcher) {
+	public static void register(CommandDispatcher<CommandContext> dispatcher) {
 		dispatcher.register(Commands.literal("notify").then(Commands.literal("threshold").then(Commands.argument("amount", IntegerArgumentType.integer()).executes((context) -> {
 			return setThreshold(context.getSource(), context.getArgument("amount", Integer.class));
 		})))
@@ -30,7 +30,7 @@ public class NotifyCommand {
 	}
 	
 	@SuppressWarnings("rawtypes")
-	private static int setThreshold(MessageContext context, int threshold) {
+	private static int setThreshold(CommandContext context, int threshold) {
 		if(!context.isConsoleMessage()) {
 			if(threshold > 0) {
 				context.getDiscordAuthor().setNotifyThreshold(threshold);
@@ -51,7 +51,7 @@ public class NotifyCommand {
 	}
 	
 	@SuppressWarnings("rawtypes")
-	private static int setFrequency(MessageContext context, int amount, String timeUnit) {
+	private static int setFrequency(CommandContext context, int amount, String timeUnit) {
 		if(!context.isConsoleMessage()) {
 			Duration frequency = TimeUtils.computeDuration(amount, timeUnit);
 			if(frequency != null) {
@@ -75,7 +75,7 @@ public class NotifyCommand {
 	}
 	
 	@SuppressWarnings("rawtypes")
-	private static int setContinuous(MessageContext context, boolean continuous) {
+	private static int setContinuous(CommandContext context, boolean continuous) {
 		if(!context.isConsoleMessage()) {
 			context.getDiscordAuthor().setNotifyContinuously(continuous);
 			context.sendMessage(context.getDiscordAuthor().getJDAUser().getAsMention() + ", you have set continuous notifications to " + continuous);
@@ -86,7 +86,7 @@ public class NotifyCommand {
 		return 1;
 	}
 	
-	private static int setDetailed(MessageContext context, boolean detailed) {
+	private static int setDetailed(CommandContext context, boolean detailed) {
 		if(!context.isConsoleMessage()) {
 			context.getDiscordAuthor().setSendDetailedPM(detailed);
 			context.sendMessage(context.getDiscordAuthor().getJDAUser().getAsMention() + ", you have set detailed PM messages to " + detailed);

@@ -3,7 +3,7 @@ package com.gamebuster19901.excite.transaction;
 import static com.gamebuster19901.excite.transaction.CurrencyType.STARS;
 import static com.gamebuster19901.excite.transaction.Transaction.WalletType.WII;
 
-import com.gamebuster19901.excite.bot.command.MessageContext;
+import com.gamebuster19901.excite.bot.command.CommandContext;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
 
 public class RedeemTransaction extends Transaction {
@@ -13,7 +13,7 @@ public class RedeemTransaction extends Transaction {
 	}
 
 	@Override
-	public String getAuditMessage(MessageContext context) {
+	public String getAuditMessage(CommandContext context) {
 		return balanceHolder.getIdentifierName() + " redeemed " + amount + " " + currency;
 	}
 

@@ -5,7 +5,7 @@ import java.sql.SQLException;
 
 import com.gamebuster19901.excite.Player;
 import com.gamebuster19901.excite.bot.command.ConsoleContext;
-import com.gamebuster19901.excite.bot.command.MessageContext;
+import com.gamebuster19901.excite.bot.command.CommandContext;
 import com.gamebuster19901.excite.bot.database.Comparison;
 import com.gamebuster19901.excite.bot.database.Insertion;
 import com.gamebuster19901.excite.bot.database.Row;
@@ -25,7 +25,7 @@ public class DiscoveryAudit extends Audit {
 	}
 	
 	@SuppressWarnings("rawtypes")
-	public static DiscoveryAudit addProfileDiscovery(MessageContext context, boolean automatic, Player player) {
+	public static DiscoveryAudit addProfileDiscovery(CommandContext context, boolean automatic, Player player) {
 		Audit parent = Audit.addAudit(context,  AuditType.DISCOVERY_AUDIT, getMessage(context, automatic, player));
 		
 		PreparedStatement st;
@@ -48,17 +48,17 @@ public class DiscoveryAudit extends Audit {
 	}
 	
 	@SuppressWarnings("rawtypes")
-	public static DiscoveryAudit getProfileDiscoveryByDiscoveredID(MessageContext context, long playerID) {
+	public static DiscoveryAudit getProfileDiscoveryByDiscoveredID(CommandContext context, long playerID) {
 		return new DiscoveryAudit(Table.selectAllFromJoinedUsingWhere(context, AUDITS, AUDIT_PROFILE_DISCOVERIES, AUDIT_ID, new Comparison(PLAYER_ID, EQUALS, playerID)).getRow(true));
 	}
 	
 	@SuppressWarnings("rawtypes")
-	public static DiscoveryAudit getProfileDiscoveryByAuditID(MessageContext context, long auditID) {
+	public static DiscoveryAudit getProfileDiscoveryByAuditID(CommandContext context, long auditID) {
 		return new DiscoveryAudit(Table.selectAllFromJoinedUsingWhere(context, AUDITS, AUDIT_PROFILE_DISCOVERIES, AUDIT_ID, new Comparison(AUDIT_ID, EQUALS, auditID)).getRow(true));
 	}
 	
 	@SuppressWarnings("rawtypes")
-	private static String getMessage(MessageContext context, boolean automatic, Player player) {
+	private static String getMessage(CommandContext context, boolean automatic, Player player) {
 		if(context.isConsoleMessage() && automatic) {
 			return player.getIdentifierName();
 		}

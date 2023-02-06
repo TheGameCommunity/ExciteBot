@@ -4,7 +4,7 @@ import java.io.IOError;
 import java.sql.SQLException;
 
 import com.gamebuster19901.excite.bot.command.ConsoleContext;
-import com.gamebuster19901.excite.bot.command.MessageContext;
+import com.gamebuster19901.excite.bot.command.CommandContext;
 import com.gamebuster19901.excite.bot.database.Comparison;
 import com.gamebuster19901.excite.bot.database.Insertion;
 import com.gamebuster19901.excite.bot.database.Row;
@@ -24,7 +24,7 @@ public class TransactionAudit extends Audit {
 		super(row, AuditType.TRANSACTION_AUDIT);
 	}
 	
-	public static TransactionAudit addTransactionAudit(MessageContext context, Transaction transaction) {
+	public static TransactionAudit addTransactionAudit(CommandContext context, Transaction transaction) {
 		Audit parent = Audit.addAudit(context, AuditType.TRANSACTION_AUDIT, getMessage(context, transaction));
 		
 		PreparedStatement st;
@@ -47,11 +47,11 @@ public class TransactionAudit extends Audit {
 		
 	}
 
-	public static TransactionAudit getTransactionAuditByAuditID(MessageContext context, long auditID) {
+	public static TransactionAudit getTransactionAuditByAuditID(CommandContext context, long auditID) {
 		return new TransactionAudit(Table.selectAllFromJoinedUsingWhere(context, AUDITS, AUDIT_TRANSACTIONS, AUDIT_ID, new Comparison(AUDIT_ID, EQUALS, auditID)).getRow(true));
 	}
 	
-	private static String getMessage(MessageContext context, Transaction transaction) {
+	private static String getMessage(CommandContext context, Transaction transaction) {
 		return transaction.getAuditMessage(context);
 	}
 }

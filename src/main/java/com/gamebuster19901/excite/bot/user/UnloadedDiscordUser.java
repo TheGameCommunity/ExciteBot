@@ -1,6 +1,6 @@
 package com.gamebuster19901.excite.bot.user;
 
-import com.gamebuster19901.excite.bot.command.MessageContext;
+import com.gamebuster19901.excite.bot.command.CommandContext;
 
 public class UnloadedDiscordUser extends DiscordUser{
 
@@ -13,7 +13,7 @@ public class UnloadedDiscordUser extends DiscordUser{
 	
 	@SuppressWarnings("rawtypes")
 	@Override
-	public void sendMessage(MessageContext context, String message) {
+	public void sendMessage(CommandContext context, String message) {
 		if(context.getEvent() != this) {
 			super.sendMessage(context, message);
 		}

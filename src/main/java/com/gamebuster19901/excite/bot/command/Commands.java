@@ -18,7 +18,7 @@ import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 
 @SuppressWarnings("rawtypes")
 public class Commands {
-	private final CommandDispatcher<MessageContext> dispatcher = new CommandDispatcher<>();
+	private final CommandDispatcher<CommandContext> dispatcher = new CommandDispatcher<>();
 	public static final Commands DISPATCHER = new Commands();
 	public static final String DEFAULT_PREFIX = "!";
 	
@@ -44,7 +44,7 @@ public class Commands {
 	}
 	
 	public void handleCommand(String command) {
-		MessageContext context = new MessageContext(Main.CONSOLE, command);
+		CommandContext context = new CommandContext(Main.CONSOLE, command);
 		try {
 			CommandAudit.addCommandAudit(context, command);
 			this.dispatcher.execute(command, context);
@@ -64,7 +64,7 @@ public class Commands {
 	}
 	
 	public void handleCommand(MessageReceivedEvent e) {
-		MessageContext<MessageReceivedEvent> context = new MessageContext<MessageReceivedEvent>(e);
+		CommandContext<MessageReceivedEvent> context = new CommandContext<MessageReceivedEvent>(e);
 		try {
 			String message = e.getMessage().getContentRaw();
 			String prefix = "";
@@ -102,19 +102,19 @@ public class Commands {
 		}
 	}
 	
-	public static LiteralArgumentBuilder<MessageContext> literal(String name) {
+	public static LiteralArgumentBuilder<CommandContext> literal(String name) {
 		return LiteralArgumentBuilder.literal(name);
 	}
 	
-	public static <T> RequiredArgumentBuilder<MessageContext, T> argument(String name, ArgumentType<T> type) {
+	public static <T> RequiredArgumentBuilder<CommandContext, T> argument(String name, ArgumentType<T> type) {
 		return RequiredArgumentBuilder.argument(name, type);
 	}
 	
-	public CommandDispatcher<MessageContext> getDispatcher() {
+	public CommandDispatcher<CommandContext> getDispatcher() {
 		return this.dispatcher;
 	}
 	
-	public boolean setPrefix(MessageContext context, String prefix) {
+	public boolean setPrefix(CommandContext context, String prefix) {
 		if(context.isAdmin() && context.isGuildMessage() && isValidPrefix(prefix)) {
 			context.getServer().setPrefix(prefix);
 			return true;
@@ -122,7 +122,7 @@ public class Commands {
 		return false;
 	}
 	
-	public String getPrefix(MessageContext context) {
+	public String getPrefix(CommandContext context) {
 		if(context.isGuildMessage()) {
 			return context.getServer().getPrefix();
 		}

@@ -5,7 +5,7 @@ import java.sql.SQLException;
 
 import com.gamebuster19901.excite.Player;
 import com.gamebuster19901.excite.bot.command.ConsoleContext;
-import com.gamebuster19901.excite.bot.command.MessageContext;
+import com.gamebuster19901.excite.bot.command.CommandContext;
 import com.gamebuster19901.excite.bot.database.Comparison;
 import com.gamebuster19901.excite.bot.database.Insertion;
 import com.gamebuster19901.excite.bot.database.Row;
@@ -25,7 +25,7 @@ public class NameChangeAudit extends Audit {
 	}
 	
 	@SuppressWarnings("rawtypes")
-	public static NameChangeAudit addNameChange(MessageContext context, Player player, String newName) {
+	public static NameChangeAudit addNameChange(CommandContext context, Player player, String newName) {
 		Audit parent = Audit.addAudit(ConsoleContext.INSTANCE, context,  AuditType.NAME_CHANGE_AUDIT, getMessage(context, newName));
 		String name = player.getName();
 		PreparedStatement st;
@@ -47,12 +47,12 @@ public class NameChangeAudit extends Audit {
 	}
 	
 	@SuppressWarnings("rawtypes")
-	public static NameChangeAudit getNameChangeByAuditID(MessageContext context, long auditID) {
+	public static NameChangeAudit getNameChangeByAuditID(CommandContext context, long auditID) {
 		return new NameChangeAudit(Table.selectAllFromJoinedUsingWhere(context, AUDITS, AUDIT_NAME_CHANGES, AUDIT_ID, new Comparison(AUDIT_ID, EQUALS, auditID)).getRow(true));
 	}
 	
 	@SuppressWarnings("rawtypes")
-	private static String getMessage(MessageContext context, String newName) {
+	private static String getMessage(CommandContext context, String newName) {
 		return context.getPlayerAuthor().getName() + "(" + context.getPlayerAuthor().getID() + ") changed their name to " + newName; 
 	}
 	

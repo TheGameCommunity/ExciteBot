@@ -12,14 +12,14 @@ import com.mojang.brigadier.CommandDispatcher;
 public class GameDataCommand {
 
 	@SuppressWarnings("rawtypes")
-	public static void register(CommandDispatcher<MessageContext> dispatcher) {
+	public static void register(CommandDispatcher<CommandContext> dispatcher) {
 		dispatcher.register(Commands.literal("gameData").executes((context) -> {
 			return getData(context.getSource());
 		}));
 	}
 	
 	@SuppressWarnings("rawtypes")
-	public static int getData(MessageContext context) {
+	public static int getData(CommandContext context) {
 		if(context.isOperator()) {
 			String message = "";
 			

@@ -12,7 +12,7 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 public class CRCCommand {
 	public static final int POLYNOMIAL = 0x690CE0EE;
 
-	public static void register(CommandDispatcher<MessageContext> dispatcher) {
+	public static void register(CommandDispatcher<CommandContext> dispatcher) {
 		dispatcher.register(
 				Commands.literal("crc")
 					.then(Commands.literal("test")
@@ -49,7 +49,7 @@ public class CRCCommand {
 	}
 	
 	
-	public static int checkCRC(MessageContext context, Integer expected, String data) {
+	public static int checkCRC(CommandContext context, Integer expected, String data) {
 		boolean fromFile = false;
 		File f = Paths.get(data).toFile();
 		Integer crc = null;

@@ -14,7 +14,7 @@ import com.gamebuster19901.excite.bot.audit.NameChangeAudit;
 import com.gamebuster19901.excite.bot.audit.ban.Ban;
 import com.gamebuster19901.excite.bot.audit.ban.Banee;
 import com.gamebuster19901.excite.bot.command.ConsoleContext;
-import com.gamebuster19901.excite.bot.command.MessageContext;
+import com.gamebuster19901.excite.bot.command.CommandContext;
 import com.gamebuster19901.excite.bot.database.Comparison;
 import com.gamebuster19901.excite.bot.database.Insertion;
 import com.gamebuster19901.excite.bot.database.Result;
@@ -74,7 +74,7 @@ public class Player implements Banee, Owned<DiscordUser> {
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public static Player addPlayer(MessageContext context, boolean automatic, int playerID, String friendCode, String name) throws SQLException {
+	public static Player addPlayer(CommandContext context, boolean automatic, int playerID, String friendCode, String name) throws SQLException {
 		
 		if(context.getEvent() instanceof UnknownPlayer) {
 			UnknownPlayer player = (UnknownPlayer) context.getEvent();
@@ -108,7 +108,7 @@ public class Player implements Banee, Owned<DiscordUser> {
 			suffix += BOT;
 		}
 		if(discordID != 0) {
-			MessageContext context = new MessageContext(DiscordUser.getDiscordUserIncludingUnknown(ConsoleContext.INSTANCE, discordID));
+			CommandContext context = new CommandContext(DiscordUser.getDiscordUserIncludingUnknown(ConsoleContext.INSTANCE, discordID));
 			if(context.isOperator()) {
 				suffix = suffix + Emote.getEmote(BOT_OPERATOR);
 			}
@@ -175,7 +175,7 @@ public class Player implements Banee, Owned<DiscordUser> {
 			suffix += BOT;
 		}
 		if(discordID != 0) {
-			MessageContext context = new MessageContext(DiscordUser.getDiscordUserIncludingUnknown(ConsoleContext.INSTANCE, discordID));
+			CommandContext context = new CommandContext(DiscordUser.getDiscordUserIncludingUnknown(ConsoleContext.INSTANCE, discordID));
 			if(context.isOperator()) {
 				suffix = suffix + Emote.getEmote(BOT_OPERATOR);
 			}
@@ -268,7 +268,7 @@ public class Player implements Banee, Owned<DiscordUser> {
 	public void setName(String name) throws SQLException {
 		String oldName = getName();
 		if(oldName != null && !oldName.equals(name)) {
-			NameChangeAudit.addNameChange(new MessageContext(this), this, name);
+			NameChangeAudit.addNameChange(new CommandContext(this), this, name);
 			Table.updateWhere(ConsoleContext.INSTANCE, PLAYERS, PLAYER_NAME, name, new Comparison(PLAYER_ID, EQUALS, getID()));
 		}
 	}
@@ -473,7 +473,7 @@ public class Player implements Banee, Owned<DiscordUser> {
 	}
 	
 	@SuppressWarnings({ "rawtypes" })
-	public Ban ban(MessageContext context, Duration duration, String reason) {
+	public Ban ban(CommandContext context, Duration duration, String reason) {
 		Ban ban = Ban.addBan(context, this, reason, duration);
 		DiscordUser discord = DiscordUser.getDiscordUserIncludingUnknown(context, getDiscord());
 		if(!(discord instanceof UnknownDiscordUser)) {
@@ -496,12 +496,12 @@ public class Player implements Banee, Owned<DiscordUser> {
 	}
 	
 	@SuppressWarnings("rawtypes")
-	public static boolean isPlayerKnown(MessageContext context, int pid) {
+	public static boolean isPlayerKnown(CommandContext context, int pid) {
 		return Table.existsWhere(context, PLAYERS, new Comparison(PLAYER_ID, EQUALS, pid));
 	}
 	
 	@SuppressWarnings("rawtypes")
-	public static Player getPlayerByID(MessageContext context, int pid) {
+	public static Player getPlayerByID(CommandContext context, int pid) {
 		try {
 			Result rs = Table.selectAllFromWhere(context, PLAYERS, new Comparison(PLAYER_ID, EQUALS, pid));
 			if(rs.next()) {
@@ -515,7 +515,7 @@ public class Player implements Banee, Owned<DiscordUser> {
 	
 	@Deprecated
 	@SuppressWarnings("rawtypes")
-	public static Player[] getPlayersByName(MessageContext context, String name) {
+	public static Player[] getPlayersByName(CommandContext context, String name) {
 		HashSet<Player> players = new HashSet<Player>();
 		try {
 			Result rs = Table.selectAllFromWhere(context, PLAYERS, new Comparison(PLAYER_NAME, EQUALS, name));
@@ -528,7 +528,7 @@ public class Player implements Banee, Owned<DiscordUser> {
 		return players.toArray(new Player[]{});
 	}
 	
-	public static Player[] getPlayersByAnyIdentifier(MessageContext context, String identifier) {
+	public static Player[] getPlayersByAnyIdentifier(CommandContext context, String identifier) {
 		HashSet<Player> players = new HashSet<Player>();
 		try {
 			Result rs = Table.selectAllFromWhere(context, PLAYERS, 
@@ -547,7 +547,7 @@ public class Player implements Banee, Owned<DiscordUser> {
 		return players.toArray(new Player[]{});
 	}
 	
-	public static Player[] getUnclaimedPlayersByAnyIdentifier(MessageContext context, String identifier) {
+	public static Player[] getUnclaimedPlayersByAnyIdentifier(CommandContext context, String identifier) {
 		HashSet<Player> players = new HashSet<Player>();
 		try {
 			Result rs = Table.selectAllFromWhere(context, PLAYERS, 
@@ -569,7 +569,7 @@ public class Player implements Banee, Owned<DiscordUser> {
 	}
 	
 	@SuppressWarnings("rawtypes")
-	public static Player[] getEncounteredPlayers(MessageContext context) {
+	public static Player[] getEncounteredPlayers(CommandContext context) {
 		HashSet<Player> players = new HashSet<Player>();
 		try {
 			Result rs = Table.selectAllFrom(context, PLAYERS);

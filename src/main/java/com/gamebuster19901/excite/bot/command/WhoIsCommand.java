@@ -34,8 +34,8 @@ public class WhoIsCommand {
 	
 	private static final boolean [] HOURS_ONLY = new boolean[]         {false, false, false, false, true, false, false};
 	
-	public static void register(CommandDispatcher<MessageContext> dispatcher) {
-		LiteralCommandNode<MessageContext> builder = dispatcher.register(Commands.literal("whois")
+	public static void register(CommandDispatcher<CommandContext> dispatcher) {
+		LiteralCommandNode<CommandContext> builder = dispatcher.register(Commands.literal("whois")
 			.then(Commands.argument("player", StringArgumentType.greedyString()).executes((command) -> {
 				return sendResponse(command.getSource(), command.getArgument("player", String.class));
 			}
@@ -49,7 +49,7 @@ public class WhoIsCommand {
 	}
 	
 	@SuppressWarnings("serial")
-	public static int sendResponse(MessageContext context, String lookingFor) {
+	public static int sendResponse(CommandContext context, String lookingFor) {
 		if(context.isConsoleMessage() || context.isIngameEvent()) {
 			context.sendMessage("You cannot execute this command as " + context.getEvent().getClass().getSimpleName());
 			return 1;

@@ -16,7 +16,7 @@ import com.mojang.brigadier.arguments.LongArgumentType;
 public class PardonCommand {
 
 	@SuppressWarnings("rawtypes")
-	public static void register(CommandDispatcher<MessageContext> dispatcher) {
+	public static void register(CommandDispatcher<CommandContext> dispatcher) {
 		
 		dispatcher.register(Commands.literal("pardon")
 				
@@ -45,7 +45,7 @@ public class PardonCommand {
 	}
 	
 	@SuppressWarnings("rawtypes")
-	private static final int pardon(MessageContext context, long banID) {
+	private static final int pardon(CommandContext context, long banID) {
 		if(context.isAdmin()) {
 			Ban ban = Ban.getBanByAuditId(context, banID);
 			if(ban != null) {
@@ -62,7 +62,7 @@ public class PardonCommand {
 	}
 	
 	@SuppressWarnings("rawtypes")
-	private static final int pardon(MessageContext context, Banee banee, long banId) {
+	private static final int pardon(CommandContext context, Banee banee, long banId) {
 		if(context.isAdmin()) {
 			Ban pardoning = Ban.getBanByAuditId(context, banId);
 			if(pardoning != null) {
@@ -89,7 +89,7 @@ public class PardonCommand {
 	}
 	
 	@SuppressWarnings("rawtypes")
-	private static final int pardon(MessageContext context, Banee banee) {
+	private static final int pardon(CommandContext context, Banee banee) {
 		if(context.isAdmin()) {
 			Ban ban = banee.getLongestActiveBan(context);
 			if(ban == null) {
@@ -108,7 +108,7 @@ public class PardonCommand {
 	}
 	
 	@SuppressWarnings({ "rawtypes", "deprecation" })
-	private static final int pardon(MessageContext context, Ban ban) {
+	private static final int pardon(CommandContext context, Ban ban) {
 		if(context.isAdmin()) {
 			Pardon pardon = Pardon.addPardonByAuditID(context, ban.getID());
 			if(pardon != null) {

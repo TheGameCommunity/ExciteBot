@@ -3,7 +3,7 @@ package com.gamebuster19901.excite.bot.database;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import com.gamebuster19901.excite.bot.command.MessageContext;
+import com.gamebuster19901.excite.bot.command.CommandContext;
 import com.gamebuster19901.excite.bot.database.sql.DatabaseConnection;
 import com.gamebuster19901.excite.bot.database.sql.PreparedStatement;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
@@ -55,7 +55,7 @@ public class Insertion {
 	}
 	
 	@SuppressWarnings("rawtypes")
-	public PreparedStatement prepare(MessageContext context, boolean returnGeneratedKeys) throws SQLException {
+	public PreparedStatement prepare(CommandContext context, boolean returnGeneratedKeys) throws SQLException {
 		return prepare(returnGeneratedKeys);
 	}
 	
@@ -68,7 +68,7 @@ public class Insertion {
 	}
 	
 	@SuppressWarnings("rawtypes")
-	public PreparedStatement prepare(MessageContext context) throws SQLException {
+	public PreparedStatement prepare(CommandContext context) throws SQLException {
 		return prepare(false);
 	}
 	

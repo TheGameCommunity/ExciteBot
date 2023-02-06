@@ -11,7 +11,7 @@ import org.jetbrains.annotations.Nullable;
 import com.gamebuster19901.excite.bot.audit.Audit;
 import com.gamebuster19901.excite.bot.audit.AuditType;
 import com.gamebuster19901.excite.bot.command.ConsoleContext;
-import com.gamebuster19901.excite.bot.command.MessageContext;
+import com.gamebuster19901.excite.bot.command.CommandContext;
 import com.gamebuster19901.excite.bot.database.Comparison;
 import com.gamebuster19901.excite.bot.database.Insertion;
 import com.gamebuster19901.excite.bot.database.Result;
@@ -33,32 +33,32 @@ public class Ban extends Audit{
 	}
 	
 	@SuppressWarnings("rawtypes")
-	public static Ban addBan(MessageContext context, Banee banee) {
+	public static Ban addBan(CommandContext context, Banee banee) {
 		return addBan(context, banee, "");
 	}
 	
 	@SuppressWarnings("rawtypes")
-	public static Ban addBan(MessageContext context, Banee banee, String reason) {
+	public static Ban addBan(CommandContext context, Banee banee, String reason) {
 		return addBan(context, banee, reason, TimeUtils.FOREVER);
 	}
 	
 	@SuppressWarnings("rawtypes")
-	public static Ban addBan(MessageContext context, Banee banee, Duration banDuration) {
+	public static Ban addBan(CommandContext context, Banee banee, Duration banDuration) {
 		return addBan(context, banee, "", banDuration);
 	}
 	
 	@SuppressWarnings("rawtypes")
-	public static Ban addBan(MessageContext context, Banee banee, String reason, Duration banDuration) {
+	public static Ban addBan(CommandContext context, Banee banee, String reason, Duration banDuration) {
 		return addBan(context, banee, reason, banDuration, TimeUtils.fromNow(banDuration));
 	}
 	
 	@SuppressWarnings("rawtypes")
-	public static Ban addBan(MessageContext context, Banee banee, String reason, Duration banDuration, Instant banExpire) {
+	public static Ban addBan(CommandContext context, Banee banee, String reason, Duration banDuration, Instant banExpire) {
 		return addBan(context, banee, reason, banDuration, banExpire, 0l);
 	}
 	
 	@SuppressWarnings({ "rawtypes", "deprecation" })
-	public static Ban addBan(MessageContext context, Banee banee, String reason, Duration banDuration, Instant banExpire, long pardon) {
+	public static Ban addBan(CommandContext context, Banee banee, String reason, Duration banDuration, Instant banExpire, long pardon) {
 		Audit parent = Audit.addAudit(context, AuditType.BAN, reason);
 		PreparedStatement st;
 		
@@ -122,11 +122,11 @@ public class Ban extends Audit{
 	}
 	
 	@SuppressWarnings("rawtypes")
-	public static Ban[] getBansOfID(MessageContext context, long id) {
+	public static Ban[] getBansOfID(CommandContext context, long id) {
 		if(id == -1 || id == -2) {
 			throw new AssertionError();
 		}
-		Result results = Table.selectAllFromJoinedUsingWhere(new MessageContext(context.getAuthor()), AUDITS, AUDIT_BANS, AUDIT_ID, new Comparison(BANNED_ID, EQUALS, id));
+		Result results = Table.selectAllFromJoinedUsingWhere(new CommandContext(context.getAuthor()), AUDITS, AUDIT_BANS, AUDIT_ID, new Comparison(BANNED_ID, EQUALS, id));
 		ArrayList<Ban> bans = new ArrayList<Ban>();
 		while(results.next()) {
 			bans.add(new Ban(results.getRow()));
@@ -135,13 +135,13 @@ public class Ban extends Audit{
 	}
 	
 	@SuppressWarnings("rawtypes")
-	public static Ban[] getBansOf(MessageContext context, Banee banee) {
+	public static Ban[] getBansOf(CommandContext context, Banee banee) {
 		return getBansOfID(context, banee.getID());
 	}
 	
 	@Nullable
 	@SuppressWarnings("rawtypes")
-	public static Ban getBanByAuditId(MessageContext context, long id) throws IllegalArgumentException {
+	public static Ban getBanByAuditId(CommandContext context, long id) throws IllegalArgumentException {
 		Result results = Table.selectAllFromJoinedUsingWhere(context, AUDITS, AUDIT_BANS, AUDIT_ID, new Comparison(AUDIT_ID, EQUALS, id));
 		if(results.hasNext()) {
 			results.next();

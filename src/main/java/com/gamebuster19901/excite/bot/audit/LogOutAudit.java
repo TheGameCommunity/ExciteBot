@@ -2,7 +2,7 @@ package com.gamebuster19901.excite.bot.audit;
 
 import com.gamebuster19901.excite.Player;
 import com.gamebuster19901.excite.bot.command.ConsoleContext;
-import com.gamebuster19901.excite.bot.command.MessageContext;
+import com.gamebuster19901.excite.bot.command.CommandContext;
 import com.gamebuster19901.excite.bot.database.Comparison;
 import com.gamebuster19901.excite.bot.database.Insertion;
 import com.gamebuster19901.excite.bot.database.Table;
@@ -25,7 +25,7 @@ public class LogOutAudit extends Audit {
 		super(result, AuditType.LOG_OUT_AUDIT);
 	}
 
-	public static LogOutAudit addLogOutAudit(MessageContext context, Player player) {
+	public static LogOutAudit addLogOutAudit(CommandContext context, Player player) {
 		Audit parent = Audit.addAudit(context, AuditType.LOG_OUT_AUDIT, getMessage(player));
 		
 		PreparedStatement st;

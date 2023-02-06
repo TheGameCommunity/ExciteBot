@@ -37,13 +37,13 @@ import static com.gamebuster19901.excite.bot.command.ArchiveCommand.WorkerStatus
 
 public class ArchiveCommand {
 	@SuppressWarnings("rawtypes")
-	public static void register(CommandDispatcher<MessageContext> dispatcher) {
+	public static void register(CommandDispatcher<CommandContext> dispatcher) {
 		dispatcher.register(Commands.literal("archive").then(Commands.argument("channels", StringArgumentType.greedyString()).executes((context) -> {
 			return archive(context.getSource(), context.getArgument("channels", String.class));
 		})));
 	}
 
-	private static int archive(MessageContext source, String argument) {
+	private static int archive(CommandContext source, String argument) {
 		if(source.isAdmin()) {
 			if(source.isGuildMessage()) {
 				if(argument.isEmpty()) {
@@ -223,7 +223,7 @@ public class ArchiveCommand {
 		return 1;
 	}
 	
-	private static HashSet<TextChannel> getChannels(MessageContext source, Guild guild, List<String> names) {
+	private static HashSet<TextChannel> getChannels(CommandContext source, Guild guild, List<String> names) {
 		HashSet<TextChannel> channels = new HashSet<TextChannel>();
 		List<TextChannel> serverChannels = guild.getTextChannels();
 		TextChannel channel = null;

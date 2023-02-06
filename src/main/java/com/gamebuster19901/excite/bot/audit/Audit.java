@@ -9,7 +9,7 @@ import java.time.Instant;
 import org.jetbrains.annotations.Nullable;
 
 import com.gamebuster19901.excite.Main;
-import com.gamebuster19901.excite.bot.command.MessageContext;
+import com.gamebuster19901.excite.bot.command.CommandContext;
 import com.gamebuster19901.excite.bot.database.Comparison;
 import com.gamebuster19901.excite.bot.database.Insertion;
 import com.gamebuster19901.excite.bot.database.Result;
@@ -41,23 +41,23 @@ public class Audit implements Identified{
 	}
 	
 	@SuppressWarnings("rawtypes")
-	protected static Audit addAudit(MessageContext context, AuditType type, String description) {
+	protected static Audit addAudit(CommandContext context, AuditType type, String description) {
 		return addAudit(context, type, description, Instant.now());
 	}
 	
 	@SuppressWarnings("rawtypes")
-	protected static Audit addAudit(MessageContext executor, MessageContext context, AuditType type, String description) {
+	protected static Audit addAudit(CommandContext executor, CommandContext context, AuditType type, String description) {
 		return addAudit(executor, context, type, description, Instant.now());
 	}
 	
 	@SuppressWarnings("rawtypes")
-	protected static Audit addAudit(MessageContext context, AuditType type, String description, Instant dateIssued) {
+	protected static Audit addAudit(CommandContext context, AuditType type, String description, Instant dateIssued) {
 		return addAudit(context, context, type, description, dateIssued);
 	}
 	
 	@Deprecated
 	@SuppressWarnings("rawtypes")
-	protected static Audit addAudit(MessageContext executor, MessageContext context, AuditType type, String description, Instant dateIssued) {
+	protected static Audit addAudit(CommandContext executor, CommandContext context, AuditType type, String description, Instant dateIssued) {
 		PreparedStatement ps;
 		try {
 			ps = Insertion.insertInto(AUDITS).setColumns(AUDIT_TYPE, ISSUER_ID, ISSUER_NAME, DESCRIPTION, DATE_ISSUED)
@@ -76,14 +76,14 @@ public class Audit implements Identified{
 	
 	@Nullable
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	protected static Audit createAudit(MessageContext context, Row row) throws SQLException {
+	protected static Audit createAudit(CommandContext context, Row row) throws SQLException {
 		AuditType type = AuditType.getType(row);
 		long auditID = row.getLong(AUDIT_ID);
 		Class<? extends Audit> auditTypeClazz = AuditType.getType(row).getType();
 		try {
 			Constructor<? extends Audit> constructor = auditTypeClazz.getDeclaredConstructor(Row.class);
 			constructor.setAccessible(true);
-			Result result = Table.selectAllFromJoinedUsingWhere(new MessageContext(context.getAuthor()), AUDITS, type.getTable(), AUDIT_ID, new Comparison(AUDIT_ID, EQUALS, auditID));
+			Result result = Table.selectAllFromJoinedUsingWhere(new CommandContext(context.getAuthor()), AUDITS, type.getTable(), AUDIT_ID, new Comparison(AUDIT_ID, EQUALS, auditID));
 			result.next();
 			if(result.cursorValid()) {
 				Row resultRow = result.getRow();
@@ -122,7 +122,7 @@ public class Audit implements Identified{
 	
 	@Nullable
 	@SuppressWarnings("rawtypes")
-	public static Audit getAuditById(MessageContext context, long id) {
+	public static Audit getAuditById(CommandContext context, long id) {
 		try {
 			return createAudit(context, Table.selectAllFromWhere(context, AUDITS, new Comparison(AUDIT_ID, EQUALS, id)).getRow(true));
 		} catch (SQLException e) {
@@ -135,7 +135,7 @@ public class Audit implements Identified{
 	}
 	
 	@SuppressWarnings("rawtypes")
-	public DiscordUser getIssuerDiscord(MessageContext context) {
+	public DiscordUser getIssuerDiscord(CommandContext context) {
 		if(getIssuerID() == -1) {
 			return Main.CONSOLE;
 		}

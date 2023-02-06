@@ -20,7 +20,7 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 public class RegisterCommand {
 
 	@SuppressWarnings("rawtypes")
-	public static void register(CommandDispatcher<MessageContext> dispatcher) {
+	public static void register(CommandDispatcher<CommandContext> dispatcher) {
 		dispatcher.register(Commands.literal("register")
 			.then(Commands.literal("profile")
 				.then(Commands.argument("player", PlayerArgumentType.player())
@@ -41,7 +41,7 @@ public class RegisterCommand {
 	}
 	
 	@SuppressWarnings("rawtypes")
-	private static void requestRegistration(MessageContext context, Player desiredProfile) {
+	private static void requestRegistration(CommandContext context, Player desiredProfile) {
 		DiscordUser discordUser = context.getDiscordAuthor();
 		if(context.isConsoleMessage()) {
 			context.sendMessage("This command must be executed from discord.");
@@ -62,7 +62,7 @@ public class RegisterCommand {
 	}
 	
 	@SuppressWarnings("rawtypes")
-	private static void sendInfo(MessageContext context, DiscordUser discordUser, Player desiredProfile, String securityCode) {
+	private static void sendInfo(CommandContext context, DiscordUser discordUser, Player desiredProfile, String securityCode) {
 		context.getDiscordAuthor().sendMessage(
 				discordUser.getJDAUser().getAsMention() + 
 				", you have requested registration of the following profile:\n\n"
@@ -75,7 +75,7 @@ public class RegisterCommand {
 	}
 	
 	@SuppressWarnings("rawtypes")
-	private static void registerWii(MessageContext context, String securityCode) {
+	private static void registerWii(CommandContext context, String securityCode) {
 		if(context.isGuildMessage()) {
 			context.deletePromptingMessage(ConsoleContext.INSTANCE, context.getMention() + " - Woah! Send your code to me via direct message! Nobody else should be seeing your registration code!");
 			return;

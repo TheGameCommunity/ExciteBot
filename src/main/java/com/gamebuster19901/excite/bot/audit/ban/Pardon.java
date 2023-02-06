@@ -2,7 +2,7 @@ package com.gamebuster19901.excite.bot.audit.ban;
 
 import com.gamebuster19901.excite.bot.audit.Audit;
 import com.gamebuster19901.excite.bot.audit.AuditType;
-import com.gamebuster19901.excite.bot.command.MessageContext;
+import com.gamebuster19901.excite.bot.command.CommandContext;
 import com.gamebuster19901.excite.bot.database.Comparison;
 import com.gamebuster19901.excite.bot.database.Insertion;
 import com.gamebuster19901.excite.bot.database.Row;
@@ -30,7 +30,7 @@ public class Pardon extends Audit{
 	
 	@Nullable
 	@SuppressWarnings("rawtypes")
-	public static Pardon addPardonByAuditID(MessageContext context, long id) {
+	public static Pardon addPardonByAuditID(CommandContext context, long id) {
 		try {
 			Audit pardoned = Audit.getAuditById(context, id);
 			if(pardoned == null) {
@@ -70,7 +70,7 @@ public class Pardon extends Audit{
 	}
 	
 	@SuppressWarnings("rawtypes")
-	public static Pardon addPardonByBan(MessageContext context, Ban ban) {
+	public static Pardon addPardonByBan(CommandContext context, Ban ban) {
 		if(ban != null) {
 			return addPardonByAuditID(context, ban.getID());
 		}
@@ -78,12 +78,12 @@ public class Pardon extends Audit{
 	}
 	
 	@SuppressWarnings("rawtypes")
-	public static Pardon getPardonByAuditID(MessageContext context, long auditID) {
+	public static Pardon getPardonByAuditID(CommandContext context, long auditID) {
 		return new Pardon(Table.selectAllFromJoinedUsingWhere(context, AUDITS, AUDIT_PARDONS, AUDIT_ID, new Comparison(AUDIT_ID, EQUALS, auditID)).getRow(true));
 	}
 	
 	@SuppressWarnings("rawtypes")
-	public static Pardon getPardonByPardonedID(MessageContext context, long banID) {
+	public static Pardon getPardonByPardonedID(CommandContext context, long banID) {
 		return new Pardon(Table.selectAllFromJoinedUsingWhere(context, AUDITS, AUDIT_PARDONS, AUDIT_ID, new Comparison(PARDONED_AUDIT_ID, EQUALS, banID)).getRow(true));
 	}
 	

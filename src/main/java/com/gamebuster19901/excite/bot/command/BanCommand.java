@@ -21,7 +21,7 @@ import net.dv8tion.jda.api.entities.channel.concrete.PrivateChannel;
 public class BanCommand {
 
 	@SuppressWarnings("rawtypes")
-	public static void register(CommandDispatcher<MessageContext> dispatcher) {
+	public static void register(CommandDispatcher<CommandContext> dispatcher) {
 		dispatcher.register(Commands.literal("ban")
 			.then(Commands.argument("discordUser", DiscordUserArgumentType.user().setUnknown(KNOWN_ID))
 				.executes((context) -> {
@@ -82,7 +82,7 @@ public class BanCommand {
 	}
 	
 	@SuppressWarnings("rawtypes")
-	private static int banDiscordUser(MessageContext context, DiscordUser user, Duration duration, String reason) {
+	private static int banDiscordUser(CommandContext context, DiscordUser user, Duration duration, String reason) {
 		if(context.isAdmin()) {
 			Ban ban = user.ban(context, duration, reason);
 			String message = "Banned discord user " + user.getAsMention() + ": \n\n" + ban;
@@ -107,7 +107,7 @@ public class BanCommand {
 	}
 	
 	@SuppressWarnings("rawtypes")
-	private static int banProfile(MessageContext context, Player profile, Duration duration, String reason) {
+	private static int banProfile(CommandContext context, Player profile, Duration duration, String reason) {
 		if(context.isAdmin()) {
 			Ban ban = profile.ban(context, duration, reason);
 			String message = "Banned profile " + profile.getPrettyDiscord() + ": \n\n" + ban;

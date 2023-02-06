@@ -4,7 +4,7 @@ import java.io.IOError;
 import java.sql.SQLException;
 
 import com.gamebuster19901.excite.Main;
-import com.gamebuster19901.excite.bot.command.MessageContext;
+import com.gamebuster19901.excite.bot.command.CommandContext;
 import com.gamebuster19901.excite.bot.database.sql.PreparedStatement;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
 import com.gamebuster19901.excite.util.StacktraceUtil;
@@ -41,13 +41,13 @@ public enum Table {
 	}
 	
 	@SuppressWarnings("rawtypes")
-	public static Result selectColumnsFrom(MessageContext context, Column columns, Table table) throws SQLException {
+	public static Result selectColumnsFrom(CommandContext context, Column columns, Table table) throws SQLException {
 		PreparedStatement st = context.getConnection().prepareStatement("SELECT " + columns + " FROM " + table);
 		return st.query();
 	}
 	
 	@SuppressWarnings("rawtypes")
-	public static Result selectColumnsFromWhere(MessageContext context, Column columns, Table table, Comparison comparison) throws SQLException {
+	public static Result selectColumnsFromWhere(CommandContext context, Column columns, Table table, Comparison comparison) throws SQLException {
 		PreparedStatement st;
 		st = context.getConnection().prepareStatement("SELECT " + columns + " FROM " + table + " WHERE " + comparison);
 		comparison.insertValues(st);
@@ -56,17 +56,17 @@ public enum Table {
 	}
 	
 	@SuppressWarnings("rawtypes")
-	public static Result selectAllFrom(MessageContext context, Table table) throws SQLException {
+	public static Result selectAllFrom(CommandContext context, Table table) throws SQLException {
 		return selectColumnsFrom(context, ALL_COLUMNS, table);
 	}
 	
 	@SuppressWarnings("rawtypes")
-	public static Result selectAllFromWhere(MessageContext context, Table table, Comparison comparison) throws SQLException {
+	public static Result selectAllFromWhere(CommandContext context, Table table, Comparison comparison) throws SQLException {
 		return selectColumnsFromWhere(context, ALL_COLUMNS, table, comparison);
 	}
 	
 	@SuppressWarnings("rawtypes")
-	public static Result selectAllFromJoinedUsingWhere(MessageContext context, Table mainTable, Table otherTable, Column usingColumn, Comparison comparison) {
+	public static Result selectAllFromJoinedUsingWhere(CommandContext context, Table mainTable, Table otherTable, Column usingColumn, Comparison comparison) {
 		try {
 			PreparedStatement st = context.getConnection().prepareStatement("SELECT * FROM " + mainTable + " JOIN " + otherTable + " USING (" + usingColumn + ") WHERE " + comparison);
 			comparison.insertValues(st);
@@ -77,7 +77,7 @@ public enum Table {
 	}
 	
 	@SuppressWarnings({ "rawtypes" })
-	public static boolean existsWhere(MessageContext context, Table table, Comparison comparison) {
+	public static boolean existsWhere(CommandContext context, Table table, Comparison comparison) {
 		try {
 			Result result = selectColumnsFromWhere(context, (Column) comparison.getColumn(), table, comparison);
 			return result.getRowCount() > 0;
@@ -87,7 +87,7 @@ public enum Table {
 	}
 	
 	@SuppressWarnings("rawtypes")
-	public static void updateWhere(MessageContext context, Table table, Column parameter, Object value, Comparison comparison) throws SQLException {
+	public static void updateWhere(CommandContext context, Table table, Column parameter, Object value, Comparison comparison) throws SQLException {
 		PreparedStatement st = context.getConnection().prepareStatement("UPDATE " + table + " SET " + parameter + " = ? WHERE " + comparison);
 		insertValue(st, 1, value);
 		comparison.offset(1);
@@ -96,7 +96,7 @@ public enum Table {
 	}
 	
 	@SuppressWarnings("rawtypes")
-	public static void deleteWhere(MessageContext context, Table table, Comparison comparison) throws SQLException {
+	public static void deleteWhere(CommandContext context, Table table, Comparison comparison) throws SQLException {
 		PreparedStatement st = null;
 		st = context.getConnection().prepareStatement("DELETE FROM " + table + " WHERE " + comparison);
 		comparison.insertValues(st);
@@ -104,7 +104,7 @@ public enum Table {
 	}
 	
 	@SuppressWarnings("rawtypes")
-	public static void addAdmin(MessageContext promoter, DiscordUser user) {
+	public static void addAdmin(CommandContext promoter, DiscordUser user) {
 		PreparedStatement st = null;
 		try {
 			st = Insertion.insertInto(ADMINS).setColumns(Column.DISCORD_ID).to(user.getID()).prepare(promoter);
@@ -123,7 +123,7 @@ public enum Table {
 	}
 	
 	@SuppressWarnings("rawtypes")
-	public static void removeAdmin(MessageContext demoter, DiscordUser user) {
+	public static void removeAdmin(CommandContext demoter, DiscordUser user) {
 		try {
 			deleteWhere(demoter, Table.ADMINS, new Comparison(Column.DISCORD_ID, Comparator.EQUALS, user.getID()));
 			String botName = Main.discordBot.getSelfUser().getAsMention();
@@ -137,7 +137,7 @@ public enum Table {
 	}
 	
 	@SuppressWarnings("rawtypes")
-	public static void addOperator(MessageContext promoter, DiscordUser user) {
+	public static void addOperator(CommandContext promoter, DiscordUser user) {
 		PreparedStatement st = null;
 		try {
 			st = Insertion.insertInto(OPERATORS).setColumns(Column.DISCORD_ID).to(user.getID()).prepare(promoter);
@@ -156,7 +156,7 @@ public enum Table {
 	}
 	
 	@SuppressWarnings("rawtypes")
-	public static void removeOperator(MessageContext demoter, DiscordUser user) {
+	public static void removeOperator(CommandContext demoter, DiscordUser user) {
 		try {
 			deleteWhere(demoter, Table.OPERATORS, new Comparison(Column.DISCORD_ID, Comparator.EQUALS, user.getID()));
 			String botName = Main.discordBot.getSelfUser().getAsMention();

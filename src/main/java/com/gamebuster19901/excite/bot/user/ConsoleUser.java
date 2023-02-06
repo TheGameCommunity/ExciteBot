@@ -5,7 +5,7 @@ import java.util.Set;
 
 import com.gamebuster19901.excite.Main;
 import com.gamebuster19901.excite.Player;
-import com.gamebuster19901.excite.bot.command.MessageContext;
+import com.gamebuster19901.excite.bot.command.CommandContext;
 
 import net.dv8tion.jda.api.entities.User;
 
@@ -31,7 +31,7 @@ public class ConsoleUser extends UnloadedDiscordUser {
 	
 	@Override
 	@SuppressWarnings("rawtypes")
-	public Set<Player> getProfiles(MessageContext context) {
+	public Set<Player> getProfiles(CommandContext context) {
 		throw new AssertionError();
 	}
 
@@ -67,7 +67,7 @@ public class ConsoleUser extends UnloadedDiscordUser {
 	
 	@SuppressWarnings("rawtypes")
 	@Override
-	public void sendMessage(MessageContext context, String message) {
+	public void sendMessage(CommandContext context, String message) {
 		System.out.println(message);
 	}
 	

@@ -29,7 +29,7 @@ import org.apache.http.message.BasicHeader;
 import com.gamebuster19901.excite.bot.audit.LogInAudit;
 import com.gamebuster19901.excite.bot.audit.LogOutAudit;
 import com.gamebuster19901.excite.bot.command.ConsoleContext;
-import com.gamebuster19901.excite.bot.command.MessageContext;
+import com.gamebuster19901.excite.bot.command.CommandContext;
 import com.gamebuster19901.excite.exception.WiimmfiErrorResponse;
 import com.gamebuster19901.excite.exception.WiimmfiResponseException;
 import com.google.gson.JsonArray;
@@ -204,7 +204,7 @@ public class Wiimmfi {
 						
 						Player player = Player.getPlayerByID(ConsoleContext.INSTANCE, pid);
 						if(player instanceof UnknownPlayer) {
-							player = Player.addPlayer(new MessageContext(player), true, pid, fc, name);
+							player = Player.addPlayer(new CommandContext(player), true, pid, fc, name);
 						}
 						else {
 							player.setName(name);
@@ -226,13 +226,13 @@ public class Wiimmfi {
 				player.updateLastOnline();
 			}
 			else {
-				LogInAudit.addLoginAudit(new MessageContext(player), player);
+				LogInAudit.addLoginAudit(new CommandContext(player), player);
 				player.updateLastOnline();
 			}
 			PREV_ONLINE_PLAYERS.remove(player);
 		}
 		for(Player player : PREV_ONLINE_PLAYERS) {
-			LogOutAudit.addLogOutAudit(new MessageContext(player), player);
+			LogOutAudit.addLogOutAudit(new CommandContext(player), player);
 		}
 		
 		ONLINE_PLAYERS = onlinePlayers;

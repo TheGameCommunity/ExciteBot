@@ -16,7 +16,7 @@ import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 
 public class Debug {
 
-	public static void register(CommandDispatcher<MessageContext> dispatcher) {
+	public static void register(CommandDispatcher<CommandContext> dispatcher) {
 		
 		dispatcher.register(
 			Commands.literal("debug")
@@ -72,7 +72,7 @@ public class Debug {
 		
 	}
 	
-	private static int setDebugOutput(MessageContext context, MessageChannel channel) {
+	private static int setDebugOutput(CommandContext context, MessageChannel channel) {
 		if(context.isOperator()) {
 			if(channel instanceof TextChannel) {
 				TextChannel tChannel = (TextChannel) channel;
@@ -88,11 +88,11 @@ public class Debug {
 		return 1;
 	}
 	
-	public static void relayUser(MessageContext context, DiscordUser user) {
+	public static void relayUser(CommandContext context, DiscordUser user) {
 		context.sendMessage("Your argument appears to be " + user.getIdentifierName());
 	}
 	
-	public static void relayPlayer(MessageContext context, Player player) {
+	public static void relayPlayer(CommandContext context, Player player) {
 		context.sendMessage("Your argument appears to be " + player.getIdentifierName());
 	}
 	

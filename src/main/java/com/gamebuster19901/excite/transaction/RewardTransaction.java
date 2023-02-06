@@ -1,6 +1,6 @@
 package com.gamebuster19901.excite.transaction;
 
-import com.gamebuster19901.excite.bot.command.MessageContext;
+import com.gamebuster19901.excite.bot.command.CommandContext;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
 
 import static com.gamebuster19901.excite.transaction.CurrencyType.*;
@@ -38,7 +38,7 @@ public class RewardTransaction extends Transaction {
 	}
 
 	@Override
-	public String getAuditMessage(MessageContext context) {
+	public String getAuditMessage(CommandContext context) {
 		if(context.isConsoleMessage()) {
 			return balanceHolder.getIdentifierName() + " was rewarded " + amount + " " + currency + " into their " + wallet + " wallet because they " + message;
 		}

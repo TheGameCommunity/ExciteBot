@@ -10,7 +10,7 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 public class RankCommand {
 
 	@SuppressWarnings("rawtypes")
-	public static void register(CommandDispatcher<MessageContext> dispatcher) {
+	public static void register(CommandDispatcher<CommandContext> dispatcher) {
 		dispatcher.register(Commands.literal("rank")
 				.then(Commands.literal("add")
 						.then(Commands.argument("rank", StringArgumentType.word())
@@ -33,7 +33,7 @@ public class RankCommand {
 	}
 	
 	@SuppressWarnings("rawtypes")
-	private static int addRank(MessageContext context, DiscordUser user, String rank) {
+	private static int addRank(CommandContext context, DiscordUser user, String rank) {
 		if(context.isOperator()) {
 			if(rank.equalsIgnoreCase("admin")) {
 				return addAdmin(context, user);
@@ -49,7 +49,7 @@ public class RankCommand {
 	}
 	
 	@SuppressWarnings("rawtypes")
-	private static int removeRank(MessageContext context, DiscordUser user, String rank) {
+	private static int removeRank(CommandContext context, DiscordUser user, String rank) {
 		if(context.isOperator()) {
 			if(rank.equalsIgnoreCase("admin")) {
 				return removeAdmin(context, user);
@@ -65,7 +65,7 @@ public class RankCommand {
 	}
 	
 	@SuppressWarnings("rawtypes")
-	private static int addAdmin(MessageContext context, DiscordUser user) {		
+	private static int addAdmin(CommandContext context, DiscordUser user) {		
 		if(user instanceof UnknownDiscordUser) {
 			context.sendMessage("Unknown user: " + user);
 			return 1;
@@ -81,7 +81,7 @@ public class RankCommand {
 	}
 	
 	@SuppressWarnings("rawtypes")
-	private static int removeAdmin(MessageContext context, DiscordUser user) {
+	private static int removeAdmin(CommandContext context, DiscordUser user) {
 		
 		if(user instanceof UnknownDiscordUser) {
 			context.sendMessage("Unknown user: " + user);
@@ -98,7 +98,7 @@ public class RankCommand {
 	}
 	
 	@SuppressWarnings("rawtypes")
-	private static int addOperator(MessageContext context, DiscordUser user) {
+	private static int addOperator(CommandContext context, DiscordUser user) {
 		
 		if(user instanceof UnknownDiscordUser) {
 			context.sendMessage("Unknown user: " + user);
@@ -116,7 +116,7 @@ public class RankCommand {
 	}
 	
 	@SuppressWarnings("rawtypes")
-	private static int removeOperator(MessageContext context, DiscordUser user) {
+	private static int removeOperator(CommandContext context, DiscordUser user) {
 		if(user instanceof UnknownDiscordUser) {
 			context.sendMessage("Unknown user: " + user);
 			return 1;

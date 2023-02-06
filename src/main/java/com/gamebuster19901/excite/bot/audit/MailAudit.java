@@ -14,7 +14,7 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
 import com.gamebuster19901.excite.bot.command.ConsoleContext;
-import com.gamebuster19901.excite.bot.command.MessageContext;
+import com.gamebuster19901.excite.bot.command.CommandContext;
 import com.gamebuster19901.excite.bot.database.Comparison;
 import com.gamebuster19901.excite.bot.database.Insertion;
 import com.gamebuster19901.excite.bot.database.Row;
@@ -36,7 +36,7 @@ public class MailAudit extends Audit {
 	}
 
 	@SuppressWarnings("rawtypes")
-	public static MailAudit addMailAudit(MessageContext context, MimeMessage message, boolean incoming, File file) throws AddressException, MessagingException {
+	public static MailAudit addMailAudit(CommandContext context, MimeMessage message, boolean incoming, File file) throws AddressException, MessagingException {
 		ElectronicAddress from = new EmailAddress(message.getFrom()[0]);
 		ElectronicAddress to = new EmailAddress(new InternetAddress(message.getHeader("To")[0]));
 		String description = from.getEmail() + " sent mail to " + to.getEmail();
@@ -79,7 +79,7 @@ public class MailAudit extends Audit {
 	}
 	
 	@SuppressWarnings("rawtypes")
-	public static MailAudit addMailAudit(MessageContext context, MailReplyResponse message, boolean incoming, File file) {
+	public static MailAudit addMailAudit(CommandContext context, MailReplyResponse message, boolean incoming, File file) {
 		ElectronicAddress from = message.getResponder();
 		ElectronicAddress to = message.getRespondee();
 		String description = from.getEmail() + " sent mail to " + to.getEmail();

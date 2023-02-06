@@ -1,7 +1,7 @@
 package com.gamebuster19901.excite.bot.audit;
 
 import com.gamebuster19901.excite.bot.command.ConsoleContext;
-import com.gamebuster19901.excite.bot.command.MessageContext;
+import com.gamebuster19901.excite.bot.command.CommandContext;
 import com.gamebuster19901.excite.bot.database.Comparison;
 import com.gamebuster19901.excite.bot.database.Insertion;
 import com.gamebuster19901.excite.bot.database.Row;
@@ -24,7 +24,7 @@ public class WiiRegistrationAudit extends Audit {
 		super(result, AuditType.WII_REGISTRATION_AUDIT);
 	}
 	
-	public static WiiRegistrationAudit addWiiRegistrationAudit(MessageContext registrant, Wii wii, boolean unregister) {
+	public static WiiRegistrationAudit addWiiRegistrationAudit(CommandContext registrant, Wii wii, boolean unregister) {
 		Audit parent;
 		if(!unregister) {
 			parent = Audit.addAudit(registrant, AuditType.WII_REGISTRATION_AUDIT, registrant.getAuthor().getIdentifierName() + " registered " + wii.getWiiCode().hyphenate());

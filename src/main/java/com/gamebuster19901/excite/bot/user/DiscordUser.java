@@ -19,7 +19,7 @@ import com.gamebuster19901.excite.bot.audit.RankChangeAudit;
 import com.gamebuster19901.excite.bot.audit.ban.Ban;
 import com.gamebuster19901.excite.bot.audit.ban.Banee;
 import com.gamebuster19901.excite.bot.command.ConsoleContext;
-import com.gamebuster19901.excite.bot.command.MessageContext;
+import com.gamebuster19901.excite.bot.command.CommandContext;
 import com.gamebuster19901.excite.bot.database.sql.DatabaseConnection;
 import com.gamebuster19901.excite.bot.database.Comparison;
 import com.gamebuster19901.excite.bot.database.Result;
@@ -89,7 +89,7 @@ public class DiscordUser implements Banee {
 	}
 	
 	@SuppressWarnings("rawtypes")
-	private static DiscordUser addDiscordUser(MessageContext context, long discordID, String name) throws SQLException {
+	private static DiscordUser addDiscordUser(CommandContext context, long discordID, String name) throws SQLException {
 		PreparedStatement ps = null;
 		try {
 			ps = context.getConnection().prepareStatement("INSERT INTO " + DISCORD_USERS + " (" + DISCORD_ID + ", "+ DISCORD_NAME + ", " + LAST_NOTIFICATION + ") VALUES (?, ?, ?);");
@@ -132,15 +132,15 @@ public class DiscordUser implements Banee {
 	}
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public Ban ban(MessageContext context, Duration duration, String reason) {
+	public Ban ban(CommandContext context, Duration duration, String reason) {
 		Ban discordBan = Ban.addBan(context, this, reason, duration);
 		context.sendMessage(this.getAsMention() + " has been banned for " + TimeUtils.readableDuration(duration) + " with the reason: \n\n\"" + reason + "\"");
-		sendMessage(new MessageContext(this), this.getAsMention() + ", " + reason);
+		sendMessage(new CommandContext(this), this.getAsMention() + ", " + reason);
 		return discordBan;
 	}
 	
 	@SuppressWarnings("rawtypes")
-	public Set<Player> getProfiles(MessageContext context) {
+	public Set<Player> getProfiles(CommandContext context) {
 		try {
 			HashSet<Player> players = new HashSet<Player>();
 			Result results = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, PLAYER_ID, PLAYERS, new Comparison(DISCORD_ID, EQUALS, getID()));
@@ -203,7 +203,7 @@ public class DiscordUser implements Banee {
 	}
 	
 	@SuppressWarnings("rawtypes")
-	public void setAdmin(MessageContext promoter, boolean admin) {
+	public void setAdmin(CommandContext promoter, boolean admin) {
 		if(admin) {
 			Table.addAdmin(promoter, this);
 		}
@@ -217,7 +217,7 @@ public class DiscordUser implements Banee {
 	}
 	
 	@SuppressWarnings("rawtypes")
-	public void setOperator(MessageContext promoter, boolean operator) {
+	public void setOperator(CommandContext promoter, boolean operator) {
 		if(operator) {
 			if(!isAdmin()) {
 				setAdmin(promoter, operator);
@@ -455,7 +455,7 @@ public class DiscordUser implements Banee {
 	}
 	
 	@SuppressWarnings("rawtypes")
-	public void sendMessage(MessageContext context, String message) {
+	public void sendMessage(CommandContext context, String message) {
 		if(context.isGuildMessage()) {
 			MessageReceivedEvent e = (MessageReceivedEvent) context.getEvent();
 			User receiver = this.getJDAUser();
@@ -540,7 +540,7 @@ public class DiscordUser implements Banee {
 	
 	@Deprecated
 	@SuppressWarnings("rawtypes")
-	public static final DiscordUser getDiscordUser(MessageContext context, long id) {
+	public static final DiscordUser getDiscordUser(CommandContext context, long id) {
 		User user = Main.discordBot.jda.getUserById(id);
 		if(user != null) {
 			return new DiscordUser(user.getIdLong());
@@ -549,7 +549,7 @@ public class DiscordUser implements Banee {
 	}
 	
 	@SuppressWarnings("rawtypes")
-	public static final DiscordUser getDiscordUserIncludingUnknown(MessageContext context, long id) {
+	public static final DiscordUser getDiscordUserIncludingUnknown(CommandContext context, long id) {
 		DiscordUser user;
 		user = getDiscordUser(context, id);
 		if(user == null) {
@@ -559,7 +559,7 @@ public class DiscordUser implements Banee {
 	}
 	
 	@SuppressWarnings("rawtypes")
-	public static final DiscordUser getDiscordUserIncludingUnknown(MessageContext context, String discriminator) {
+	public static final DiscordUser getDiscordUserIncludingUnknown(CommandContext context, String discriminator) {
 		final HashSet<User> users;
 		users = getUsers(context, discriminator);
 		DiscordUser user;
@@ -582,7 +582,7 @@ public class DiscordUser implements Banee {
 	}
 	
 	@SuppressWarnings("rawtypes")
-	public static final DiscordUser getDiscordUserTreatingUnknownsAsNobody(MessageContext context, long id) {
+	public static final DiscordUser getDiscordUserTreatingUnknownsAsNobody(CommandContext context, long id) {
 		DiscordUser user;
 		user = getDiscordUser(context, id);
 		if(user == null) {
@@ -592,7 +592,7 @@ public class DiscordUser implements Banee {
 	}
 	
 	@SuppressWarnings("rawtypes")
-	public static final HashSet<DiscordUser> getDiscordUser(MessageContext context, String username) {
+	public static final HashSet<DiscordUser> getDiscordUser(CommandContext context, String username) {
 		HashSet<DiscordUser> users = new HashSet<DiscordUser>();
 		if(isFullDiscordTag(username)) {
 			getUsers(context, username).forEach((u) -> {
@@ -609,7 +609,7 @@ public class DiscordUser implements Banee {
 	}
 	
 	@SuppressWarnings("rawtypes")
-	public static final HashSet<User> getUsers(MessageContext context, String username) {
+	public static final HashSet<User> getUsers(CommandContext context, String username) {
 		boolean fullTag = isFullDiscordTag(username);
 		HashSet<User> users = new HashSet<User>();
 		if(context.getServer() != null) {
@@ -634,7 +634,7 @@ public class DiscordUser implements Banee {
 	}
 	
 	@SuppressWarnings("rawtypes")
-	public static final DiscordUser getDiscordUser(MessageContext context, String username, String discriminator) {
+	public static final DiscordUser getDiscordUser(CommandContext context, String username, String discriminator) {
 		if(discriminator.startsWith("#")) {
 			discriminator = discriminator.substring(discriminator.indexOf('#'));
 		}
@@ -660,7 +660,7 @@ public class DiscordUser implements Banee {
 	}
 	
 	@SuppressWarnings("rawtypes")
-	public static final HashSet<DiscordUser> getDiscordUsers(MessageContext context, String username, String discriminator) {
+	public static final HashSet<DiscordUser> getDiscordUsers(CommandContext context, String username, String discriminator) {
 		if(discriminator.startsWith("#")) {
 			discriminator = discriminator.substring(discriminator.indexOf('#'));
 		}
@@ -682,7 +682,7 @@ public class DiscordUser implements Banee {
 	
 	@Deprecated
 	@SuppressWarnings("rawtypes")
-	public static final DiscordUser[] getDiscordUsersWithUsername(MessageContext context, String username) {
+	public static final DiscordUser[] getDiscordUsersWithUsername(CommandContext context, String username) {
 		HashSet<DiscordUser> ret = new HashSet<DiscordUser>();
 		HashSet<User> users = new HashSet<User>();
 		users.addAll(Main.discordBot.jda.getUsersByName(username, true));
@@ -692,7 +692,7 @@ public class DiscordUser implements Banee {
 	}
 	
 	@SuppressWarnings("rawtypes")
-	public static final DiscordUser[] getDiscordUsersWithUsernameOrID(MessageContext context, String usernameOrID) {
+	public static final DiscordUser[] getDiscordUsersWithUsernameOrID(CommandContext context, String usernameOrID) {
 		try {
 			long id = Long.parseLong(usernameOrID);
 			DiscordUser user = getDiscordUser(context, id);

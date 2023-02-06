@@ -5,7 +5,7 @@ import java.sql.SQLException;
 
 import com.gamebuster19901.excite.Main;
 import com.gamebuster19901.excite.bot.command.ConsoleContext;
-import com.gamebuster19901.excite.bot.command.MessageContext;
+import com.gamebuster19901.excite.bot.command.CommandContext;
 import com.gamebuster19901.excite.bot.database.Comparison;
 import com.gamebuster19901.excite.bot.database.Insertion;
 import com.gamebuster19901.excite.bot.database.Row;
@@ -26,8 +26,8 @@ public class RankChangeAudit extends Audit {
 	}
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public static RankChangeAudit addRankChange(MessageContext context, DiscordUser promotee, String rank, boolean added) {
-		Audit parent = Audit.addAudit(ConsoleContext.INSTANCE, context, AuditType.RANK_CHANGE_AUDIT, getMessage(context, new MessageContext(promotee), rank, added));
+	public static RankChangeAudit addRankChange(CommandContext context, DiscordUser promotee, String rank, boolean added) {
+		Audit parent = Audit.addAudit(ConsoleContext.INSTANCE, context, AuditType.RANK_CHANGE_AUDIT, getMessage(context, new CommandContext(promotee), rank, added));
 		
 		PreparedStatement st;
 		try {
@@ -48,12 +48,12 @@ public class RankChangeAudit extends Audit {
 	}
 	
 	@SuppressWarnings("rawtypes")
-	public static RankChangeAudit getRankChangeAuditByID(MessageContext context, long auditID) {
+	public static RankChangeAudit getRankChangeAuditByID(CommandContext context, long auditID) {
 		return new RankChangeAudit(Table.selectAllFromJoinedUsingWhere(context, AUDITS, AUDIT_RANK_CHANGES, AUDIT_ID, new Comparison(AUDIT_ID, EQUALS, auditID)).getRow(true));
 	}
 	
 	@SuppressWarnings("rawtypes")
-	private static final String getMessage(MessageContext promoter, MessageContext<DiscordUser> promotee, String rank, boolean added) {
+	private static final String getMessage(CommandContext promoter, CommandContext<DiscordUser> promotee, String rank, boolean added) {
 		if(added) {
 			return promoter.getDiscordAuthor().toDetailedString() + " made " + promotee.getDiscordAuthor().toDetailedString() + " a bot " + rank + " for " + Main.discordBot.getSelfUser().getName();
 		}

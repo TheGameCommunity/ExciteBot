@@ -25,14 +25,14 @@ public class ChangelogCommand {
 			"-Gamebuster";
 	
 	@SuppressWarnings("rawtypes")
-	public static void register(CommandDispatcher<MessageContext> dispatcher) {
+	public static void register(CommandDispatcher<CommandContext> dispatcher) {
 		dispatcher.register(Commands.literal("cl").executes((context) -> {
 			return message(context.getSource());
 		}));
 	}
 	
 	@SuppressWarnings("rawtypes")
-	private static int message(MessageContext context) {
+	private static int message(CommandContext context) {
 		if(context.isOperator()) {
 				context.sendMessage(changelog);
 		}

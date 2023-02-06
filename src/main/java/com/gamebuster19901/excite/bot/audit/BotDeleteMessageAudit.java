@@ -1,7 +1,7 @@
 package com.gamebuster19901.excite.bot.audit;
 
 import com.gamebuster19901.excite.bot.command.ConsoleContext;
-import com.gamebuster19901.excite.bot.command.MessageContext;
+import com.gamebuster19901.excite.bot.command.CommandContext;
 import com.gamebuster19901.excite.bot.database.Comparison;
 import com.gamebuster19901.excite.bot.database.Insertion;
 import com.gamebuster19901.excite.bot.database.Row;
@@ -23,7 +23,7 @@ public class BotDeleteMessageAudit extends Audit {
 		super(result, AuditType.BOT_MSG_DELETE);
 	}
 	
-	public static BotDeleteMessageAudit addBotDeleteMessageAudit(MessageContext deleter, MessageContext deleted, String reason) {
+	public static BotDeleteMessageAudit addBotDeleteMessageAudit(CommandContext deleter, CommandContext deleted, String reason) {
 		Audit parent = Audit.addAudit(deleter, deleted, AuditType.BOT_MSG_DELETE, getMessage(ConsoleContext.INSTANCE, deleted, reason));
 		
 		PreparedStatement st;
@@ -50,7 +50,7 @@ public class BotDeleteMessageAudit extends Audit {
 		return new BotDeleteMessageAudit(Table.selectAllFromJoinedUsingWhere(context, AUDITS, AUDIT_BOT_MSG_DEL, AUDIT_ID, new Comparison(AUDIT_ID, EQUALS, auditID)).getRow(true));
 	}
 	
-	private static String getMessage(MessageContext deleter, MessageContext sender, String reason) {
+	private static String getMessage(CommandContext deleter, CommandContext sender, String reason) {
 		return deleter.getAuthor().getIdentifierName() + " deleted a message by " + sender.getAuthor().getIdentifierName() + " due to \"" + reason + "\"";
 	}
 

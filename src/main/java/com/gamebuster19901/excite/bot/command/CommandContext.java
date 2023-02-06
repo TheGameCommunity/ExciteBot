@@ -26,12 +26,12 @@ import net.dv8tion.jda.api.entities.channel.middleman.StandardGuildMessageChanne
 import net.dv8tion.jda.api.entities.channel.unions.MessageChannelUnion;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 
-public class MessageContext<E>{
+public class CommandContext<E>{
 	
 	private E event;
 	private AbnormalMessage message;
 	
-	public MessageContext(E e) {
+	public CommandContext(E e) {
 		if(e instanceof MessageReceivedEvent || e instanceof DiscordUser || e instanceof Player) {
 			this.event = e;
 		}
@@ -40,7 +40,7 @@ public class MessageContext<E>{
 		}
 	}
 	
-	public MessageContext(E e, String message) {
+	public CommandContext(E e, String message) {
 		this(e);
 		long id = 0;
 		if(e instanceof MessageReceivedEvent) {
@@ -50,7 +50,7 @@ public class MessageContext<E>{
 	}
 	
 	@SuppressWarnings("unchecked")
-	public MessageContext() {
+	public CommandContext() {
 		this.event = (E) Main.CONSOLE;
 	}
 	
@@ -239,7 +239,7 @@ public class MessageContext<E>{
 		
 	}
 	
-	public void deletePromptingMessage(MessageContext deleter, String response) {
+	public void deletePromptingMessage(CommandContext deleter, String response) {
 		Message message = getMessage();
 		if(message != null) {
 			message.delete().complete();

@@ -10,7 +10,7 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 
 public class InsertCommand {
 	
-	public static void register(CommandDispatcher<MessageContext> dispatcher) {
+	public static void register(CommandDispatcher<CommandContext> dispatcher) {
 		dispatcher.register(Commands.literal("insert").then(Commands.literal("profile")
 			.then(Commands.argument("pid", IntegerArgumentType.integer(1, 999999999))
 			.then(Commands.argument("fc", StringArgumentType.string())
@@ -21,7 +21,7 @@ public class InsertCommand {
 		))))));
 	}
 	
-	private static int addProfile(MessageContext context, int pid, String fc, String name) {
+	private static int addProfile(CommandContext context, int pid, String fc, String name) {
 		if(context.isOperator()) {
 			if(!Player.isPlayerKnown(context, pid)) {
 				try {

@@ -5,13 +5,12 @@ import com.gamebuster19901.excite.Wiimmfi;
 import com.gamebuster19901.excite.util.StacktraceUtil;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import com.mojang.brigadier.context.CommandContext;
 
 @SuppressWarnings("rawtypes") 
 public class OnlineCommand {
 
-	public static void register(CommandDispatcher<MessageContext> dispatcher) {
-		LiteralArgumentBuilder<MessageContext> builder = Commands.literal("online").executes((command) -> {
+	public static void register(CommandDispatcher<CommandContext> dispatcher) {
+		LiteralArgumentBuilder<CommandContext> builder = Commands.literal("online").executes((command) -> {
 			return sendResponse(command.getSource(), command);
 		});
 		
@@ -19,7 +18,7 @@ public class OnlineCommand {
 		dispatcher.register(Commands.literal("o").executes(builder.getCommand()));
 	}
 	
-	public static int sendResponse(MessageContext context, CommandContext<MessageContext> cmdContext) {
+	public static int sendResponse(CommandContext context, com.mojang.brigadier.context.CommandContext<CommandContext> cmdContext) {
 		Wiimmfi wiimmfi = Main.discordBot.getWiimmfi();
 		String response;
 		if(wiimmfi.getError() == null) {

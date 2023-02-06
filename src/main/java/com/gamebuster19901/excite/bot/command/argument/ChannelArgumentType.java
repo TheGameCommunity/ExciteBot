@@ -4,7 +4,7 @@ import java.util.List;
 
 import com.gamebuster19901.excite.Main;
 import com.gamebuster19901.excite.bot.command.Commands;
-import com.gamebuster19901.excite.bot.command.MessageContext;
+import com.gamebuster19901.excite.bot.command.CommandContext;
 import com.gamebuster19901.excite.bot.command.exception.ParseExceptions;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.arguments.ArgumentType;
@@ -25,7 +25,7 @@ public class ChannelArgumentType implements ArgumentType<MessageChannel>{
 	 */
 	@Override
 	public <S> MessageChannel parse(S source, StringReader reader) throws CommandSyntaxException {
-		MessageContext context = (MessageContext) source;
+		CommandContext context = (CommandContext) source;
 		
 		String channel = Commands.readString(reader);
 		

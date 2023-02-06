@@ -3,7 +3,7 @@ package com.gamebuster19901.excite.bot.audit.ban;
 import org.jetbrains.annotations.Nullable;
 
 import com.gamebuster19901.excite.Player;
-import com.gamebuster19901.excite.bot.command.MessageContext;
+import com.gamebuster19901.excite.bot.command.CommandContext;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
 import com.gamebuster19901.excite.util.Named;
 
@@ -12,7 +12,7 @@ public interface Banee extends Named {
 	public String getName();
 	
 	@SuppressWarnings("rawtypes")
-	public default Ban getLongestActiveBan(MessageContext context) {
+	public default Ban getLongestActiveBan(CommandContext context) {
 		Ban longest = null;
 		for(Ban ban : Ban.getBansOfID(context, this.getID())) {
 			if(ban.isActive()) {
@@ -25,7 +25,7 @@ public interface Banee extends Named {
 	}
 	
 	@SuppressWarnings("rawtypes")
-	public static Banee getBanee(MessageContext context, long id) {
+	public static Banee getBanee(CommandContext context, long id) {
 		DiscordUser discord = DiscordUser.getDiscordUserIncludingUnknown(context, id);
 		Player player = Player.getPlayerByID(context, (int) id);
 		
@@ -37,7 +37,7 @@ public interface Banee extends Named {
 	
 	@Nullable
 	@SuppressWarnings({ "rawtypes", "deprecation" })
-	public static Banee getBanee(MessageContext context, String name) {
+	public static Banee getBanee(CommandContext context, String name) {
 		DiscordUser[] discords = DiscordUser.getDiscordUsersWithUsername(context, name);
 		Player[] players = Player.getPlayersByName(context, name);
 		int amount = discords.length + players.length;

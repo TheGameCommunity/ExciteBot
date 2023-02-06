@@ -1,7 +1,7 @@
 package com.gamebuster19901.excite.bot.audit;
 
 import com.gamebuster19901.excite.bot.command.ConsoleContext;
-import com.gamebuster19901.excite.bot.command.MessageContext;
+import com.gamebuster19901.excite.bot.command.CommandContext;
 import com.gamebuster19901.excite.bot.database.Comparison;
 import com.gamebuster19901.excite.bot.database.Insertion;
 import com.gamebuster19901.excite.bot.database.Row;
@@ -25,7 +25,7 @@ public class CommandAudit extends Audit {
 	}
 	
 	@SuppressWarnings("rawtypes")
-	public static CommandAudit addCommandAudit(MessageContext context, String command) {
+	public static CommandAudit addCommandAudit(CommandContext context, String command) {
 		Audit parent = Audit.addAudit(ConsoleContext.INSTANCE, context, AuditType.COMMAND_AUDIT, command);
 		
 		PreparedStatement st;
@@ -71,7 +71,7 @@ public class CommandAudit extends Audit {
 	}
 	
 	@SuppressWarnings("rawtypes")
-	public static CommandAudit getCommandAuditByID(MessageContext context, long auditID) {
+	public static CommandAudit getCommandAuditByID(CommandContext context, long auditID) {
 		return new CommandAudit(Table.selectAllFromJoinedUsingWhere(context, AUDITS, AUDIT_COMMANDS, AUDIT_ID, new Comparison(AUDIT_ID, EQUALS, auditID)).getRow(true));
 	}
 	

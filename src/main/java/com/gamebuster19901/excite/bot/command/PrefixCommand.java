@@ -5,7 +5,7 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 
 public class PrefixCommand {	
 	@SuppressWarnings("rawtypes")
-	public static void register(CommandDispatcher<MessageContext> dispatcher) {
+	public static void register(CommandDispatcher<CommandContext> dispatcher) {
 		dispatcher.register(Commands.literal("prefix")
 			.then(Commands.argument("pre", StringArgumentType.greedyString())
 				.executes((context) -> {
@@ -14,7 +14,7 @@ public class PrefixCommand {
 	}
 	
 	@SuppressWarnings("rawtypes")
-	private static int setPrefix(MessageContext context, String prefix) {
+	private static int setPrefix(CommandContext context, String prefix) {
 		if(context.isAdmin()) {
 			if(context.isGuildMessage()) {
 				if(Commands.isValidPrefix(prefix)) {

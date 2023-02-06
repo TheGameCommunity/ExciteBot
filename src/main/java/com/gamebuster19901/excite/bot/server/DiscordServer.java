@@ -8,7 +8,7 @@ import static com.gamebuster19901.excite.bot.database.Comparator.EQUALS;
 
 import com.gamebuster19901.excite.Main;
 import com.gamebuster19901.excite.bot.command.ConsoleContext;
-import com.gamebuster19901.excite.bot.command.MessageContext;
+import com.gamebuster19901.excite.bot.command.CommandContext;
 import com.gamebuster19901.excite.bot.database.Comparison;
 import com.gamebuster19901.excite.bot.database.Result;
 import com.gamebuster19901.excite.bot.database.Table;
@@ -46,7 +46,7 @@ public class DiscordServer implements Named {
 	}
 	
 	@SuppressWarnings({ "rawtypes", "resource" })
-	public static DiscordServer addServer(MessageContext context, long guildId, String name) throws SQLException {
+	public static DiscordServer addServer(CommandContext context, long guildId, String name) throws SQLException {
 		PreparedStatement ps = context.getConnection().prepareStatement("INSERT INTO " + DISCORD_SERVERS + " (" + SERVER_ID + ", " + SERVER_NAME + ") VALUES (?, ?)");
 		ps.setLong(1, guildId);
 		ps.setString(2, name);
@@ -138,7 +138,7 @@ public class DiscordServer implements Named {
 	}
 	
 	@SuppressWarnings("rawtypes")
-	public static DiscordServer getServer(MessageContext context, long serverId) {
+	public static DiscordServer getServer(CommandContext context, long serverId) {
 		try {
 			Result results = Table.selectAllFromWhere(context, DISCORD_SERVERS, new Comparison(SERVER_ID, EQUALS, serverId));
 			

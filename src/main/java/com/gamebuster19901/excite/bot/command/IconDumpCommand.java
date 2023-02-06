@@ -11,7 +11,7 @@ import net.dv8tion.jda.api.entities.emoji.RichCustomEmoji;
 public class IconDumpCommand {
 
 	@SuppressWarnings("rawtypes")
-	public static void register(CommandDispatcher<MessageContext> dispatcher) {
+	public static void register(CommandDispatcher<CommandContext> dispatcher) {
 		dispatcher.register(Commands.literal("icondump").executes((context) -> {
 			context.getSource().sendMessage("Provide a server id");
 			return 0;
@@ -22,7 +22,7 @@ public class IconDumpCommand {
 	}
 		
 	@SuppressWarnings("rawtypes")
-	public static int sendResponse(MessageContext context, long serverId) {
+	public static int sendResponse(CommandContext context, long serverId) {
 		if(context.isOperator()) {
 			DiscordServer server = DiscordServer.getServer(ConsoleContext.INSTANCE, serverId);
 			if(server != null && server.isLoaded()) {

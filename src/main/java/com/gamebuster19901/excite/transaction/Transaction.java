@@ -1,6 +1,6 @@
 package com.gamebuster19901.excite.transaction;
 
-import com.gamebuster19901.excite.bot.command.MessageContext;
+import com.gamebuster19901.excite.bot.command.CommandContext;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
 
 public abstract class Transaction {
@@ -66,7 +66,7 @@ public abstract class Transaction {
 		return failureReason;
 	}
 	
-	public abstract String getAuditMessage(MessageContext context);
+	public abstract String getAuditMessage(CommandContext context);
 	
 	public abstract boolean isValid();
 	

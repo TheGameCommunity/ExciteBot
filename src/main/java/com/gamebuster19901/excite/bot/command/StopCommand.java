@@ -6,14 +6,14 @@ import com.mojang.brigadier.CommandDispatcher;
 public class StopCommand {
 
 	@SuppressWarnings("rawtypes")
-	public static void register(CommandDispatcher<MessageContext> dispatcher) {
+	public static void register(CommandDispatcher<CommandContext> dispatcher) {
 		dispatcher.register(Commands.literal("stop").executes((context) -> {
 			return stop(context.getSource());
 		}));
 	}
 	
 	@SuppressWarnings("rawtypes")
-	private static int stop(MessageContext context) {
+	private static int stop(CommandContext context) {
 		if(context.isAdmin()) {
 			try {
 				context.sendMessage("Stopping!");

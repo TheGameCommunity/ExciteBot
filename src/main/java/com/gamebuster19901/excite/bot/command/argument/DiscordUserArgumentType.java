@@ -2,7 +2,7 @@ package com.gamebuster19901.excite.bot.command.argument;
 
 import com.gamebuster19901.excite.bot.command.Commands;
 import com.gamebuster19901.excite.bot.command.ConsoleContext;
-import com.gamebuster19901.excite.bot.command.MessageContext;
+import com.gamebuster19901.excite.bot.command.CommandContext;
 import com.gamebuster19901.excite.bot.command.exception.ParseExceptions;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
 import com.gamebuster19901.excite.bot.user.Nobody;
@@ -12,7 +12,6 @@ import static com.gamebuster19901.excite.bot.command.argument.UserObtainer.*;
 import static com.gamebuster19901.excite.bot.command.argument.DiscordUserArgumentType.UnknownType.*;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.arguments.ArgumentType;
-import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 
 public class DiscordUserArgumentType implements ArgumentType<DiscordUser> {
@@ -45,13 +44,13 @@ public class DiscordUserArgumentType implements ArgumentType<DiscordUser> {
 	
 	public static DiscordUserArgumentType user() {return new DiscordUserArgumentType();}
 	
-	public static DiscordUser getDiscordUser(final CommandContext<?> context, final String name) {
+	public static DiscordUser getDiscordUser(final com.mojang.brigadier.context.CommandContext<?> context, final String name) {
 		return context.getArgument(name, DiscordUser.class);
 	}
 	
 	@Override
 	public <S> DiscordUser parse(S source, StringReader reader) throws CommandSyntaxException {
-		MessageContext context = (MessageContext) source;
+		CommandContext context = (CommandContext) source;
 		if(requiredContext == UserObtainer.JDA_ONLY) {
 			source = (S) ConsoleContext.INSTANCE;
 		}
@@ -70,13 +69,13 @@ public class DiscordUserArgumentType implements ArgumentType<DiscordUser> {
 		else {
 			input = Commands.readString(reader);
 		}
-		DiscordUser[] users = DiscordUser.getDiscordUsersWithUsernameOrID((MessageContext)source, input);
+		DiscordUser[] users = DiscordUser.getDiscordUsersWithUsernameOrID((CommandContext)source, input);
 		if(users.length == 0) {
 			if(unknownType != FULLY_KNOWN) {
 				if(treatUnknownsAsNobody) {
 					return Nobody.INSTANCE;
 				}
-				DiscordUser user = DiscordUser.getDiscordUserIncludingUnknown((MessageContext)source, input);
+				DiscordUser user = DiscordUser.getDiscordUserIncludingUnknown((CommandContext)source, input);
 				if(unknownType == KNOWN_ID) {
 					if(user instanceof UnknownDiscordUser) {
 						if(!((UnknownDiscordUser) user).hasID() ) {

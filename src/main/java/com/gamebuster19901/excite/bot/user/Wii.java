@@ -13,7 +13,7 @@ import org.jetbrains.annotations.Nullable;
 
 import com.gamebuster19901.excite.bot.audit.WiiRegistrationAudit;
 import com.gamebuster19901.excite.bot.command.ConsoleContext;
-import com.gamebuster19901.excite.bot.command.MessageContext;
+import com.gamebuster19901.excite.bot.command.CommandContext;
 import com.gamebuster19901.excite.bot.database.Comparison;
 import com.gamebuster19901.excite.bot.database.Result;
 import com.gamebuster19901.excite.bot.database.Table;
@@ -144,7 +144,7 @@ public class Wii implements Named, Owned<DiscordUser>, ElectronicAddress {
 		
 	}
 	
-	public void register(MessageContext owner) throws SQLException, MessagingException{
+	public void register(CommandContext owner) throws SQLException, MessagingException{
 		Table.updateWhere(owner, WIIS, DISCORD_ID, owner.getSenderId(), new Comparison(WII_ID, EQUALS, wiiCode.code));
 		Table.updateWhere(owner, WIIS, REGISTRATION_CODE, null, new Comparison(WII_ID, EQUALS, wiiCode.code));
 		WiiRegistrationAudit.addWiiRegistrationAudit(owner, this, false);
