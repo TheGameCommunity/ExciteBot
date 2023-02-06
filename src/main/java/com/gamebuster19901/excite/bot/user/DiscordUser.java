@@ -27,7 +27,6 @@ import com.gamebuster19901.excite.bot.database.Table;
 import com.gamebuster19901.excite.bot.database.sql.PreparedStatement;
 import com.gamebuster19901.excite.bot.server.DiscordServer;
 import com.gamebuster19901.excite.transaction.CurrencyType;
-import com.gamebuster19901.excite.util.StacktraceUtil;
 import com.gamebuster19901.excite.util.TimeUtils;
 
 import static com.gamebuster19901.excite.bot.database.Comparator.*;
@@ -70,7 +69,7 @@ public class DiscordUser implements Banee {
 	}
 	
 	public static void addUser(User user) {
-		if(getDiscordUserIncludingUnknown(ConsoleContext.INSTANCE, user.getIdLong()) instanceof UnknownDiscordUser) {
+		if(!isKnown(user) && !(getDiscordUserIncludingUnknown(ConsoleContext.INSTANCE, user.getIdLong()) instanceof UnknownDiscordUser)) {
 			try {
 				addDiscordUser(ConsoleContext.INSTANCE, user.getIdLong(), user.getAsTag());
 			} catch (SQLException e) {
@@ -80,7 +79,7 @@ public class DiscordUser implements Banee {
 	}
 	
 	public static void addUser(Member member) {
-		if(getDiscordUserIncludingUnknown(ConsoleContext.INSTANCE, member.getIdLong()) instanceof UnknownDiscordUser) {
+		if(!isKnown(member) && !(getDiscordUserIncludingUnknown(ConsoleContext.INSTANCE, member.getIdLong()) instanceof UnknownDiscordUser)) {
 			try {
 				addDiscordUser(ConsoleContext.INSTANCE, member.getIdLong(), member.getUser().getAsTag());
 			} catch (SQLException e) {
@@ -185,6 +184,22 @@ public class DiscordUser implements Banee {
 		catch(SQLException e) {
 			throw new IOError(e);
 		}
+	}
+	
+	public boolean isKnown() {
+		return isKnown(getID());
+	}
+	
+	public static boolean isKnown(long discordID) {
+		return Table.existsWhere(ConsoleContext.INSTANCE, Table.DISCORD_USERS, new Comparison(DISCORD_ID, EQUALS, discordID));
+	}
+	
+	public static boolean isKnown(User user) {
+		return isKnown(user.getIdLong());
+	}
+	
+	public static boolean isKnown(Member member) {
+		return isKnown(member.getIdLong());
 	}
 	
 	@SuppressWarnings("rawtypes")
@@ -770,15 +785,6 @@ public class DiscordUser implements Banee {
 					}
 				}
 			}
-		}
-	}
-	
-	@Override
-	public void finalize() {
-		try {
-			connection.close();
-		} catch (SQLException e) {
-			ConsoleUser.getConsoleUser().sendMessage(StacktraceUtil.getStackTrace(e));
 		}
 	}
 
