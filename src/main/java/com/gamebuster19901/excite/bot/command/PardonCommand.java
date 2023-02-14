@@ -6,11 +6,11 @@ import com.gamebuster19901.excite.bot.audit.ban.Banee;
 import com.gamebuster19901.excite.bot.audit.ban.Pardon;
 import com.gamebuster19901.excite.bot.command.argument.DiscordUserArgumentType;
 import com.gamebuster19901.excite.bot.command.argument.PlayerArgumentType;
-import com.gamebuster19901.excite.bot.command.argument.UserObtainer;
-import com.gamebuster19901.excite.bot.user.DiscordUser;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.LongArgumentType;
+
+import net.dv8tion.jda.api.entities.User;
 
 public class PardonCommand {
 
@@ -19,9 +19,9 @@ public class PardonCommand {
 		
 		dispatcher.register(Commands.literal("pardon")
 				
-			.then(Commands.argument("discord", DiscordUserArgumentType.user().of(UserObtainer.UNCHANGED).setUnknown(UnknownType.KNOWN_ID))
+			.then(Commands.argument("discord", new DiscordUserArgumentType())
 				.executes((context) -> {
-					return pardon(context.getSource(), context.getArgument("discord", User.class));
+					return pardon(context.getSource(), Banee.of(context.getArgument("discord", User.class)));
 				})	
 			).then(Commands.argument("banID", LongArgumentType.longArg()).executes((context) -> {
 				return pardon(context.getSource(), Banee.of(context.getArgument("discord", User.class)), context.getArgument("banID", Long.class));
@@ -66,12 +66,7 @@ public class PardonCommand {
 			Ban pardoning = Ban.getBanByAuditId(context, banId);
 			if(pardoning != null) {
 				if(pardoning.getBannedID() == banee.getID()) {
-					if(banee instanceof DiscordUser) {
-						return pardon(context, (DiscordUser) banee);
-					}
-					else if (banee instanceof Player) {
-						return pardon(context, (Player) banee);
-					}
+					return pardon(context, banee);
 				}
 				else {
 					context.sendMessage("Ban #" + banId + " does not belong to " + banee.getIdentifierName());

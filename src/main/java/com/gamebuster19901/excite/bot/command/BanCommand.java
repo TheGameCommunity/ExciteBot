@@ -11,11 +11,11 @@ import com.gamebuster19901.excite.bot.command.argument.DurationArgumentType;
 import com.gamebuster19901.excite.bot.command.argument.PlayerArgumentType;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
 import com.gamebuster19901.excite.util.TimeUtils;
-import static com.gamebuster19901.excite.bot.command.argument.DiscordUserArgumentType.UnknownType.*;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
 
+import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.channel.concrete.PrivateChannel;
 
 public class BanCommand {
@@ -23,26 +23,26 @@ public class BanCommand {
 	@SuppressWarnings("rawtypes")
 	public static void register(CommandDispatcher<CommandContext> dispatcher) {
 		dispatcher.register(Commands.literal("ban")
-			.then(Commands.argument("discordUser", DiscordUserArgumentType.user().setUnknown(KNOWN_ID))
+			.then(Commands.argument("discordUser", new DiscordUserArgumentType())
 				.executes((context) -> {
-					return banDiscordUser(context.getSource(), context.getArgument("discordUser", DiscordUser.class), TimeUtils.FOREVER, parseReason(TimeUtils.FOREVER, null));
+					return banDiscordUser(context.getSource(), context.getArgument("discordUser", User.class), TimeUtils.FOREVER, parseReason(TimeUtils.FOREVER, null));
 				}
 			)
 				.then(Commands.argument("duration", DurationArgumentType.duration())
 					.executes((context) -> {
 						Duration duration = context.getArgument("duration", Duration.class);
-						return banDiscordUser(context.getSource(), context.getArgument("discordUser", DiscordUser.class), duration, parseReason(duration, null));
+						return banDiscordUser(context.getSource(), context.getArgument("discordUser", User.class), duration, parseReason(duration, null));
 					}
 					).then(Commands.argument("reason", StringArgumentType.greedyString())
 						.executes((context) -> {
 							Duration duration = context.getArgument("duration", Duration.class);
-							return banDiscordUser(context.getSource(), context.getArgument("discordUser", DiscordUser.class), duration, parseReason(duration, context.getArgument("reason", String.class)));
+							return banDiscordUser(context.getSource(), context.getArgument("discordUser", User.class), duration, parseReason(duration, context.getArgument("reason", String.class)));
 						})
 					)
 				)
 			.then(Commands.argument("reason", StringArgumentType.greedyString())
 				.executes((context) -> {
-					return banDiscordUser(context.getSource(), context.getArgument("discordUser", DiscordUser.class), TimeUtils.FOREVER, parseReason(TimeUtils.FOREVER, context.getArgument("reason", String.class)));
+					return banDiscordUser(context.getSource(), context.getArgument("discordUser", User.class), TimeUtils.FOREVER, parseReason(TimeUtils.FOREVER, context.getArgument("reason", String.class)));
 				})
 			)
 		)
@@ -82,20 +82,20 @@ public class BanCommand {
 	}
 	
 	@SuppressWarnings("rawtypes")
-	private static int banDiscordUser(CommandContext context, DiscordUser user, Duration duration, String reason) {
+	private static int banDiscordUser(CommandContext context, User user, Duration duration, String reason) {
 		if(context.isAdmin()) {
-			Ban ban = user.ban(context, duration, reason);
+			Ban ban = DiscordUser.ban(context, user, duration, reason);
 			String message = "Banned discord user " + user.getAsMention() + ": \n\n" + ban;
 			if(context.isConsoleMessage()) {
 				context.sendMessage(message);
 			}
 			else {
 				PrivateChannel privateChannel;
-				if(context.isPrivateMessage()) {
+				if(context.isPrivateContext()) {
 					privateChannel = (PrivateChannel) context.getChannel();
 				}
 				else {
-					privateChannel = context.getDiscordAuthor().getJDAUser().openPrivateChannel().complete();
+					privateChannel = context.getAuthor().openPrivateChannel().complete();
 				}
 				privateChannel.sendMessage(message).complete();
 			}
@@ -116,11 +116,11 @@ public class BanCommand {
 			}
 			else {
 				PrivateChannel privateChannel;
-				if(context.isPrivateMessage()) {
+				if(context.isPrivateContext()) {
 					privateChannel = (PrivateChannel) context.getChannel();
 				}
 				else {
-					privateChannel = context.getDiscordAuthor().getJDAUser().openPrivateChannel().complete();
+					privateChannel = context.getAuthor().openPrivateChannel().complete();
 				}
 				privateChannel.sendMessage(message);
 			}

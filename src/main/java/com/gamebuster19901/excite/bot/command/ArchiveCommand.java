@@ -14,7 +14,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
 import com.gamebuster19901.excite.bot.mail.Mailbox;
-import com.gamebuster19901.excite.bot.server.DiscordServer;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
 import com.gamebuster19901.excite.util.StacktraceUtil;
 import com.gamebuster19901.excite.util.ThreadService;
@@ -27,10 +26,10 @@ import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.Message.Attachment;
 import net.dv8tion.jda.api.entities.MessageEmbed.Field;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
+import net.dv8tion.jda.api.interactions.InteractionHook;
 import net.dv8tion.jda.api.requests.restaction.pagination.MessagePaginationAction;
 
 import static com.gamebuster19901.excite.bot.command.ArchiveCommand.WorkerStatus.*;
@@ -45,13 +44,13 @@ public class ArchiveCommand {
 
 	private static int archive(CommandContext source, String argument) {
 		if(source.isAdmin()) {
-			if(source.isGuildMessage()) {
+			if(source.isGuildContext()) {
 				if(argument.isEmpty()) {
 					source.sendMessage("Usage: archive <TextChannels>");
 					return 1;
 				}
 				Guild guild = source.getServer();
-				Member member = DiscordUser.getMember(source.getDiscordAuthor(), server);
+				Member member = DiscordUser.getMember(source.getAuthor(), guild);
 				HashSet<TextChannel> channelsToArchive = getChannels(source, guild, Arrays.asList(argument.split(" ")));
 				for(TextChannel channel : channelsToArchive) {
 					if(!member.hasPermission(channel, Permission.MANAGE_CHANNEL, Permission.MESSAGE_MANAGE)) {
@@ -88,7 +87,7 @@ public class ArchiveCommand {
 							embed.addField(emailsArchivedField);
 							embed.addField(estimatedSizeField);
 							embed.addField(timeElapsedField);
-							Message message = source.sendMessage(embed.build());
+							InteractionHook message = source.sendMessage(embed);
 							while(!currentStatus.finished()) {
 								try {
 									Thread.sleep(2500);
@@ -112,14 +111,14 @@ public class ArchiveCommand {
 										embed.addField(estimatedSizeField = new Field("Estimated size:", FileUtils.humanReadableByteCount(estimatedSize), true, true));
 										embed.addField(timeElapsedField = new Field ("Time elapsed:", TimeUtils.readableDuration(Duration.between(start, now)), true, true));
 										embed.setTimestamp(now);
-										message.editMessageEmbeds(embed.build()).complete();
+										message.editMessageEmbedsById("@original", embed.build()).complete();
 									}
 									Thread.sleep(2500);
 								} catch (InterruptedException e) {
 									currentStatus = ERRORED;
 									embed.setTitle("Archive failed");
 									embed.setColor(Color.RED);
-									message.editMessageEmbeds(embed.build()).complete();
+									message.editMessageEmbedsById("@original", embed.build()).complete();
 									System.out.println("Monitor thread interrupted... stopping!");
 									return;
 								}
@@ -131,18 +130,18 @@ public class ArchiveCommand {
 							embed.addField(estimatedSizeField = new Field("Estimated size:", FileUtils.humanReadableByteCount(estimatedSize), true, true));
 							embed.addField(timeElapsedField = new Field ("Time elapsed:", TimeUtils.readableDuration(Duration.between(start, now)), true, true));
 							embed.setTimestamp(now);
-							message.editMessageEmbeds(embed.build()).complete();
+							message.editMessageEmbedsById("@original", embed.build()).complete();
 							if(currentStatus == COMPLETE) {
 								embed.setColor(Color.GREEN);
 								embed.setTitle("Archive complete");
-								source.sendMessage(source.getDiscordAuthor().getAsMention() + " Archive complete.");
+								source.sendMessage(source.getAuthor().getAsMention() + " Archive complete.");
 							}
 							else {
 								embed.setColor(Color.RED);
 								embed.setTitle("Archive failed");
-								source.sendMessage(source.getDiscordAuthor().getAsMention() + " Archive FAILED.");
+								source.sendMessage(source.getAuthor().getAsMention() + " Archive FAILED.");
 							}
-							message.editMessageEmbeds(embed.build()).complete();
+							message.editMessageEmbedsById("@original", embed.build()).complete();
 						}});
 						
 						String date = TimeUtils.getDBDate(Instant.now());

@@ -29,7 +29,6 @@ public class Commands {
 		IconDumpCommand.register(dispatcher);
 		GameDataCommand.register(dispatcher);
 		RankCommand.register(dispatcher);
-		PrefixCommand.register(dispatcher);
 		ChangelogCommand.register(dispatcher);
 		InsertCommand.register(dispatcher);
 		ArchiveCommand.register(dispatcher);
@@ -38,7 +37,7 @@ public class Commands {
 	}
 	
 	public void handleCommand(String command) {
-		CommandContext context = new CommandContext(Main.CONSOLE, command);
+		CommandContext context = new CommandContext(Main.CONSOLE);
 		try {
 			CommandAudit.addCommandAudit(context, command);
 			this.dispatcher.execute(command, context);

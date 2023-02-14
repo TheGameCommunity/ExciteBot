@@ -1,29 +1,20 @@
 package com.gamebuster19901.excite.bot.command;
 
-import java.sql.SQLException;
+import java.time.Instant;
 
-import org.jetbrains.annotations.Nullable;
-
-import com.gamebuster19901.excite.Main;
-import com.gamebuster19901.excite.Player;
-import com.gamebuster19901.excite.bot.audit.BotDeleteMessageAudit;
-import com.gamebuster19901.excite.bot.database.sql.DatabaseConnection;
 import com.gamebuster19901.excite.bot.user.ConsoleUser;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
-import com.gamebuster19901.excite.bot.user.Nobody;
-import com.gamebuster19901.excite.util.Named;
 
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Guild;
-import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.ISnowflake;
 import net.dv8tion.jda.api.entities.User;
-import net.dv8tion.jda.api.entities.channel.concrete.NewsChannel;
 import net.dv8tion.jda.api.entities.channel.concrete.PrivateChannel;
-import net.dv8tion.jda.api.entities.channel.concrete.ThreadChannel;
-import net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel;
-import net.dv8tion.jda.api.entities.channel.middleman.StandardGuildMessageChannel;
-import net.dv8tion.jda.api.entities.channel.unions.MessageChannelUnion;
+import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
+import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
+import net.dv8tion.jda.api.events.guild.GuildReadyEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
+import net.dv8tion.jda.api.interactions.Interaction;
 import net.dv8tion.jda.api.interactions.InteractionHook;
 import net.dv8tion.jda.api.interactions.callbacks.IMessageEditCallback;
 import net.dv8tion.jda.api.interactions.callbacks.IReplyCallback;
@@ -32,107 +23,63 @@ import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 import net.dv8tion.jda.api.utils.messages.MessageEditBuilder;
 import net.dv8tion.jda.api.utils.messages.MessageEditData;
 
-public class CommandContext<E>{
+public class CommandContext<E> {
 	
 	private E event;
-	private AbnormalMessage message;
+	private EmbedBuilder embedBuilder;
 	
 	public CommandContext(E e) {
-		if(e instanceof MessageReceivedEvent || e instanceof User || e instanceof Player) {
+		if(e instanceof MessageReceivedEvent || e instanceof Interaction || e instanceof GuildReadyEvent || e instanceof User) {
 			this.event = e;
 		}
 		else {
-			throw new IllegalArgumentException(e.toString());
+			throw new IllegalArgumentException(e.getClass().getCanonicalName());
 		}
 	}
-	
-	public CommandContext(E e, String message) {
-		this(e);
-		long id = 0;
-		if(e instanceof MessageReceivedEvent) {
-			id = ((MessageReceivedEvent) e).getMessageIdLong();
+
+	public User getAuthor() {
+		if(event instanceof Interaction) {
+			return ((Interaction) event).getUser();
 		}
-		this.message = new AbnormalMessage(message, id);
-	}
-	
-	@SuppressWarnings("unchecked")
-	public CommandContext() {
-		this.event = (E) Main.CONSOLE;
-	}
-	
-	public boolean isDiscordContext() {
-		return event instanceof MessageReceivedEvent;
-	}
-	
-	public boolean isGuildMessage() {
-		return getChannel() instanceof GuildMessageChannel;
-	}
-	
-	public boolean isStandardGuildMessage() {
-		return getChannel() instanceof StandardGuildMessageChannel;
-	}
-	
-	public boolean isNewsMessage() {
-		return getChannel() instanceof NewsChannel;
-	}
-	
-	public boolean isThreadMessage() {
-		return getChannel() instanceof ThreadChannel;
-	}
-	
-	public boolean isPrivateMessage() {
-		return getChannel() instanceof PrivateChannel || event instanceof DiscordUser;
-	}
-	
-	public boolean isConsoleMessage() {
-		return event instanceof ConsoleUser;
-	}
-	
-	public boolean isIngameEvent() {
-		return event instanceof Player;
-	}
-	
-	public E getEvent() {
-		return event;
-	}
-	
-	public Named<?> getAuthor() {
-		Named<?> author = null;
-		if(isIngameEvent()) {
-			author = getPlayerAuthor();
-		}
-		else if (isDiscordContext() || isConsoleMessage()) {
-			author = Named.of(getDiscordAuthor());
-		}
-		if(author == null) {
-			throw new AssertionError(author + " is not from ingame, discord, or the console?!");
-		}
-		return author;
-	}
-	
-	public User getDiscordAuthor() {
 		if(event instanceof MessageReceivedEvent) {
 			return ((MessageReceivedEvent) event).getAuthor();
 		}
-		return Nobody.INSTANCE;
-	}
-	
-	public Player getPlayerAuthor() {
-		if(event instanceof Player) {
-			return (Player) event;
+		if(event instanceof User) {
+			return (User) event;
 		}
 		return null;
 	}
 	
-	public boolean isAdmin() {
-		if (isOperator()){
-			return true;
+	@SuppressWarnings("unchecked")
+	public <T> T getEvent(Class<T> type) throws ClassCastException {	
+		if(type.isAssignableFrom(event.getClass())) {
+			return (T)event;
 		}
-		return DiscordUser.isAdmin(getDiscordAuthor());
+		throw new ClassCastException(event + " cannot be cast to " + type.getCanonicalName());
 	}
 	
-	public boolean isOperator() {
-		return isConsoleMessage() || DiscordUser.isOperator(getDiscordAuthor());
+	public boolean isDiscordContext() {
+		return event instanceof ISnowflake;
+	}
+	
+	public boolean isGuildContext() {
+		return getChannel() instanceof GuildChannel;
+	}
+	
+	public boolean isPrivateContext() {
+		return getChannel() instanceof PrivateChannel;
+	}
+	
+	public String getMention() {
+		if (event instanceof Interaction) {
+			return ((Interaction) event).getUser().getAsMention();
+		}
+		else if (event instanceof User) {
+			return ((User) event).getAsMention();
+		}
+		else {
+			throw new UnsupportedOperationException(event.getClass().getCanonicalName() + " cannot be mentioned!");
+		}
 	}
 	
 	public InteractionHook replyMessage(MessageCreateData messageData) {
@@ -192,85 +139,69 @@ public class CommandContext<E>{
 	}
 	
 	@Deprecated
-	public void sendMessage(String message) {
-		replyMessage(new MessageCreateBuilder().setContent(message).build());
+	public InteractionHook sendMessage(String message) {
+		return replyMessage(new MessageCreateBuilder().setContent(message).build());
 	}
 	
-	public void sendMessage(EmbedBuilder embed) {
-		replyMessage(new MessageCreateBuilder().setEmbeds(embed.build()).build());
+	public InteractionHook  sendMessage(EmbedBuilder embed) {
+		return replyMessage(new MessageCreateBuilder().setEmbeds(embed.build()).build());
 	}
 	
-	public String getMention() {
-		if(isConsoleMessage()) {
-			return "@CONSOLE";
-		}
-		if(isIngameEvent()) {
-			throw new UnsupportedOperationException();
-		}
-		return getDiscordAuthor().getAsMention();
+	public InteractionHook sendMessage(EmbedBuilder embed, boolean ephemeral) {
+		return replyMessage(new MessageCreateBuilder().setEmbeds(embed.build()).build(), ephemeral);
 	}
 	
-	public String getTag() {
-		if(isConsoleMessage()) {
-			return "CONSOLE";
-		}
-		if(isIngameEvent()) {
-			return getPlayerAuthor().toString();
-		}
-		return getDiscordAuthor().getAsTag();
+	public EmbedBuilder constructEmbedResponse(String command) {
+		return constructEmbedResponse(command, null);
 	}
 	
-	public long getSenderId() {
-		if(event instanceof DiscordUser) {
-			return getDiscordAuthor().getIdLong();
-		}
-		if(event instanceof MessageReceivedEvent) {
-			return ((MessageReceivedEvent) event).getAuthor().getIdLong();
-		}
-		if (event instanceof Player) {
-			return ((Player) event).getID();
-		}
-		throw new IllegalStateException(event.getClass().getCanonicalName());
+	public EmbedBuilder constructEmbedResponse(String command, String title) {
+		User user = getAuthor();
+		embedBuilder = new EmbedBuilder();
+		embedBuilder.setAuthor(user.getAsTag(), null, user.getAvatarUrl());
+		embedBuilder.setTimestamp(Instant.now());
+		return embedBuilder;
 	}
 	
-	public Guild getServer() {
-		if(event instanceof MessageReceivedEvent) {
-			if(((MessageReceivedEvent) event).isFromGuild()) {
-				return ((MessageReceivedEvent) event).getGuild();
-			}
+	public MessageChannel getChannel() {
+		if(event instanceof Interaction) {
+			return ((Interaction) event).getMessageChannel();
 		}
-		return null;
-	}
-	
-	public MessageChannelUnion getChannel() {
-		if (event instanceof MessageReceivedEvent) {
+		else if (event instanceof MessageReceivedEvent) {
 			return ((MessageReceivedEvent) event).getChannel();
 		}
 		return null;
 	}
 	
-	public DatabaseConnection getConnection() throws SQLException {
-		return DatabaseConnection.INSTANCE;
+	public EmbedBuilder getEmbed() {
+		return embedBuilder;
 	}
 	
-	@Nullable
-	public Message getMessage() {
+	public Guild getServer() {
+		if(event instanceof Interaction) {
+			return ((Interaction) event).getGuild();
+		}
 		if(event instanceof MessageReceivedEvent) {
-			return ((MessageReceivedEvent) event).getMessage();
+			return ((MessageReceivedEvent) event).getGuild();
 		}
-		
-		return message;
-		
+		return null;
 	}
 	
-	public void deletePromptingMessage(CommandContext deleter, String response) {
-		Message message = getMessage();
-		if(message != null) {
-			message.delete().complete();
-			BotDeleteMessageAudit.addBotDeleteMessageAudit(deleter, this, "User published their registration code.");
-			if(response != null && !response.isEmpty()) {
-				sendMessage(response);
-			}
-		}
+	public boolean isConsoleMessage() {
+		return event instanceof ConsoleUser;
 	}
+	
+	public boolean isAdmin() {
+		return DiscordUser.isOperator(getAuthor());
+	}
+
+	public boolean isOperator() {
+		return DiscordUser.isOperator(getAuthor());
+	}
+
+	public void deletePromptingMessage(ConsoleContext instance, String string) {
+		// TODO Auto-generated method stub
+		
+	}
+
 }

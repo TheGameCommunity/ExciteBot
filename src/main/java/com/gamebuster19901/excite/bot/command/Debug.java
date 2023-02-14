@@ -11,6 +11,7 @@ import com.gamebuster19901.excite.bot.user.DiscordUser;
 import com.gamebuster19901.excite.util.TimeUtils;
 import com.mojang.brigadier.CommandDispatcher;
 
+import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 
@@ -53,9 +54,9 @@ public class Debug {
 								)
 				))
 				.then(Commands.literal("user")
-					.then(Commands.argument("user", DiscordUserArgumentType.user())
+					.then(Commands.argument("user", new DiscordUserArgumentType())
 						.executes((context)	-> {
-							relayUser(context.getSource(), context.getArgument("user", DiscordUser.class));
+							relayUser(context.getSource(), context.getArgument("user", User.class));
 							return 1;
 						})
 					)
@@ -88,8 +89,8 @@ public class Debug {
 		return 1;
 	}
 	
-	public static void relayUser(CommandContext context, DiscordUser user) {
-		context.sendMessage("Your argument appears to be " + user.getIdentifierName());
+	public static void relayUser(CommandContext context, User user) {
+		context.sendMessage("Your argument appears to be " + DiscordUser.toDetailedString(user));
 	}
 	
 	public static void relayPlayer(CommandContext context, Player player) {

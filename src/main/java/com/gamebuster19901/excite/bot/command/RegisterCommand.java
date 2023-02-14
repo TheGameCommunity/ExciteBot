@@ -17,6 +17,8 @@ import com.gamebuster19901.excite.util.StacktraceUtil;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
 
+import net.dv8tion.jda.api.entities.User;
+
 public class RegisterCommand {
 
 	@SuppressWarnings("rawtypes")
@@ -42,12 +44,12 @@ public class RegisterCommand {
 	
 	@SuppressWarnings("rawtypes")
 	private static void requestRegistration(CommandContext context, Player desiredProfile) {
-		DiscordUser discordUser = context.getDiscordAuthor();
+		User discordUser = context.getAuthor();
 		if(context.isConsoleMessage()) {
 			context.sendMessage("This command must be executed from discord.");
 			return;
 		}
-		if(discordUser.requestingRegistration()) {
+		if(DiscordUser.requestingRegistration(discordUser)) {
 			context.sendMessage("You are already trying to register a profile! Please wait until registration is complete or the registration code expires.");
 			return;
 		}
@@ -57,14 +59,14 @@ public class RegisterCommand {
 			return;
 		}
 		
-		String securityCode = discordUser.requestRegistration(desiredProfile);
+		String securityCode = DiscordUser.requestRegistration(discordUser, desiredProfile);
 		sendInfo(context, discordUser, desiredProfile, securityCode);
 	}
 	
 	@SuppressWarnings("rawtypes")
-	private static void sendInfo(CommandContext context, DiscordUser discordUser, Player desiredProfile, String securityCode) {
-		context.getDiscordAuthor().sendMessage(
-				discordUser.getJDAUser().getAsMention() + 
+	private static void sendInfo(CommandContext context, User discordUser, Player desiredProfile, String securityCode) {
+		context.sendMessage(
+				discordUser.getAsMention() + 
 				", you have requested registration of the following profile:\n\n"
 				+ desiredProfile.toFullString() 
 				+ "\n\nRegistration Code: `" + securityCode + "`\n"
@@ -76,7 +78,7 @@ public class RegisterCommand {
 	
 	@SuppressWarnings("rawtypes")
 	private static void registerWii(CommandContext context, String securityCode) {
-		if(context.isGuildMessage()) {
+		if(context.isGuildContext()) {
 			context.deletePromptingMessage(ConsoleContext.INSTANCE, context.getMention() + " - Woah! Send your code to me via direct message! Nobody else should be seeing your registration code!");
 			return;
 		}

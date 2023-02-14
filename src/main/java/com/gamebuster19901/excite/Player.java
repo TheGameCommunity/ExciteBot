@@ -110,27 +110,27 @@ public class Player implements Banee<Player>, Owned<User, Player> {
 		if(discordID != 0) {
 			CommandContext context = new CommandContext(DiscordUser.getUser(discordID));
 			if(context.isOperator()) {
-				suffix = suffix + Emote.getEmote(BOT_OPERATOR);
+				suffix = suffix + Emote.getEmoji(BOT_OPERATOR);
 			}
 			else if(context.isAdmin()) {
-				suffix = suffix + Emote.getEmote(BOT_ADMIN);
+				suffix = suffix + Emote.getEmoji(BOT_ADMIN);
 			}
 		}
 		if(isLegacy()) {
-			suffix += Emote.getEmote(LEGACY);
+			suffix += Emote.getEmoji(LEGACY);
 		}
 		if(isVerified()) {
-			suffix += Emote.getEmote(VERIFIED);
+			suffix += Emote.getEmoji(VERIFIED);
 			if(this.isBanned()) {
 				if(!isOnline()) {
-					suffix += Emote.getEmote(BANNED);
+					suffix += Emote.getEmoji(BANNED);
 				}
 			}
 			return String.format(prefix + " " + name +  " - Discord❲" + getPrettyDiscord() + "❳" + suffix);
 		}
 		else if(this.isBanned()) {
 			if(!isOnline()) {
-				suffix += Emote.getEmote(BANNED);
+				suffix += Emote.getEmoji(BANNED);
 			}
 		}
 		if(!suffix.isEmpty()) {
@@ -149,11 +149,11 @@ public class Player implements Banee<Player>, Owned<User, Player> {
 			suffix += BOT;
 		}
 		if(isLegacy()) {
-			suffix += Emote.getEmote(LEGACY);
+			suffix += Emote.getEmoji(LEGACY);
 		}
 		if(this.isBanned()) {
 			if(!isOnline()) {
-				suffix += Emote.getEmote(BANNED);
+				suffix += Emote.getEmoji(BANNED);
 			}
 		}
 		if(!suffix.isEmpty()) {
@@ -177,27 +177,27 @@ public class Player implements Banee<Player>, Owned<User, Player> {
 		if(discordID != 0) {
 			CommandContext context = new CommandContext(DiscordUser.getUser(discordID));
 			if(context.isOperator()) {
-				suffix = suffix + Emote.getEmote(BOT_OPERATOR);
+				suffix = suffix + Emote.getEmoji(BOT_OPERATOR);
 			}
 			else if(context.isAdmin()) {
-				suffix = suffix + Emote.getEmote(BOT_ADMIN);
+				suffix = suffix + Emote.getEmoji(BOT_ADMIN);
 			}
 		}
 		if(isLegacy()) {
-			suffix += Emote.getEmote(LEGACY);
+			suffix += Emote.getEmoji(LEGACY);
 		}
 		if(isVerified()) {
-			suffix += Emote.getEmote(VERIFIED);
+			suffix += Emote.getEmoji(VERIFIED);
 			if(this.isBanned()) {
 				if(!isOnline()) {
-					suffix += Emote.getEmote(BANNED);
+					suffix += Emote.getEmoji(BANNED);
 				}
 			}
 			return String.format(prefix + " " + name +  " - FC❲" + friendCode +  "❳ - PID❲"  + playerID + "❳ - Discord❲" + getPrettyDiscord() + "❳" + suffix);
 		}
 		else if(this.isBanned()) {
 			if(!isOnline()) {
-				suffix += Emote.getEmote(BANNED);
+				suffix += Emote.getEmoji(BANNED);
 			}
 		}
 		if(!suffix.isEmpty()) {
@@ -210,30 +210,30 @@ public class Player implements Banee<Player>, Owned<User, Player> {
 		String prefix = "";
 		if(isOnline()) {
 			if(isBanned()) {
-				prefix = prefix + Emote.getEmote(BANNED);
+				prefix = prefix + Emote.getEmoji(BANNED);
 			}
 			if(isGlobal()) {
 				if(isSearching()) {
-					prefix = prefix + Emote.getEmote(SEARCHING);
+					prefix = prefix + Emote.getEmoji(SEARCHING);
 				}
 				else {
 					if(isHosting()) {
-						prefix = prefix + Emote.getEmote(HOSTING);
+						prefix = prefix + Emote.getEmoji(HOSTING);
 					}
 					else if (!isBanned()){
-						prefix = prefix + Emote.getEmote(ONLINE);
+						prefix = prefix + Emote.getEmoji(ONLINE);
 					}
 				}
 			}
 			else if (isPrivate()){
 				if(isFriendsList()) {
-					prefix = prefix + Emote.getEmote(FRIENDS_LIST);
+					prefix = prefix + Emote.getEmoji(FRIENDS_LIST);
 				}
 				if(isHosting()) {
-					prefix = prefix + Emote.getEmote(HOSTING_PRIVATE);
+					prefix = prefix + Emote.getEmoji(HOSTING_PRIVATE);
 				}
 				else{
-					prefix = prefix + Emote.getEmote(ONLINE_PRIVATE);
+					prefix = prefix + Emote.getEmoji(ONLINE_PRIVATE);
 				}
 			}
 			else {
@@ -241,7 +241,7 @@ public class Player implements Banee<Player>, Owned<User, Player> {
 			}
 		}
 		else {
-			prefix = prefix + Emote.getEmote(OFFLINE);
+			prefix = prefix + Emote.getEmoji(OFFLINE);
 		}
 		return prefix;
 	}
