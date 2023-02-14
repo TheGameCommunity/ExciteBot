@@ -19,12 +19,11 @@ import javax.security.auth.login.LoginException;
 
 import com.gamebuster19901.excite.bot.DiscordBot;
 import com.gamebuster19901.excite.bot.command.Commands;
-import com.gamebuster19901.excite.bot.command.ConsoleContext;
 import com.gamebuster19901.excite.bot.database.sql.DatabaseConnection;
 import com.gamebuster19901.excite.bot.mail.Mailbox;
 import com.gamebuster19901.excite.bot.user.ConsoleUser;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
-import com.gamebuster19901.excite.bot.user.UnknownDiscordUser;
+import com.gamebuster19901.excite.bot.user.UnknownUser;
 import com.gamebuster19901.excite.util.StacktraceUtil;
 import com.gamebuster19901.excite.util.ThreadService;
 
@@ -35,6 +34,7 @@ import com.mysql.cj.jdbc.exceptions.CommunicationsException;
 import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.entities.Activity.ActivityType;
+import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.exceptions.ErrorResponseException;
 
 public class Main {
@@ -181,9 +181,9 @@ public class Main {
 				discordBot.jda.getPresence().setPresence(OnlineStatus.DO_NOT_DISTURB, Activity.of(ActivityType.WATCHING, "Bot Crashed"));
 				if(botOwner != -1) {
 					try {
-						DiscordUser user = DiscordUser.getDiscordUserIncludingUnknown(ConsoleContext.INSTANCE, botOwner);
-						if(!(user instanceof UnknownDiscordUser)) {
-							user.sendMessage(StacktraceUtil.getStackTrace(t));
+						User user = DiscordUser.getUser(botOwner);
+						if(!(user instanceof UnknownUser)) {
+							DiscordUser.sendMessage(user, StacktraceUtil.getStackTrace(t));
 						}
 						else {
 							CONSOLE.sendMessage(StacktraceUtil.getStackTrace(t));

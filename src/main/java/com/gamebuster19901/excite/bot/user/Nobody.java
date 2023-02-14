@@ -1,6 +1,6 @@
 package com.gamebuster19901.excite.bot.user;
 
-public class Nobody extends UnloadedDiscordUser {
+public class Nobody extends CustomUser {
 
 	public static final Nobody INSTANCE = new Nobody();
 	
@@ -10,6 +10,11 @@ public class Nobody extends UnloadedDiscordUser {
 	
 	@Override
 	public String toString() {
+		return "Nobody";
+	}
+
+	@Override
+	public String getAsMention() {
 		return "Nobody";
 	}
 }

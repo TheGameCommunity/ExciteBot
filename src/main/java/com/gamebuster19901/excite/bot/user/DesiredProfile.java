@@ -6,17 +6,19 @@ import java.util.Random;
 
 import com.gamebuster19901.excite.Player;
 
+import net.dv8tion.jda.api.entities.User;
+
 public class DesiredProfile {
 
 	public static final String validPasswordChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNPQRSTUVWXYZ123456789,.!?";
 	
-	private final DiscordUser requester;
+	private final User requester;
 	private final Player desiredProfile;
 	private final Random random = new Random();
 	private final String registrationCode = generateRegistrationCode();
 	private final Instant registrationTimeout = Instant.now().plus(Duration.ofMinutes(5));
 	
-	public DesiredProfile(DiscordUser requester, Player player) {
+	public DesiredProfile(User requester, Player player) {
 		this.requester = requester;
 		this.desiredProfile = player;
 		if(player.getDiscord() != 0) {
@@ -24,7 +26,7 @@ public class DesiredProfile {
 		}
 	}
 	
-	public DiscordUser getRequester() {
+	public User getRequester() {
 		return requester;
 	}
 	
@@ -45,8 +47,8 @@ public class DesiredProfile {
 	}
 	
 	public void register() {
-		desiredProfile.setDiscord(requester.getID());
-		requester.sendMessage(desiredProfile.toFullString() + " successfully registered!");
+		desiredProfile.setDiscord(requester.getIdLong());
+		DiscordUser.sendMessage(requester, desiredProfile.toFullString() + " successfully registered!");
 	}
 	
 	private final String generateRegistrationCode() {

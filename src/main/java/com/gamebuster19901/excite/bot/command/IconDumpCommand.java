@@ -2,10 +2,11 @@ package com.gamebuster19901.excite.bot.command;
 
 import java.util.List;
 
-import com.gamebuster19901.excite.bot.server.DiscordServer;
+import com.gamebuster19901.excite.Main;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.LongArgumentType;
 
+import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.emoji.RichCustomEmoji;
 
 public class IconDumpCommand {
@@ -24,9 +25,9 @@ public class IconDumpCommand {
 	@SuppressWarnings("rawtypes")
 	public static int sendResponse(CommandContext context, long serverId) {
 		if(context.isOperator()) {
-			DiscordServer server = DiscordServer.getServer(ConsoleContext.INSTANCE, serverId);
+			Guild server = Main.discordBot.jda.getGuildById(serverId);
 			if(server != null && server.isLoaded()) {
-				List<RichCustomEmoji> emotes = server.getGuild().getEmojis();
+				List<RichCustomEmoji> emotes = server.getEmojis();
 				String ret = server.getName() + " has " + emotes.size() + " emotes:\n\n";
 				for(RichCustomEmoji emote : emotes) {
 					ret += emote.getName() + ": " + emote.getAsMention() + "\n";

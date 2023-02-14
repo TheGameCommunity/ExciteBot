@@ -22,7 +22,7 @@ import com.gamebuster19901.excite.bot.database.Table;
 import com.gamebuster19901.excite.bot.database.sql.PreparedStatement;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
 import com.gamebuster19901.excite.bot.user.Nobody;
-import com.gamebuster19901.excite.bot.user.UnknownDiscordUser;
+import com.gamebuster19901.excite.bot.user.UnknownUser;
 import com.gamebuster19901.excite.util.Owned;
 import com.gamebuster19901.excite.util.TimeUtils;
 
@@ -32,7 +32,7 @@ import static com.gamebuster19901.excite.bot.database.Column.*;
 
 import net.dv8tion.jda.api.entities.User;
 
-public class Player implements Banee, Owned<DiscordUser> {
+public class Player implements Banee<Player>, Owned<User, Player> {
 	private static final Logger LOGGER = Logger.getLogger(Player.class.getName());
 	
 	public static final String validFCChars = "1234567890";
@@ -108,7 +108,7 @@ public class Player implements Banee, Owned<DiscordUser> {
 			suffix += BOT;
 		}
 		if(discordID != 0) {
-			CommandContext context = new CommandContext(DiscordUser.getDiscordUserIncludingUnknown(ConsoleContext.INSTANCE, discordID));
+			CommandContext context = new CommandContext(DiscordUser.getUser(discordID));
 			if(context.isOperator()) {
 				suffix = suffix + Emote.getEmote(BOT_OPERATOR);
 			}
@@ -175,7 +175,7 @@ public class Player implements Banee, Owned<DiscordUser> {
 			suffix += BOT;
 		}
 		if(discordID != 0) {
-			CommandContext context = new CommandContext(DiscordUser.getDiscordUserIncludingUnknown(ConsoleContext.INSTANCE, discordID));
+			CommandContext context = new CommandContext(DiscordUser.getUser(discordID));
 			if(context.isOperator()) {
 				suffix = suffix + Emote.getEmote(BOT_OPERATOR);
 			}
@@ -307,14 +307,7 @@ public class Player implements Banee, Owned<DiscordUser> {
 	
 	@SuppressWarnings("deprecation")
 	public boolean isBot() {
-		DiscordUser discordUser = DiscordUser.getDiscordUser(ConsoleContext.INSTANCE, getDiscord());
-		if(discordUser != null) {
-			User user = discordUser.getJDAUser();
-			if(user != null) {
-				return user.isBot();
-			}
-		}
-		return false;
+		return DiscordUser.getUser(getDiscord()).isBot();
 	}
 	
 	public boolean isRedacted() {
@@ -429,11 +422,11 @@ public class Player implements Banee, Owned<DiscordUser> {
 	}
 	
 	@Override
-	public DiscordUser getOwner() {
+	public User getOwner() {
 		try {
 			Result result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, DISCORD_ID, PLAYERS, new Comparison(PLAYER_ID, EQUALS, getID()));
 			if(result.next()) {
-				return DiscordUser.getDiscordUserTreatingUnknownsAsNobody(ConsoleContext.INSTANCE, getDiscord());
+				return DiscordUser.getUser(getDiscord());
 			}
 			return Nobody.INSTANCE;
 		} catch (SQLException e) {
@@ -458,7 +451,7 @@ public class Player implements Banee, Owned<DiscordUser> {
 	}
 	
 	public String getPrettyDiscord() {
-		return DiscordUser.getDiscordUserIncludingUnknown(ConsoleContext.INSTANCE, getDiscord()).toString();
+		return DiscordUser.getUser(getDiscord()).toString();
 	}
 	
 	public void setDiscord(long discordID) {
@@ -475,9 +468,9 @@ public class Player implements Banee, Owned<DiscordUser> {
 	@SuppressWarnings({ "rawtypes" })
 	public Ban ban(CommandContext context, Duration duration, String reason) {
 		Ban ban = Ban.addBan(context, this, reason, duration);
-		DiscordUser discord = DiscordUser.getDiscordUserIncludingUnknown(context, getDiscord());
-		if(!(discord instanceof UnknownDiscordUser)) {
-			discord.sendMessage(context, toString() + " " + reason);
+		User discord = DiscordUser.getUser(getDiscord());
+		if(!(discord instanceof UnknownUser)) {
+			DiscordUser.sendMessage(discord, toString() + " " + reason);
 		}
 		return ban;
 	}
@@ -493,6 +486,12 @@ public class Player implements Banee, Owned<DiscordUser> {
 	@Override
 	public int hashCode() {
 		return (int) getID();
+	}
+	
+
+	@Override
+	public Player asObj() {
+		return this;
 	}
 	
 	@SuppressWarnings("rawtypes")

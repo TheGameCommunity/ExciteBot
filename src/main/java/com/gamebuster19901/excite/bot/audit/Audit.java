@@ -8,7 +8,6 @@ import java.time.Instant;
 
 import org.jetbrains.annotations.Nullable;
 
-import com.gamebuster19901.excite.Main;
 import com.gamebuster19901.excite.bot.command.CommandContext;
 import com.gamebuster19901.excite.bot.database.Comparison;
 import com.gamebuster19901.excite.bot.database.Insertion;
@@ -17,9 +16,12 @@ import com.gamebuster19901.excite.bot.database.Row;
 import com.gamebuster19901.excite.bot.database.Table;
 import com.gamebuster19901.excite.bot.database.sql.PreparedStatement;
 import com.gamebuster19901.excite.bot.database.sql.ResultSet;
+import com.gamebuster19901.excite.bot.user.ConsoleUser;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
 import com.gamebuster19901.excite.util.Identified;
 import com.gamebuster19901.excite.util.TimeUtils;
+
+import net.dv8tion.jda.api.entities.User;
 
 import static com.gamebuster19901.excite.bot.database.Table.AUDITS;
 import static com.gamebuster19901.excite.bot.database.Column.*;
@@ -135,11 +137,11 @@ public class Audit implements Identified{
 	}
 	
 	@SuppressWarnings("rawtypes")
-	public DiscordUser getIssuerDiscord(CommandContext context) {
-		if(getIssuerID() == -1) {
-			return Main.CONSOLE;
+	public User getIssuerDiscord(CommandContext context) {
+		if(getIssuerID() == 0) {
+			return ConsoleUser.getConsoleUser();
 		}
-		return DiscordUser.getDiscordUserIncludingUnknown(context, getIssuerID());
+		return DiscordUser.getUser(getIssuerID());
 	}
 	
 }

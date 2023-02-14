@@ -1,113 +1,51 @@
 package com.gamebuster19901.excite.bot.command.argument;
 
-import com.gamebuster19901.excite.bot.command.Commands;
-import com.gamebuster19901.excite.bot.command.ConsoleContext;
-import com.gamebuster19901.excite.bot.command.CommandContext;
-import com.gamebuster19901.excite.bot.command.exception.ParseExceptions;
-import com.gamebuster19901.excite.bot.user.DiscordUser;
-import com.gamebuster19901.excite.bot.user.Nobody;
-import com.gamebuster19901.excite.bot.user.UnknownDiscordUser;
+import java.util.concurrent.CompletableFuture;
 
-import static com.gamebuster19901.excite.bot.command.argument.UserObtainer.*;
-import static com.gamebuster19901.excite.bot.command.argument.DiscordUserArgumentType.UnknownType.*;
+import com.gamebuster19901.excite.Main;
+import com.gamebuster19901.excite.bot.command.CommandContext;
+import com.gamebuster19901.excite.bot.command.Commands;
+import com.gamebuster19901.excite.bot.command.exception.ParseExceptions;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.brigadier.suggestion.Suggestions;
+import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 
-public class DiscordUserArgumentType implements ArgumentType<DiscordUser> {
+import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.User;
+
+public class DiscordUserArgumentType implements ArgumentType<User>{
 	
-	private UnknownType unknownType = FULLY_KNOWN;
-	private boolean treatUnknownsAsNobody = false;
-	private UserObtainer requiredContext = UNCHANGED;
-	
-	private DiscordUserArgumentType(){}
-	
-	public DiscordUserArgumentType setUnknown(UnknownType unknownType) {
-		unknownType = unknownType;
-		return this;
-	}
-	
-	public DiscordUserArgumentType treatUnknownsAsNobody() {
-		if(unknownType != FULLY_KNOWN) {
-			treatUnknownsAsNobody = true;
-			return this;
-		}
-		else {
-			throw new IllegalStateException("Unknowns are not allowed, allow unknowns before attempting to treat them as nobody.");
-		}
-	}
-	
-	public DiscordUserArgumentType of(UserObtainer type) {
-		requiredContext = type;
-		return this;
-	}
-	
-	public static DiscordUserArgumentType user() {return new DiscordUserArgumentType();}
-	
-	public static DiscordUser getDiscordUser(final com.mojang.brigadier.context.CommandContext<?> context, final String name) {
-		return context.getArgument(name, DiscordUser.class);
+	@Override
+	public <S> User parse(S context, StringReader reader) throws CommandSyntaxException {
+		String s = Commands.readString(reader);
+		long id;
+			if(s.length() > 3) {
+				if(s.startsWith("<@")) {
+					id = Long.parseLong(s.substring(2, s.length() - 1));
+					return Main.discordBot.jda.retrieveUserById(id).complete();
+				}
+			}
+		throw ParseExceptions.DISCORD_NOT_FOUND.create(s);
 	}
 	
 	@Override
-	public <S> DiscordUser parse(S source, StringReader reader) throws CommandSyntaxException {
-		CommandContext context = (CommandContext) source;
-		if(requiredContext == UserObtainer.JDA_ONLY) {
-			source = (S) ConsoleContext.INSTANCE;
-		}
-		if(requiredContext == UserObtainer.GUILD_CHANNEL_ONLY) {
-			if(!(context.isDiscordContext())) {
-				throw ParseExceptions.DISCORD_CONTEXT_REQUIRED.create();
-			}
-			else if (!context.isGuildMessage()) {
-				throw ParseExceptions.DISCORD_CHANNEL_REQUIRED.create();
-			}
-		}
-		String input;
-		if(reader.peek() == '"') {
-			input = Commands.readQuotedString(reader);
-		}
-		else {
-			input = Commands.readString(reader);
-		}
-		DiscordUser[] users = DiscordUser.getDiscordUsersWithUsernameOrID((CommandContext)source, input);
-		if(users.length == 0) {
-			if(unknownType != FULLY_KNOWN) {
-				if(treatUnknownsAsNobody) {
-					return Nobody.INSTANCE;
+	public <S> CompletableFuture<Suggestions> listSuggestions(com.mojang.brigadier.context.CommandContext<S> context, SuggestionsBuilder builder) {
+		CommandContext<?> c = (CommandContext<?>) context.getSource();
+		Guild server = c.getServer();
+		System.err.println(Commands.lastArgOf(builder.getInput()));
+		if(server != null) {
+			server.findMembers((member) -> {
+				return (member.getEffectiveName().toLowerCase() + "#" + member.getUser().getDiscriminator()).startsWith(Commands.lastArgOf(builder.getInput().toLowerCase()));
+			}).onSuccess((foundMembers) -> {
+				for(Member member : foundMembers) {
+					builder.suggest(member.getAsMention());
 				}
-				DiscordUser user = DiscordUser.getDiscordUserIncludingUnknown((CommandContext)source, input);
-				if(unknownType == KNOWN_ID) {
-					if(user instanceof UnknownDiscordUser) {
-						if(!((UnknownDiscordUser) user).hasID() ) {
-							throw ParseExceptions.DISCORD_NOT_FOUND.create(input);
-						}
-					}
-				}
-				return user;
-			}
-			throw ParseExceptions.DISCORD_NOT_FOUND.create(input);
+			});
 		}
-		if(users.length == 1) {
-			return users[0];
-		}
-		throw ParseExceptions.DISCORD_AMBIGUITY.create(input, users);
+		return builder.buildFuture();
 	}
 	
-	public static enum UnknownType {
-		/**
-		 * Username and ID are unknown
-		 */
-		UNKNOWN_ID,
-		
-		/**
-		 * Username is unknown, but ID is known
-		 */
-		KNOWN_ID,
-		
-		/**
-		 * Username and ID are fully known
-		 */
-		FULLY_KNOWN
-	}
-
 }

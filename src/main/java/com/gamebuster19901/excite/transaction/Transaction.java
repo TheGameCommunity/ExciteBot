@@ -1,7 +1,8 @@
 package com.gamebuster19901.excite.transaction;
 
 import com.gamebuster19901.excite.bot.command.CommandContext;
-import com.gamebuster19901.excite.bot.user.DiscordUser;
+
+import net.dv8tion.jda.api.entities.User;
 
 public abstract class Transaction {
 
@@ -20,7 +21,7 @@ public abstract class Transaction {
 		
 	}
 	
-	final DiscordUser balanceHolder;
+	final User balanceHolder;
 	final TransactionType transactionType;
 	final String message;
 	final WalletType wallet;
@@ -29,7 +30,7 @@ public abstract class Transaction {
 	
 	String failureReason;
 	
-	public Transaction(DiscordUser balanceHolder, TransactionType transactionType, String message, WalletType wallet, CurrencyType currency, long amount) {
+	public Transaction(User balanceHolder, TransactionType transactionType, String message, WalletType wallet, CurrencyType currency, long amount) {
 		this.balanceHolder = balanceHolder;
 		this.transactionType = transactionType;
 		this.message = message;
@@ -38,7 +39,7 @@ public abstract class Transaction {
 		this.amount = amount;
 	}
 	
-	public DiscordUser getBalanceHolder() {
+	public User getBalanceHolder() {
 		return balanceHolder;
 	}
 	

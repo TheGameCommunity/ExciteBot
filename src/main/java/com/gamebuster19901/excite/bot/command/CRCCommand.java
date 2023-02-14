@@ -69,14 +69,14 @@ public class CRCCommand {
 		if(context.isOperator()) {
 			if(expected != null) {
 				if(crc.equals(expected)) {
-					context.sendMessage(Emote.getEmote("verified") + fromFile(fromFile) + "`" + data + "` matches " + asHexInfo(expected));
+					context.sendMessage(Emote.getEmoji("verified") + fromFile(fromFile) + "`" + data + "` matches " + asHexInfo(expected));
 				}
 				else {
-					context.sendMessage(Emote.getEmote("banned") + fromFile(fromFile) + "`" + data + "` does not match " + asHexInfo(expected) + ".\n\nThe actual value was " + asHexInfo(crc));
+					context.sendMessage(Emote.getEmoji("banned") + fromFile(fromFile) + "`" + data + "` does not match " + asHexInfo(expected) + ".\n\nThe actual value was " + asHexInfo(crc));
 				}
 			}
 			else {
-				context.sendMessage(Emote.getEmote("info") + fromFile(fromFile) + "`" + data + "` CRCd with polynomial " + asHexInfo(POLYNOMIAL) + " is\n\n" + asHexInfo(crc));
+				context.sendMessage(Emote.getEmoji("info") + fromFile(fromFile) + "`" + data + "` CRCd with polynomial " + asHexInfo(POLYNOMIAL) + " is\n\n" + asHexInfo(crc));
 			}
 		}
 		else {

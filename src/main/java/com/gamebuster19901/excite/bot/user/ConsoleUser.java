@@ -1,88 +1,37 @@
 package com.gamebuster19901.excite.bot.user;
 
-import java.time.Duration;
-import java.util.Set;
-
 import com.gamebuster19901.excite.Main;
-import com.gamebuster19901.excite.Player;
-import com.gamebuster19901.excite.bot.command.CommandContext;
 
-import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.entities.channel.concrete.PrivateChannel;
+import net.dv8tion.jda.api.requests.restaction.CacheRestAction;
 
-public class ConsoleUser extends UnloadedDiscordUser {
+public class ConsoleUser extends CustomUser {
 	
 	public static final long CONSOLE_USER_ID = 0;
 	
 	private final String name = "CONSOLE";
 	
+	@Deprecated
 	public ConsoleUser() {
 		super(CONSOLE_USER_ID);
 	}
-	
-	@Override
-	public String getName() {
-		return toDetailedString();
-	}
-	
-	@Override
-	public User getJDAUser() {
-		throw new AssertionError();
-	}
-	
-	@Override
-	@SuppressWarnings("rawtypes")
-	public Set<Player> getProfiles(CommandContext context) {
-		throw new AssertionError();
-	}
 
 	@Override
-	public void setNotifyThreshold(int threshold) {
-		throw new AssertionError();
+	public String getAsMention() {
+		return "CONSOLE";
 	}
 	
-	@Override
-	public void setNotifyFrequency(Duration frequency) {
-		throw new AssertionError();
-	}
-	
-	@Override
-	public void setNotifyContinuously(boolean continuous) {
-		throw new AssertionError();
-	}
-	
-	@Override
-	public String requestRegistration(Player desiredProfile) {
-		throw new AssertionError();
-	}
-	
-	@Override
-	public boolean requestingRegistration() {
-		throw new AssertionError();
-	}
-	
-	@Override
-	public void sendMessage(String message) {
-		System.out.println(message);
-	}
-	
-	@SuppressWarnings("rawtypes")
-	@Override
-	public void sendMessage(CommandContext context, String message) {
-		System.out.println(message);
-	}
-	
-	@Override
-	public String toString() {
-		return name; 
-	}
-	
-	@Override
-	public String toDetailedString() {
-		return toString();
-	}
-
-	public static final ConsoleUser getConsoleUser() {
+	public static ConsoleUser getConsoleUser() {
 		return Main.CONSOLE;
+	}
+	
+	@Override
+	public CacheRestAction<PrivateChannel> openPrivateChannel() {
+		throw new UnsupportedOperationException();
+	}
+	
+	public void sendMessage(String message) {
+		DiscordUser.sendMessage(this, message);
 	}
 	
 }

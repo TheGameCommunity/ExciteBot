@@ -26,13 +26,14 @@ import com.gamebuster19901.excite.util.Named;
 import com.gamebuster19901.excite.util.Owned;
 
 import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.entities.User;
 
 import static com.gamebuster19901.excite.bot.database.Comparator.*;
 import static com.gamebuster19901.excite.bot.database.Column.*;
 import static com.gamebuster19901.excite.bot.database.Table.WIIS;
 import static com.gamebuster19901.excite.bot.user.DesiredProfile.validPasswordChars;
 
-public class Wii implements Named, Owned<DiscordUser>, ElectronicAddress {
+public class Wii implements Named<Wii>, Owned<User, Wii>, ElectronicAddress {
 	
 	private static final String EMAIL_SUFFIX = "@rc24.xyz";
 	private static final Pattern PATTERN = Pattern.compile("^\\d{16}$");
@@ -48,11 +49,11 @@ public class Wii implements Named, Owned<DiscordUser>, ElectronicAddress {
 		return wiiCode;
 	}
 	
-	public DiscordUser getOwner() {
+	public User getOwner() {
 		try {
 			Result result = Table.selectColumnsFromWhere(ConsoleContext.INSTANCE, DISCORD_ID, WIIS, new Comparison(WII_ID, EQUALS, wiiCode));
 			if(result.next()) {
-				return DiscordUser.getDiscordUserIncludingUnknown(ConsoleContext.INSTANCE, result.getLong(DISCORD_ID));
+				return DiscordUser.getUser(result);
 			}
 			return Nobody.INSTANCE;
 		} catch (SQLException e) {
@@ -83,7 +84,7 @@ public class Wii implements Named, Owned<DiscordUser>, ElectronicAddress {
 	@Override
 	public String getName() {
 		if(wiiCode.isValid) {
-			return Emote.getEmote("wii") + wiiCode.hyphenate();
+			return Emote.getEmoji("wii") + wiiCode.hyphenate();
 		}
 		return wiiCode.toString();
 	}
@@ -153,11 +154,11 @@ public class Wii implements Named, Owned<DiscordUser>, ElectronicAddress {
 		embed.setTitle("Registration Successful");
 		embed.setDescription("You have succesfully registered the following wii:\n\n" + this.getIdentifierName());
 		ElectronicAddress exciteEmail = Mailbox.ADDRESS;
-		owner.sendMessage(embed.build());
+		owner.sendMessage(embed);
 		LinkedHashSet<MailResponse> wiiMail = Mailbox.packResponses(
 				new TextualMailResponse((Wii)exciteEmail, this, null).setText(
 					"This wii has been registered with\n Excitebot.\n" +
-					"registrant: " + owner.getDiscordAuthor().getIdentifierName() + "\n\n" +
+					"registrant: " + DiscordUser.toDetailedString(getOwner()) + "\n\n" +
 					"If this is not you, contact a TCG\nadmin immediately.\n\n" +
 					"-The Game Community"
 				)
@@ -256,6 +257,11 @@ public class Wii implements Named, Owned<DiscordUser>, ElectronicAddress {
 	@Override
 	public String getType() {
 		return "rfc822";
+	}
+
+	@Override
+	public Wii asObj() {
+		return this;
 	}
 	
 }

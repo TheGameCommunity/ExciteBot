@@ -50,8 +50,7 @@ public class ArchiveCommand {
 					source.sendMessage("Usage: archive <TextChannels>");
 					return 1;
 				}
-				DiscordServer server = source.getServer();
-				Guild guild = server.getGuild();
+				Guild guild = source.getServer();
 				Member member = DiscordUser.getMember(source.getDiscordAuthor(), server);
 				HashSet<TextChannel> channelsToArchive = getChannels(source, guild, Arrays.asList(argument.split(" ")));
 				for(TextChannel channel : channelsToArchive) {
@@ -136,12 +135,12 @@ public class ArchiveCommand {
 							if(currentStatus == COMPLETE) {
 								embed.setColor(Color.GREEN);
 								embed.setTitle("Archive complete");
-								source.sendMessage(source.getDiscordAuthor().getJDAUser().getAsMention() + " Archive complete.");
+								source.sendMessage(source.getDiscordAuthor().getAsMention() + " Archive complete.");
 							}
 							else {
 								embed.setColor(Color.RED);
 								embed.setTitle("Archive failed");
-								source.sendMessage(source.getDiscordAuthor().getJDAUser().getAsMention() + " Archive FAILED.");
+								source.sendMessage(source.getDiscordAuthor().getAsMention() + " Archive FAILED.");
 							}
 							message.editMessageEmbeds(embed.build()).complete();
 						}});

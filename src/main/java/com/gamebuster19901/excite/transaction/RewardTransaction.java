@@ -3,12 +3,14 @@ package com.gamebuster19901.excite.transaction;
 import com.gamebuster19901.excite.bot.command.CommandContext;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
 
+import net.dv8tion.jda.api.entities.User;
+
 import static com.gamebuster19901.excite.transaction.CurrencyType.*;
 import static com.gamebuster19901.excite.transaction.Transaction.WalletType.*;
 
 public class RewardTransaction extends Transaction {
 
-	public RewardTransaction(DiscordUser balanceHolder, String message, WalletType wallet, CurrencyType currency, long amount) {
+	public RewardTransaction(User balanceHolder, String message, WalletType wallet, CurrencyType currency, long amount) {
 		super(balanceHolder, TransactionType.REWARD, message, wallet, currency, amount);
 	}
 
@@ -26,12 +28,12 @@ public class RewardTransaction extends Transaction {
 			failureReason = "balanceHolder is null?!";
 			return false;
 		}
-		if(balanceHolder.getJDAUser().isBot()) {
-			failureReason = balanceHolder.getIdentifierName() + " is a bot.";
+		if(balanceHolder.isBot()) {
+			failureReason = DiscordUser.toDetailedString(balanceHolder) + " is a bot.";
 			return false;
 		}
-		if(balanceHolder.isBanned()) {
-			failureReason = balanceHolder.getIdentifierName() + " is banned.";
+		if(DiscordUser.isBanned(balanceHolder)) {
+			failureReason = DiscordUser.toDetailedString(balanceHolder) + " is banned.";
 			return false;
 		}
 		return true;
@@ -39,14 +41,15 @@ public class RewardTransaction extends Transaction {
 
 	@Override
 	public String getAuditMessage(CommandContext context) {
+		String user = DiscordUser.toDetailedString(balanceHolder);
 		if(context.isConsoleMessage()) {
-			return balanceHolder.getIdentifierName() + " was rewarded " + amount + " " + currency + " into their " + wallet + " wallet because they " + message;
+			return user + " was rewarded " + amount + " " + currency + " into their " + wallet + " wallet because they " + message;
 		}
 		else {
 			if(message == null || message.isEmpty()) {
-				return context.getAuthor().getIdentifierName() + " awarded " + amount + " " + currency + " into the " + wallet + " wallet of " + balanceHolder.getIdentifierName();
+				return context.getAuthor().getIdentifierName() + " awarded " + amount + " " + currency + " into the " + wallet + " wallet of " + user;
 			}
-			return context.getAuthor().getIdentifierName() + " awarded " + amount + " " + currency + " into the " + wallet + " wallet of " + balanceHolder.getIdentifierName() + " because they " + message;
+			return context.getAuthor().getIdentifierName() + " awarded " + amount + " " + currency + " into the " + wallet + " wallet of " + user + " because they " + message;
 		}
 	}
 

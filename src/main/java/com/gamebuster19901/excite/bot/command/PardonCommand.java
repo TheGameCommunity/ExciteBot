@@ -5,7 +5,6 @@ import com.gamebuster19901.excite.bot.audit.ban.Ban;
 import com.gamebuster19901.excite.bot.audit.ban.Banee;
 import com.gamebuster19901.excite.bot.audit.ban.Pardon;
 import com.gamebuster19901.excite.bot.command.argument.DiscordUserArgumentType;
-import com.gamebuster19901.excite.bot.command.argument.DiscordUserArgumentType.UnknownType;
 import com.gamebuster19901.excite.bot.command.argument.PlayerArgumentType;
 import com.gamebuster19901.excite.bot.command.argument.UserObtainer;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
@@ -22,10 +21,10 @@ public class PardonCommand {
 				
 			.then(Commands.argument("discord", DiscordUserArgumentType.user().of(UserObtainer.UNCHANGED).setUnknown(UnknownType.KNOWN_ID))
 				.executes((context) -> {
-					return pardon(context.getSource(), context.getArgument("discord", DiscordUser.class));
+					return pardon(context.getSource(), context.getArgument("discord", User.class));
 				})	
 			).then(Commands.argument("banID", LongArgumentType.longArg()).executes((context) -> {
-				return pardon(context.getSource(), context.getArgument("discord", DiscordUser.class), context.getArgument("banID", Long.class));
+				return pardon(context.getSource(), Banee.of(context.getArgument("discord", User.class)), context.getArgument("banID", Long.class));
 			}))
 			
 			.then(Commands.argument("player", PlayerArgumentType.player().allowUnknown())

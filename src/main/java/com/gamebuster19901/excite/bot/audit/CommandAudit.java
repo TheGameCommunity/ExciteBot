@@ -48,7 +48,7 @@ public class CommandAudit extends Audit {
 			}
 			else {
 				serverName = context.getServer().getName();
-				serverID = context.getServer().getID();
+				serverID = context.getServer().getIdLong();
 				channelName = context.getChannel().getName();
 				channelID = context.getChannel().getIdLong();
 				messageID = context.getMessage().getIdLong();

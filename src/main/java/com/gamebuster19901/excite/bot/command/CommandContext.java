@@ -8,23 +8,29 @@ import com.gamebuster19901.excite.Main;
 import com.gamebuster19901.excite.Player;
 import com.gamebuster19901.excite.bot.audit.BotDeleteMessageAudit;
 import com.gamebuster19901.excite.bot.database.sql.DatabaseConnection;
-import com.gamebuster19901.excite.bot.server.DiscordServer;
 import com.gamebuster19901.excite.bot.user.ConsoleUser;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
 import com.gamebuster19901.excite.bot.user.Nobody;
-import com.gamebuster19901.excite.util.MessageUtil;
 import com.gamebuster19901.excite.util.Named;
 
+import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.MessageEmbed;
+import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.channel.concrete.NewsChannel;
 import net.dv8tion.jda.api.entities.channel.concrete.PrivateChannel;
 import net.dv8tion.jda.api.entities.channel.concrete.ThreadChannel;
 import net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel;
-import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 import net.dv8tion.jda.api.entities.channel.middleman.StandardGuildMessageChannel;
 import net.dv8tion.jda.api.entities.channel.unions.MessageChannelUnion;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
+import net.dv8tion.jda.api.interactions.InteractionHook;
+import net.dv8tion.jda.api.interactions.callbacks.IMessageEditCallback;
+import net.dv8tion.jda.api.interactions.callbacks.IReplyCallback;
+import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
+import net.dv8tion.jda.api.utils.messages.MessageCreateData;
+import net.dv8tion.jda.api.utils.messages.MessageEditBuilder;
+import net.dv8tion.jda.api.utils.messages.MessageEditData;
 
 public class CommandContext<E>{
 	
@@ -32,7 +38,7 @@ public class CommandContext<E>{
 	private AbnormalMessage message;
 	
 	public CommandContext(E e) {
-		if(e instanceof MessageReceivedEvent || e instanceof DiscordUser || e instanceof Player) {
+		if(e instanceof MessageReceivedEvent || e instanceof User || e instanceof Player) {
 			this.event = e;
 		}
 		else {
@@ -90,13 +96,13 @@ public class CommandContext<E>{
 		return event;
 	}
 	
-	public Named getAuthor() {
-		Named author = null;
+	public Named<?> getAuthor() {
+		Named<?> author = null;
 		if(isIngameEvent()) {
 			author = getPlayerAuthor();
 		}
 		else if (isDiscordContext() || isConsoleMessage()) {
-			author = getDiscordAuthor();
+			author = Named.of(getDiscordAuthor());
 		}
 		if(author == null) {
 			throw new AssertionError(author + " is not from ingame, discord, or the console?!");
@@ -104,12 +110,9 @@ public class CommandContext<E>{
 		return author;
 	}
 	
-	public DiscordUser getDiscordAuthor() {
+	public User getDiscordAuthor() {
 		if(event instanceof MessageReceivedEvent) {
-			return DiscordUser.getDiscordUser(ConsoleContext.INSTANCE, ((MessageReceivedEvent)event).getMessage().getAuthor().getIdLong());
-		}
-		else if (event instanceof DiscordUser) {
-			return (DiscordUser) event;
+			return ((MessageReceivedEvent) event).getAuthor();
 		}
 		return Nobody.INSTANCE;
 	}
@@ -125,55 +128,76 @@ public class CommandContext<E>{
 		if (isOperator()){
 			return true;
 		}
-		return getDiscordAuthor().isAdmin();
+		return DiscordUser.isAdmin(getDiscordAuthor());
 	}
 	
 	public boolean isOperator() {
-		return isConsoleMessage() || getDiscordAuthor().isOperator();
+		return isConsoleMessage() || DiscordUser.isOperator(getDiscordAuthor());
 	}
 	
-	public Message sendMessage(MessageEmbed message) {
-		if(isDiscordContext()) {
-			return ((MessageReceivedEvent)event).getChannel().sendMessageEmbeds(message).complete();
-		}
-		else if (isConsoleMessage()) {
-			throw new UnsupportedOperationException("Cannot send an embed to the console");
-		}
-		else if (event instanceof DiscordUser) {
-			return ((DiscordUser) event).sendMessage(message);
-		}
-		else if(isIngameEvent()) {
-			throw new UnsupportedOperationException();
-		}
-		return null;
+	public InteractionHook replyMessage(MessageCreateData messageData) {
+		return replyMessage(messageData, false);
 	}
 	
-	public void sendMessage(MessageChannel channel, String message) {
-		if(isIngameEvent()) {
-			throw new UnsupportedOperationException();
+	public InteractionHook replyMessage(MessageCreateData messageData, boolean ephemeral) {
+		if(event instanceof IReplyCallback) {
+			return ((IReplyCallback) event).reply(messageData).setEphemeral(ephemeral).complete();
 		}
-		channel.sendMessage(message).complete();
+		else if(event instanceof MessageReceivedEvent) {
+			((MessageReceivedEvent) event).getChannel().sendMessage(messageData);
+			return null;
+		}
+		else if(event instanceof User) {
+			if(event instanceof ConsoleUser) {
+				System.out.println(messageData.getContent());
+			}
+			else {
+				PrivateChannel channel = ((User)event).openPrivateChannel().complete();
+				channel.sendMessage(messageData).queue();
+			}
+			return null;
+		}
+		else {
+			throw new UnsupportedOperationException("Cannot reply to a " + event.getClass().getCanonicalName());
+		}
 	}
 	
+	public void replyMessage(String message) {
+		if(message.length() > 2000) {
+			message = message.substring(0, 2000);
+		}
+		replyMessage(new MessageCreateBuilder().setContent(message).build(), false);
+	}
+	
+	public void editMessage(MessageEditData messageEdit) {
+		if(event instanceof IMessageEditCallback) {
+			((IMessageEditCallback) event).editMessage(messageEdit);
+		}
+		else {
+			replyMessage(MessageCreateData.fromEditData(messageEdit));
+		}
+	}
+	
+	public void editMessage(String message) {
+		editMessage(new MessageEditBuilder().closeFiles().clear().setContent(message).build());
+	}
+	
+	public void editMessage(String message, boolean clear) {
+		if(!clear) {
+			editMessage(new MessageEditBuilder().setContent(message).build());
+		}
+		else {
+			editMessage(message);
+		}
+	}
+	
+	@Deprecated
 	public void sendMessage(String message) {
-		if(isDiscordContext()) {
-			if(event instanceof MessageReceivedEvent) {
-				for(String submessage : MessageUtil.toMessages(message)) {
-					((MessageReceivedEvent)event).getChannel().sendMessage(submessage).complete();
-				}
-			}
-		}
-		else if (event instanceof DiscordUser) {
-			for(String submessage : MessageUtil.toMessages(message)) {
-				((DiscordUser) event).sendMessage(submessage);
-			}
-		}
-		else if (isConsoleMessage()) {
-			System.out.println(message);
-		}
-		if(isIngameEvent()) {
-			throw new UnsupportedOperationException();
-		}
+		replyMessage(new MessageCreateBuilder().setContent(message).build());
+	}
+	
+	public void sendMessage(EmbedBuilder embed) {
+		replyMessage(new MessageCreateBuilder().setEmbeds(embed.build()).build());
 	}
 	
 	public String getMention() {
@@ -183,7 +207,7 @@ public class CommandContext<E>{
 		if(isIngameEvent()) {
 			throw new UnsupportedOperationException();
 		}
-		return getDiscordAuthor().getJDAUser().getAsMention();
+		return getDiscordAuthor().getAsMention();
 	}
 	
 	public String getTag() {
@@ -193,12 +217,12 @@ public class CommandContext<E>{
 		if(isIngameEvent()) {
 			return getPlayerAuthor().toString();
 		}
-		return getDiscordAuthor().getJDAUser().getAsTag();
+		return getDiscordAuthor().getAsTag();
 	}
 	
 	public long getSenderId() {
 		if(event instanceof DiscordUser) {
-			return getDiscordAuthor().getID();
+			return getDiscordAuthor().getIdLong();
 		}
 		if(event instanceof MessageReceivedEvent) {
 			return ((MessageReceivedEvent) event).getAuthor().getIdLong();
@@ -209,10 +233,10 @@ public class CommandContext<E>{
 		throw new IllegalStateException(event.getClass().getCanonicalName());
 	}
 	
-	public DiscordServer getServer() {
+	public Guild getServer() {
 		if(event instanceof MessageReceivedEvent) {
 			if(((MessageReceivedEvent) event).isFromGuild()) {
-				return DiscordServer.getServer(ConsoleContext.INSTANCE, ((MessageReceivedEvent)event).getMessage().getGuild().getIdLong());
+				return ((MessageReceivedEvent) event).getGuild();
 			}
 		}
 		return null;

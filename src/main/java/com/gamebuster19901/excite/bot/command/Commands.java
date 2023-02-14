@@ -1,10 +1,7 @@
 package com.gamebuster19901.excite.bot.command;
 
-import org.apache.commons.lang3.StringUtils;
-
 import com.gamebuster19901.excite.Main;
 import com.gamebuster19901.excite.bot.audit.CommandAudit;
-import com.gamebuster19901.excite.bot.user.DiscordUser;
 import com.gamebuster19901.excite.util.StacktraceUtil;
 
 import com.mojang.brigadier.CommandDispatcher;
@@ -14,13 +11,10 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 
-import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
-
 @SuppressWarnings("rawtypes")
 public class Commands {
 	private final CommandDispatcher<CommandContext> dispatcher = new CommandDispatcher<>();
 	public static final Commands DISPATCHER = new Commands();
-	public static final String DEFAULT_PREFIX = "!";
 	
 	public Commands() {
 		OnlineCommand.register(dispatcher);
@@ -63,45 +57,6 @@ public class Commands {
 		}
 	}
 	
-	public void handleCommand(MessageReceivedEvent e) {
-		CommandContext<MessageReceivedEvent> context = new CommandContext<MessageReceivedEvent>(e);
-		try {
-			String message = e.getMessage().getContentRaw();
-			String prefix = "";
-			if(context.isGuildMessage()) {
-				prefix = context.getServer().getPrefix();
-			}
-			if(message.startsWith(prefix)) {
-				message = StringUtils.replaceOnce(message, prefix, "");
-				DiscordUser sender = DiscordUser.getDiscordUser(ConsoleContext.INSTANCE, e.getAuthor().getIdLong());
-				if(!sender.isBanned()) {
-					if(!sender.isBanned()) {
-						CommandAudit.addCommandAudit(context, message);
-						this.dispatcher.execute(message, context);
-					}
-				}
-			}
-		}
-		catch (CommandSyntaxException ex) {
-			if(ex.getMessage() != null && !ex.getMessage().startsWith("Unknown command at position")) {
-				context.sendMessage(ex.getClass() + " " + ex.getMessage());
-			}
-		}
-		catch(Throwable t) {
-			if(t instanceof StackOverflowError) {
-				context.sendMessage(t.getClass().getCanonicalName());
-				throw t;
-			}
-			context.sendMessage(StacktraceUtil.getStackTrace(t));
-			if(!context.isConsoleMessage()) {
-				t.printStackTrace();
-			}
-			if(t instanceof Error) {
-				throw t;
-			}
-		}
-	}
-	
 	public static LiteralArgumentBuilder<CommandContext> literal(String name) {
 		return LiteralArgumentBuilder.literal(name);
 	}
@@ -112,21 +67,6 @@ public class Commands {
 	
 	public CommandDispatcher<CommandContext> getDispatcher() {
 		return this.dispatcher;
-	}
-	
-	public boolean setPrefix(CommandContext context, String prefix) {
-		if(context.isAdmin() && context.isGuildMessage() && isValidPrefix(prefix)) {
-			context.getServer().setPrefix(prefix);
-			return true;
-		}
-		return false;
-	}
-	
-	public String getPrefix(CommandContext context) {
-		if(context.isGuildMessage()) {
-			return context.getServer().getPrefix();
-		}
-		return DEFAULT_PREFIX;
 	}
 	
 	public static boolean isValidPrefix(String prefix) {
@@ -172,6 +112,13 @@ public class Commands {
 			throw CommandSyntaxException.BUILT_IN_EXCEPTIONS.readerExpectedEndOfQuote().createWithContext(reader);
 		}
 		return ret.toString();
+	}
+	
+	public static String lastArgOf(String command) {
+		if(command.indexOf(' ') > 0) {
+			return command.substring(command.lastIndexOf(' ') + 1);
+		}
+		return "";
 	}
 	
 }

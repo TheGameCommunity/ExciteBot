@@ -6,15 +6,17 @@ import static com.gamebuster19901.excite.transaction.Transaction.WalletType.WII;
 import com.gamebuster19901.excite.bot.command.CommandContext;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
 
+import net.dv8tion.jda.api.entities.User;
+
 public class RedeemTransaction extends Transaction {
 
-	public RedeemTransaction(DiscordUser balanceHolder, String message, long amount) {
+	public RedeemTransaction(User balanceHolder, String message, long amount) {
 		super(balanceHolder, TransactionType.REDEEM, message, WalletType.DISCORD, CurrencyType.STARS, amount);
 	}
 
 	@Override
 	public String getAuditMessage(CommandContext context) {
-		return balanceHolder.getIdentifierName() + " redeemed " + amount + " " + currency;
+		return DiscordUser.toDetailedString(balanceHolder) + " redeemed " + amount + " " + currency;
 	}
 
 	@Override
@@ -31,15 +33,15 @@ public class RedeemTransaction extends Transaction {
 			failureReason = "balanceHolder is null?!";
 			return false;
 		}
-		if(balanceHolder.getJDAUser().isBot()) {
-			failureReason = balanceHolder.getIdentifierName() + " is a bot.";
+		if(balanceHolder.isBot()) {
+			failureReason = DiscordUser.toDetailedString(balanceHolder) + " is a bot.";
 			return false;
 		}
-		if(balanceHolder.isBanned()) {
-			failureReason = balanceHolder.getIdentifierName() + " is banned.";
+		if(DiscordUser.isBanned(balanceHolder)) {
+			failureReason = DiscordUser.toDetailedString(balanceHolder) + " is banned.";
 			return false;
 		}
-		if(balanceHolder.getBalance(CurrencyType.STARS) <= amount) {
+		if(DiscordUser.getBalance(balanceHolder, CurrencyType.STARS) <= amount) {
 			failureReason = "Insufficient Funds.";
 			return false;
 		}

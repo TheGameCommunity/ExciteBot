@@ -13,6 +13,8 @@ import com.gamebuster19901.excite.bot.database.Table;
 import com.gamebuster19901.excite.bot.database.sql.PreparedStatement;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
 
+import net.dv8tion.jda.api.entities.User;
+
 import static com.gamebuster19901.excite.bot.database.Column.*;
 import static com.gamebuster19901.excite.bot.database.Table.*;
 import static com.gamebuster19901.excite.bot.database.Comparator.*;
@@ -26,14 +28,14 @@ public class RankChangeAudit extends Audit {
 	}
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public static RankChangeAudit addRankChange(CommandContext context, DiscordUser promotee, String rank, boolean added) {
+	public static RankChangeAudit addRankChange(CommandContext context, User promotee, String rank, boolean added) {
 		Audit parent = Audit.addAudit(ConsoleContext.INSTANCE, context, AuditType.RANK_CHANGE_AUDIT, getMessage(context, new CommandContext(promotee), rank, added));
 		
 		PreparedStatement st;
 		try {
 			st = Insertion.insertInto(AUDIT_RANK_CHANGES)
 			.setColumns(AUDIT_ID, PROMOTEE, PROMOTEE_ID)
-			.to(parent.getID(), promotee, promotee.getID())
+			.to(parent.getID(), promotee, promotee.getIdLong())
 			.prepare(ConsoleContext.INSTANCE, true);
 			
 			st.execute();
@@ -53,11 +55,11 @@ public class RankChangeAudit extends Audit {
 	}
 	
 	@SuppressWarnings("rawtypes")
-	private static final String getMessage(CommandContext promoter, CommandContext<DiscordUser> promotee, String rank, boolean added) {
+	private static final String getMessage(CommandContext promoter, CommandContext<User> promotee, String rank, boolean added) {
 		if(added) {
-			return promoter.getDiscordAuthor().toDetailedString() + " made " + promotee.getDiscordAuthor().toDetailedString() + " a bot " + rank + " for " + Main.discordBot.getSelfUser().getName();
+			return DiscordUser.toDetailedString(promoter.getDiscordAuthor()) + " made " + DiscordUser.toDetailedString(promotee.getDiscordAuthor()) + " a bot " + rank + " for " + Main.discordBot.getSelfUser().getName();
 		}
-		return promoter.getDiscordAuthor().toDetailedString() + " removed the bot " + rank + " rights from " + promotee.getDiscordAuthor().toDetailedString() + " for " + Main.discordBot.getSelfUser().getName();
+		return DiscordUser.toDetailedString(promoter.getDiscordAuthor()) + " removed the bot " + rank + " rights from " + DiscordUser.toDetailedString(promotee.getDiscordAuthor()) + " for " + Main.discordBot.getSelfUser().getName();
 	}
 	
 }

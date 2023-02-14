@@ -2,6 +2,7 @@ package com.gamebuster19901.excite.bot.command;
 
 import java.time.Duration;
 
+import com.gamebuster19901.excite.bot.user.DiscordUser;
 import com.gamebuster19901.excite.util.TimeUtils;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.BoolArgumentType;
@@ -33,11 +34,11 @@ public class NotifyCommand {
 	private static int setThreshold(CommandContext context, int threshold) {
 		if(!context.isConsoleMessage()) {
 			if(threshold > 0) {
-				context.getDiscordAuthor().setNotifyThreshold(threshold);
+				DiscordUser.setNotifyThreshold(context.getDiscordAuthor(), threshold);
 				context.sendMessage(context.getMention() + ", the player count must now be " + threshold + " or higher for you to be notified");
 			}
 			else if (threshold == -1) {
-				context.getDiscordAuthor().setNotifyThreshold(threshold);
+				DiscordUser.setNotifyThreshold(context.getDiscordAuthor(), threshold);
 				context.sendMessage(context.getMention() + ", you will no longer be notified if players are online.");
 			}
 			else {
@@ -57,7 +58,7 @@ public class NotifyCommand {
 			if(frequency != null) {
 				Duration min = Duration.ofMinutes(5);
 				if(frequency.compareTo(min) >= 0) {
-					context.getDiscordAuthor().setNotifyFrequency(frequency);
+					DiscordUser.setNotifyFrequency(context.getDiscordAuthor(), frequency);
 					context.sendMessage(context.getMention() + ", You will now be notified of online players a maximum of once every " + TimeUtils.readableDuration(frequency));
 				}
 				else {
@@ -77,8 +78,8 @@ public class NotifyCommand {
 	@SuppressWarnings("rawtypes")
 	private static int setContinuous(CommandContext context, boolean continuous) {
 		if(!context.isConsoleMessage()) {
-			context.getDiscordAuthor().setNotifyContinuously(continuous);
-			context.sendMessage(context.getDiscordAuthor().getJDAUser().getAsMention() + ", you have set continuous notifications to " + continuous);
+			DiscordUser.setNotifyContinuously(context.getDiscordAuthor(), continuous);
+			context.sendMessage(context.getDiscordAuthor().getAsMention() + ", you have set continuous notifications to " + continuous);
 		}
 		else {
 			context.sendMessage("This command must be executed from discord");
@@ -88,8 +89,8 @@ public class NotifyCommand {
 	
 	private static int setDetailed(CommandContext context, boolean detailed) {
 		if(!context.isConsoleMessage()) {
-			context.getDiscordAuthor().setSendDetailedPM(detailed);
-			context.sendMessage(context.getDiscordAuthor().getJDAUser().getAsMention() + ", you have set detailed PM messages to " + detailed);
+			DiscordUser.setSendDetailedPM(context.getDiscordAuthor(), detailed);
+			context.sendMessage(context.getDiscordAuthor().getAsMention() + ", you have set detailed PM messages to " + detailed);
 		}
 		else {
 			context.sendMessage("This command must be executed from discord");

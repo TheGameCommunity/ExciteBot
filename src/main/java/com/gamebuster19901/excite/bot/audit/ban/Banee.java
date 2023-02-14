@@ -7,9 +7,14 @@ import com.gamebuster19901.excite.bot.command.CommandContext;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
 import com.gamebuster19901.excite.util.Named;
 
-public interface Banee extends Named {
+import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.User;
+
+public interface Banee<T> extends Named<T> {
 	
 	public String getName();
+	
+	public T asObj();
 	
 	@SuppressWarnings("rawtypes")
 	public default Ban getLongestActiveBan(CommandContext context) {
@@ -26,11 +31,11 @@ public interface Banee extends Named {
 	
 	@SuppressWarnings("rawtypes")
 	public static Banee getBanee(CommandContext context, long id) {
-		DiscordUser discord = DiscordUser.getDiscordUserIncludingUnknown(context, id);
+		User discord = DiscordUser.getUser(id);
 		Player player = Player.getPlayerByID(context, (int) id);
 		
 		if(!player.isKnown()) {
-			return discord;
+			return Banee.of(discord);
 		}
 		return player;
 	}
@@ -38,12 +43,12 @@ public interface Banee extends Named {
 	@Nullable
 	@SuppressWarnings({ "rawtypes", "deprecation" })
 	public static Banee getBanee(CommandContext context, String name) {
-		DiscordUser[] discords = DiscordUser.getDiscordUsersWithUsername(context, name);
+		User[] discords = DiscordUser.getUsers(name);
 		Player[] players = Player.getPlayersByName(context, name);
 		int amount = discords.length + players.length;
 		if(amount == 1) {
 			if(discords.length == 1) {
-				return discords[0];
+				return Banee.of(discords[0]);
 			}
 			return players[0];
 		}
@@ -54,8 +59,8 @@ public interface Banee extends Named {
 			String ret = name + " is ambiguous, please supply an ID instead.\n\nAmbiguities\n\n:";
 			if(discords.length > 0) {
 				ret = ret + "Discord Users:\n";
-				for(DiscordUser discord : discords) {
-					ret = ret + discord.toDetailedString();
+				for(User discord : discords) {
+					ret = ret + DiscordUser.toDetailedString(discord);
 				}
 			}
 			if(players.length > 0) {
@@ -67,6 +72,29 @@ public interface Banee extends Named {
 			context.sendMessage(ret);
 		}
 		return null;
+	}
+	
+	public static Banee<User> of(User user) {
+		return new Banee<User>() {
+			@Override
+			public long getID() {
+				return user.getIdLong();
+			}
+
+			@Override
+			public String getName() {
+				return user.getName() + user.getDiscriminator();
+			}
+
+			@Override
+			public User asObj() {
+				return user;
+			}
+		};
+	}
+	
+	public static Banee<User> of(Member member) {
+		return of(member.getUser());
 	}
 	
 }

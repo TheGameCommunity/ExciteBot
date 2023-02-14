@@ -35,7 +35,7 @@ public class ChannelArgumentType implements ArgumentType<MessageChannel>{
 			if (channel.charAt(0) == '#') {
 				channel = channel.substring(1);
 				channelName = channel;
-				List<GuildChannel> channels = context.getServer().getGuild().getChannels(true);
+				List<GuildChannel> channels = context.getServer().getChannels(true);
 				for(GuildChannel gChannel : channels) {
 					if(gChannel.getName().equals(channelName)) {
 						ret = gChannel;

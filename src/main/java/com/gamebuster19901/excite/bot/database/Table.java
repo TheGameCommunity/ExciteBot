@@ -9,6 +9,8 @@ import com.gamebuster19901.excite.bot.database.sql.PreparedStatement;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
 import com.gamebuster19901.excite.util.StacktraceUtil;
 
+import net.dv8tion.jda.api.entities.User;
+
 import static com.gamebuster19901.excite.bot.database.Column.ALL_COLUMNS;
 
 public enum Table {
@@ -104,14 +106,14 @@ public enum Table {
 	}
 	
 	@SuppressWarnings("rawtypes")
-	public static void addAdmin(CommandContext promoter, DiscordUser user) {
+	public static void addAdmin(CommandContext promoter, User user) {
 		PreparedStatement st = null;
 		try {
-			st = Insertion.insertInto(ADMINS).setColumns(Column.DISCORD_ID).to(user.getID()).prepare(promoter);
+			st = Insertion.insertInto(ADMINS).setColumns(Column.DISCORD_ID).to(user.getIdLong()).prepare(promoter);
 			st.execute();
 			String botName = Main.discordBot.getSelfUser().getAsMention();
-			user.sendMessage("You are now an administrator for " + botName);
-			promoter.sendMessage(user.toDetailedString() + " is now an administrator for " + botName);
+			DiscordUser.sendMessage(user, "You are now an administrator for " + botName);
+			promoter.sendMessage(user.getAsMention() + " is now an administrator for " + botName);
 		} catch (SQLException e) {
 			promoter.sendMessage("Could not make " + user + " a bot administrator: ");
 			promoter.sendMessage(StacktraceUtil.getStackTrace(e));
@@ -123,12 +125,12 @@ public enum Table {
 	}
 	
 	@SuppressWarnings("rawtypes")
-	public static void removeAdmin(CommandContext demoter, DiscordUser user) {
+	public static void removeAdmin(CommandContext demoter, User user) {
 		try {
-			deleteWhere(demoter, Table.ADMINS, new Comparison(Column.DISCORD_ID, Comparator.EQUALS, user.getID()));
+			deleteWhere(demoter, Table.ADMINS, new Comparison(Column.DISCORD_ID, Comparator.EQUALS, user.getIdLong()));
 			String botName = Main.discordBot.getSelfUser().getAsMention();
-			user.sendMessage("You are no longer an administrator for " + botName);
-			demoter.sendMessage(user.toDetailedString() + " is no longer a bot administrator for " + botName);
+			DiscordUser.sendMessage(user, "You are no longer an administrator for " + botName);
+			demoter.sendMessage(user.getAsMention() + " is no longer a bot administrator for " + botName);
 		} catch (SQLException e) {
 			demoter.sendMessage("could not revoke the administrator permissions of " + user);
 			demoter.sendMessage(StacktraceUtil.getStackTrace(e));
@@ -137,14 +139,14 @@ public enum Table {
 	}
 	
 	@SuppressWarnings("rawtypes")
-	public static void addOperator(CommandContext promoter, DiscordUser user) {
+	public static void addOperator(CommandContext promoter, User user) {
 		PreparedStatement st = null;
 		try {
-			st = Insertion.insertInto(OPERATORS).setColumns(Column.DISCORD_ID).to(user.getID()).prepare(promoter);
+			st = Insertion.insertInto(OPERATORS).setColumns(Column.DISCORD_ID).to(user.getIdLong()).prepare(promoter);
 			st.execute();
 			String botName = Main.discordBot.getSelfUser().getAsMention();
-			user.sendMessage("You are now an operator for " + botName);
-			promoter.sendMessage(user.toDetailedString() + " is now an operator for " + botName);
+			DiscordUser.sendMessage(user, "You are now an operator for " + botName);
+			promoter.sendMessage(user.getAsMention() + " is now an operator for " + botName);
 		} catch (SQLException e) {
 			promoter.sendMessage("Could not make " + user + " a bot operator: ");
 			promoter.sendMessage(StacktraceUtil.getStackTrace(e));
@@ -156,12 +158,12 @@ public enum Table {
 	}
 	
 	@SuppressWarnings("rawtypes")
-	public static void removeOperator(CommandContext demoter, DiscordUser user) {
+	public static void removeOperator(CommandContext demoter, User user) {
 		try {
-			deleteWhere(demoter, Table.OPERATORS, new Comparison(Column.DISCORD_ID, Comparator.EQUALS, user.getID()));
+			deleteWhere(demoter, Table.OPERATORS, new Comparison(Column.DISCORD_ID, Comparator.EQUALS, user.getIdLong()));
 			String botName = Main.discordBot.getSelfUser().getAsMention();
-			user.sendMessage("You are no longer an operator for " + botName);
-			demoter.getDiscordAuthor().sendMessage(user.toDetailedString() + " is no longer a bot operator for " + botName);
+			DiscordUser.sendMessage(user, "You are no longer an operator for " + botName);
+			demoter.sendMessage(user.getAsMention() + " is no longer a bot operator for " + botName);
 		} catch (SQLException e) {
 			demoter.sendMessage("could not revoke the operator permissions of " + user);
 			demoter.sendMessage(StacktraceUtil.getStackTrace(e));
