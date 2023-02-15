@@ -17,7 +17,7 @@ public class RestartCommand {
 		if(context.isAdmin()) {
 			try {
 				context.sendMessage("Restarting!");
-				DiscordUser.messageAllAdmins(context.getDiscordAuthor().getAsMention() + " is restarting the bot!");
+				DiscordUser.messageAllAdmins(context.getAuthor().getAsMention() + " is restarting the bot!");
 			}
 			catch (Throwable t) {
 				t.printStackTrace();

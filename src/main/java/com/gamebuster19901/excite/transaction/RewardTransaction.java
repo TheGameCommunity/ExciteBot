@@ -47,9 +47,9 @@ public class RewardTransaction extends Transaction {
 		}
 		else {
 			if(message == null || message.isEmpty()) {
-				return context.getAuthor().getIdentifierName() + " awarded " + amount + " " + currency + " into the " + wallet + " wallet of " + user;
+				return DiscordUser.toDetailedString(context.getAuthor()) + " awarded " + amount + " " + currency + " into the " + wallet + " wallet of " + user;
 			}
-			return context.getAuthor().getIdentifierName() + " awarded " + amount + " " + currency + " into the " + wallet + " wallet of " + user + " because they " + message;
+			return DiscordUser.toDetailedString(context.getAuthor()) + " awarded " + amount + " " + currency + " into the " + wallet + " wallet of " + user + " because they " + message;
 		}
 	}
 

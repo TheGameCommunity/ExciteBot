@@ -52,8 +52,9 @@ public class NameChangeAudit extends Audit {
 	}
 	
 	@SuppressWarnings("rawtypes")
-	private static String getMessage(CommandContext context, String newName) {
-		return context.getPlayerAuthor().getName() + "(" + context.getPlayerAuthor().getID() + ") changed their name to " + newName; 
+	private static String getMessage(CommandContext<?> context, String newName) {
+		Player player = context.getEvent(Player.class);
+		return player.getName() + "(" + player.getID() + ") changed their name to " + newName; 
 	}
 	
 }

@@ -11,6 +11,7 @@ import com.gamebuster19901.excite.bot.database.Insertion;
 import com.gamebuster19901.excite.bot.database.Row;
 import com.gamebuster19901.excite.bot.database.Table;
 import com.gamebuster19901.excite.bot.database.sql.PreparedStatement;
+import com.gamebuster19901.excite.bot.user.DiscordUser;
 
 import static com.gamebuster19901.excite.bot.database.Column.*;
 import static com.gamebuster19901.excite.bot.database.Table.*;
@@ -62,7 +63,7 @@ public class DiscoveryAudit extends Audit {
 		if(context.isConsoleMessage() && automatic) {
 			return player.getIdentifierName();
 		}
-		return context.getAuthor().getIdentifierName() + " added " + player.getIdentifierName();
+		return DiscordUser.toDetailedString(context) + " added " + player.getIdentifierName();
 	}
 	
 }

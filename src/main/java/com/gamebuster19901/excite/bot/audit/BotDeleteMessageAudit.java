@@ -7,6 +7,7 @@ import com.gamebuster19901.excite.bot.database.Insertion;
 import com.gamebuster19901.excite.bot.database.Row;
 import com.gamebuster19901.excite.bot.database.Table;
 import com.gamebuster19901.excite.bot.database.sql.PreparedStatement;
+import com.gamebuster19901.excite.bot.user.DiscordUser;
 
 import static com.gamebuster19901.excite.bot.database.Column.*;
 import static com.gamebuster19901.excite.bot.database.Comparator.*;
@@ -31,7 +32,7 @@ public class BotDeleteMessageAudit extends Audit {
 		try {
 			st = Insertion.insertInto(Table.AUDIT_BOT_MSG_DEL)
 			.setColumns(AUDIT_ID, DISCORD_ID)
-			.to(parent.getID(), deleted.getSenderId())
+			.to(parent.getID(), deleted.getAuthor().getIdLong())
 			.prepare(deleter, true);
 			
 			st.execute();
@@ -51,7 +52,7 @@ public class BotDeleteMessageAudit extends Audit {
 	}
 	
 	private static String getMessage(CommandContext deleter, CommandContext sender, String reason) {
-		return deleter.getAuthor().getIdentifierName() + " deleted a message by " + sender.getAuthor().getIdentifierName() + " due to \"" + reason + "\"";
+		return DiscordUser.toDetailedString(deleter) + " deleted a message by " + DiscordUser.toDetailedString(sender) + " due to \"" + reason + "\"";
 	}
 
 }

@@ -57,9 +57,9 @@ public class RankChangeAudit extends Audit {
 	@SuppressWarnings("rawtypes")
 	private static final String getMessage(CommandContext promoter, CommandContext<User> promotee, String rank, boolean added) {
 		if(added) {
-			return DiscordUser.toDetailedString(promoter.getDiscordAuthor()) + " made " + DiscordUser.toDetailedString(promotee.getDiscordAuthor()) + " a bot " + rank + " for " + Main.discordBot.getSelfUser().getName();
+			return DiscordUser.toDetailedString(promoter) + " made " + DiscordUser.toDetailedString(promotee) + " a bot " + rank + " for " + Main.discordBot.getSelfUser().getName();
 		}
-		return DiscordUser.toDetailedString(promoter.getDiscordAuthor()) + " removed the bot " + rank + " rights from " + DiscordUser.toDetailedString(promotee.getDiscordAuthor()) + " for " + Main.discordBot.getSelfUser().getName();
+		return DiscordUser.toDetailedString(promoter) + " removed the bot " + rank + " rights from " + DiscordUser.toDetailedString(promotee) + " for " + Main.discordBot.getSelfUser().getName();
 	}
 	
 }

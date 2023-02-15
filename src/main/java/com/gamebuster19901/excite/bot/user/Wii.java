@@ -146,7 +146,7 @@ public class Wii implements Named<Wii>, Owned<User, Wii>, ElectronicAddress {
 	}
 	
 	public void register(CommandContext owner) throws SQLException, MessagingException{
-		Table.updateWhere(owner, WIIS, DISCORD_ID, owner.getSenderId(), new Comparison(WII_ID, EQUALS, wiiCode.code));
+		Table.updateWhere(owner, WIIS, DISCORD_ID, owner.getAuthor().getIdLong(), new Comparison(WII_ID, EQUALS, wiiCode.code));
 		Table.updateWhere(owner, WIIS, REGISTRATION_CODE, null, new Comparison(WII_ID, EQUALS, wiiCode.code));
 		WiiRegistrationAudit.addWiiRegistrationAudit(owner, this, false);
 		EmbedBuilder embed = new EmbedBuilder();

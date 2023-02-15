@@ -22,9 +22,9 @@ public class RefundTransaction extends Transaction{
 		}
 		else {
 			if(message == null || message.isEmpty()) {
-				return context.getAuthor().getIdentifierName() + " refunded " + amount + " " + currency + " into the " + wallet + " wallet of " + user;
+				return DiscordUser.toDetailedString(context.getAuthor()) + " refunded " + amount + " " + currency + " into the " + wallet + " wallet of " + user;
 			}
-			return context.getAuthor().getIdentifierName() + " refunded " + amount + " " + currency + " into the " + wallet + " wallet of " + user + " due to " + message;
+			return DiscordUser.toDetailedString(context.getAuthor()) + " refunded " + amount + " " + currency + " into the " + wallet + " wallet of " + user + " due to " + message;
 		}
 	}
 

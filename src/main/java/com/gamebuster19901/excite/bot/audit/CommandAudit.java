@@ -8,6 +8,8 @@ import com.gamebuster19901.excite.bot.database.Row;
 import com.gamebuster19901.excite.bot.database.Table;
 import com.gamebuster19901.excite.bot.database.sql.PreparedStatement;
 
+import net.dv8tion.jda.api.interactions.Interaction;
+
 import static com.gamebuster19901.excite.bot.database.Column.*;
 import static com.gamebuster19901.excite.bot.database.Table.*;
 
@@ -25,7 +27,7 @@ public class CommandAudit extends Audit {
 	}
 	
 	@SuppressWarnings("rawtypes")
-	public static CommandAudit addCommandAudit(CommandContext context, String command) {
+	public static CommandAudit addCommandAudit(CommandContext<?> context, String command) {
 		Audit parent = Audit.addAudit(ConsoleContext.INSTANCE, context, AuditType.COMMAND_AUDIT, command);
 		
 		PreparedStatement st;
@@ -36,22 +38,22 @@ public class CommandAudit extends Audit {
 			String channelName = null;
 			long channelID = 0;
 			long messageID = 0;
-			boolean isGuildMessage = context.isGuildMessage();
-			boolean isPrivateMessage = context.isPrivateMessage();
+			boolean isGuildMessage = context.isGuildContext();
+			boolean isPrivateMessage = context.isPrivateContext();
 			boolean isConsoleMessage = context.isConsoleMessage();
 			boolean isAdmin = context.isAdmin();
 			boolean isOperator = context.isOperator();
 			
 			if(isPrivateMessage || isConsoleMessage) {
-				channelName = context.getDiscordAuthor().getName();
-				channelID = context.getSenderId();
+				channelName = context.getAuthor().getName();
+				channelID = context.getAuthor().getIdLong();
 			}
 			else {
 				serverName = context.getServer().getName();
 				serverID = context.getServer().getIdLong();
 				channelName = context.getChannel().getName();
 				channelID = context.getChannel().getIdLong();
-				messageID = context.getMessage().getIdLong();
+				messageID = context.getEvent(Interaction.class).getIdLong();
 			}
 			
 			st = Insertion.insertInto(AUDIT_COMMANDS)

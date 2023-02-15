@@ -27,21 +27,21 @@ import com.gamebuster19901.excite.util.file.File;
 import com.mysql.cj.exceptions.CJCommunicationsException;
 import com.mysql.cj.exceptions.ConnectionIsClosedException;
 
-public class DatabaseConnection implements Connection {
+public class Database implements Connection {
 
 	public static String SCHEMA;
 	
-	public static DatabaseConnection INSTANCE;
+	public static Database INSTANCE;
 	static {
 		try {
-			INSTANCE = new DatabaseConnection();
+			INSTANCE = new Database();
 		} catch (IOException | SQLException e) {
 			e.printStackTrace();
 		}
 	}
 	private final Connection parent;
 	
-	public DatabaseConnection() throws IOException, SQLException {
+	public Database() throws IOException, SQLException {
 		File file = new File("./mysql.secret");
 		if(file.isSecret()) {
 			List<String> lines = Files.readAllLines(file.toPath());
@@ -52,7 +52,7 @@ public class DatabaseConnection implements Connection {
 		}
 	}
 		
-	public DatabaseConnection(String connectionInfo) throws SQLException {
+	public Database(String connectionInfo) throws SQLException {
 
 		this.parent = DriverManager.getConnection(connectionInfo);
 	}
@@ -99,7 +99,7 @@ public class DatabaseConnection implements Connection {
 					System.err.println("Attempting to recover from database connection failure...");
 					INSTANCE.close();
 					try {
-						INSTANCE = new DatabaseConnection();
+						INSTANCE = new Database();
 						return new PreparedStatement(parent.prepareStatement(sql, ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_READ_ONLY));
 					} catch (IOException | SQLException e1) {
 						throw new Error(e1);

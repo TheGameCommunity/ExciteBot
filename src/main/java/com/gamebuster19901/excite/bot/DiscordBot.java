@@ -6,6 +6,7 @@ import java.io.FileReader;
 import java.io.IOError;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
@@ -14,7 +15,9 @@ import java.util.logging.Logger;
 import javax.security.auth.login.LoginException;
 
 import com.gamebuster19901.excite.Wiimmfi;
-import com.gamebuster19901.excite.bot.database.sql.DatabaseConnection;
+import com.gamebuster19901.excite.bot.command.Commands;
+import com.gamebuster19901.excite.bot.command.argument.GlobalLiteralArgumentBuilder.GlobalLiteralCommandNode;
+import com.gamebuster19901.excite.bot.database.sql.Database;
 import com.gamebuster19901.excite.bot.user.ConsoleUser;
 
 import net.dv8tion.jda.api.JDA;
@@ -23,6 +26,9 @@ import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.entities.Activity.ActivityType;
 import net.dv8tion.jda.api.entities.SelfUser;
+import net.dv8tion.jda.api.interactions.commands.OptionType;
+import net.dv8tion.jda.api.interactions.commands.build.CommandData;
+import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
 import net.dv8tion.jda.api.managers.Presence;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.utils.ChunkingFilter;
@@ -36,6 +42,7 @@ public class DiscordBot {
 	private String botOwner;
 	public final JDA jda;
 	protected Wiimmfi wiimmfi;
+	private boolean dev;
 	
 	public DiscordBot(Wiimmfi wiimmfi, String botOwner, File secretFile) throws LoginException, IOException {
 		this.wiimmfi = wiimmfi;
@@ -48,6 +55,13 @@ public class DiscordBot {
 			JDABuilder builder = JDABuilder.createDefault(secret, GATEWAYS).setMemberCachePolicy(MemberCachePolicy.ALL).setChunkingFilter(ChunkingFilter.ALL);
 			this.jda = builder.build();
 			jda.addEventListener(new EventReceiver());
+			dev = Boolean.parseBoolean(reader.readLine());
+			if(!dev) {
+				
+			}
+			else {
+				setupGlobalCommands();
+			}
 		} 
 		catch (IOException e) {
 			LOGGER.log(Level.SEVERE, e, () -> e.getMessage());
@@ -90,7 +104,7 @@ public class DiscordBot {
 	public void updatePresence() {
 		try {
 			ConsoleUser user = ConsoleUser.getConsoleUser();
-			DatabaseConnection.INSTANCE.isClosed();
+			Database.INSTANCE.isClosed();
 		}
 		catch(IOError | SQLException e) {
 			setNoDB();
@@ -113,6 +127,27 @@ public class DiscordBot {
 	
 	public SelfUser getSelfUser() {
 		return jda.getSelfUser();
+	}
+	
+	private void setupGlobalCommands() {
+		List<CommandData> commands = new ArrayList<>();
+		Commands.DISPATCHER.getDispatcher().getRoot().getChildren().forEach((command) -> {
+			if(!isDev()) {
+				if(command instanceof GlobalLiteralCommandNode) {
+					SlashCommandData data = net.dv8tion.jda.api.interactions.commands.build.Commands.slash(command.getName(), command.getUsageText());
+					if(command.getChildren().size() > 0) {
+						data.addOption(OptionType.STRING, "argument", "argument");
+					}
+					System.out.println("Global: " + command.getUsageText());
+					commands.add(data);
+				}
+			}
+		});
+		this.jda.updateCommands().addCommands(commands).queue();
+	}
+	
+	public boolean isDev() {
+		return dev;
 	}
 	
 }

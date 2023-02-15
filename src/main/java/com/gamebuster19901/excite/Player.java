@@ -74,10 +74,10 @@ public class Player implements Banee<Player>, Owned<User, Player> {
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public static Player addPlayer(CommandContext context, boolean automatic, int playerID, String friendCode, String name) throws SQLException {
+	public static Player addPlayer(CommandContext<?> context, boolean automatic, int playerID, String friendCode, String name) throws SQLException {
 		
-		if(context.getEvent() instanceof UnknownPlayer) {
-			UnknownPlayer player = (UnknownPlayer) context.getEvent();
+		if(context.getEvent(Player.class) instanceof UnknownPlayer) {
+			UnknownPlayer player = context.getEvent(UnknownPlayer.class);
 			player.name = name;
 			player.friendCode = friendCode;
 		}

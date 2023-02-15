@@ -23,6 +23,7 @@ import com.gamebuster19901.excite.bot.command.CommandContext;
 import com.gamebuster19901.excite.bot.database.Comparison;
 import com.gamebuster19901.excite.bot.database.Result;
 import com.gamebuster19901.excite.bot.database.Table;
+import com.gamebuster19901.excite.bot.database.sql.Database;
 import com.gamebuster19901.excite.bot.database.sql.PreparedStatement;
 import com.gamebuster19901.excite.transaction.CurrencyType;
 import com.gamebuster19901.excite.util.TimeUtils;
@@ -64,7 +65,7 @@ public class DiscordUser{
 	private static User addDiscordUser(CommandContext context, long discordID, String name) throws SQLException {
 		PreparedStatement ps = null;
 		try {
-			ps = context.getConnection().prepareStatement("INSERT INTO " + DISCORD_USERS + " (" + DISCORD_ID + ", "+ DISCORD_NAME + ", " + LAST_NOTIFICATION + ") VALUES (?, ?, ?);");
+			ps = Database.INSTANCE.prepareStatement("INSERT INTO " + DISCORD_USERS + " (" + DISCORD_ID + ", "+ DISCORD_NAME + ", " + LAST_NOTIFICATION + ") VALUES (?, ?, ?);");
 			
 			Table.insertValue(ps, 1, discordID);
 			Table.insertValue(ps, 2, name);
@@ -399,6 +400,10 @@ public class DiscordUser{
 		return user.getName() + user.getDiscriminator() + " (" + user.getIdLong() + ")";
 	}
 	
+	public static String toDetailedString(CommandContext context) {
+		return toDetailedString(context.getAuthor());
+	}
+	
 	public static final User getUser(long id) {
 		return Main.discordBot.jda.retrieveUserById(id).complete();
 	}
@@ -458,7 +463,7 @@ public class DiscordUser{
 	
 	public static User[] getAllAdmins() {
 		try {
-			PreparedStatement st = ConsoleContext.INSTANCE.getConnection().prepareStatement("SELECT * FROM discord_users INNER JOIN admins ON(discord_users.discordID = admins.discordID);");
+			PreparedStatement st = Database.INSTANCE.prepareStatement("SELECT * FROM discord_users INNER JOIN admins ON(discord_users.discordID = admins.discordID);");
 			Result results = st.query();
 			int columns = results.getColumnCount();
 			User[] operators = new User[columns];
@@ -474,7 +479,7 @@ public class DiscordUser{
 	
 	public static User[] getAllOperators() {
 		try {
-			PreparedStatement st = ConsoleContext.INSTANCE.getConnection().prepareStatement("SELECT * FROM discord_users INNER JOIN operators ON(discord_users.discordID = operators.discordID);");
+			PreparedStatement st = Database.INSTANCE.prepareStatement("SELECT * FROM discord_users INNER JOIN operators ON(discord_users.discordID = operators.discordID);");
 			Result results = st.query();
 			int columns = results.getColumnCount();
 			User[] operators = new User[columns];

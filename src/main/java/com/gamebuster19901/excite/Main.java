@@ -19,7 +19,7 @@ import javax.security.auth.login.LoginException;
 
 import com.gamebuster19901.excite.bot.DiscordBot;
 import com.gamebuster19901.excite.bot.command.Commands;
-import com.gamebuster19901.excite.bot.database.sql.DatabaseConnection;
+import com.gamebuster19901.excite.bot.database.sql.Database;
 import com.gamebuster19901.excite.bot.mail.Mailbox;
 import com.gamebuster19901.excite.bot.user.ConsoleUser;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
@@ -41,7 +41,7 @@ public class Main {
 	private static final Logger LOGGER = Logger.getLogger(Main.class.getName());
 	public static long botOwner = -1;
 	
-	public static DatabaseConnection database;
+	public static Database database;
 	public static Wiimmfi wiimmfi;
 	public static DiscordBot discordBot;
 	
@@ -96,7 +96,7 @@ public class Main {
 		
 		do {
 			try {
-				DatabaseConnection.INSTANCE = new DatabaseConnection();
+				Database.INSTANCE = new Database();
 			}
 			catch(Throwable t) {
 				System.out.println(t);
@@ -104,7 +104,7 @@ public class Main {
 				Thread.sleep(5000);
 			}
 		}
-		while(DatabaseConnection.INSTANCE == null);
+		while(Database.INSTANCE == null);
 		
 		Throwable prevError = null;
 		Instant nextDiscordPing = Instant.now().minusMillis(1);
@@ -151,17 +151,17 @@ public class Main {
 				catch(Throwable t) {
 					if(t != null && (t instanceof ConnectionIsClosedException || t instanceof CommunicationsException || t instanceof CJCommunicationsException || t instanceof SQLNonTransientConnectionException || (t.getCause() != null && (t.getCause() instanceof IOException || t.getCause() instanceof SQLException || t.getCause() instanceof IOError)))) {
 						System.err.println("Attempting to recover from database connection failure...");
-						DatabaseConnection.INSTANCE.close();
-						DatabaseConnection.INSTANCE = null;
-						while(DatabaseConnection.INSTANCE == null) {
+						Database.INSTANCE.close();
+						Database.INSTANCE = null;
+						while(Database.INSTANCE == null) {
 							discordBot.setNoDB();
 							try {
-								DatabaseConnection.INSTANCE = new DatabaseConnection();
+								Database.INSTANCE = new Database();
 							}
 							catch(Throwable t2) {
 								System.err.println("Attempting to recover from database connection failure...");
 								t2.printStackTrace(System.err);
-								DatabaseConnection.INSTANCE = null;
+								Database.INSTANCE = null;
 							}
 							Thread.sleep(5000);
 						}
@@ -211,13 +211,13 @@ public class Main {
 		return new Wiimmfi();
 	}
 	
-	private static DatabaseConnection startDatabase(String[] args) throws SQLException, IOException {
+	private static Database startDatabase(String[] args) throws SQLException, IOException {
 		for(int i = 0; i < args.length; i++) {
 			if(args[i].equalsIgnoreCase("-dbURL")) {
-				return new DatabaseConnection(args[++i]);
+				return new Database(args[++i]);
 			}
 		}
-		return new DatabaseConnection();
+		return new Database();
 	}
 	
 	private static DiscordBot startDiscordBot(String[] args, Wiimmfi wiimmfi) throws LoginException, IOException {

@@ -5,6 +5,7 @@ import java.sql.SQLException;
 
 import com.gamebuster19901.excite.Main;
 import com.gamebuster19901.excite.bot.command.CommandContext;
+import com.gamebuster19901.excite.bot.database.sql.Database;
 import com.gamebuster19901.excite.bot.database.sql.PreparedStatement;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
 import com.gamebuster19901.excite.util.StacktraceUtil;
@@ -44,14 +45,14 @@ public enum Table {
 	
 	@SuppressWarnings("rawtypes")
 	public static Result selectColumnsFrom(CommandContext context, Column columns, Table table) throws SQLException {
-		PreparedStatement st = context.getConnection().prepareStatement("SELECT " + columns + " FROM " + table);
+		PreparedStatement st = Database.INSTANCE.prepareStatement("SELECT " + columns + " FROM " + table);
 		return st.query();
 	}
 	
 	@SuppressWarnings("rawtypes")
 	public static Result selectColumnsFromWhere(CommandContext context, Column columns, Table table, Comparison comparison) throws SQLException {
 		PreparedStatement st;
-		st = context.getConnection().prepareStatement("SELECT " + columns + " FROM " + table + " WHERE " + comparison);
+		st = Database.INSTANCE.prepareStatement("SELECT " + columns + " FROM " + table + " WHERE " + comparison);
 		comparison.insertValues(st);
 
 		return st.query();
@@ -70,7 +71,7 @@ public enum Table {
 	@SuppressWarnings("rawtypes")
 	public static Result selectAllFromJoinedUsingWhere(CommandContext context, Table mainTable, Table otherTable, Column usingColumn, Comparison comparison) {
 		try {
-			PreparedStatement st = context.getConnection().prepareStatement("SELECT * FROM " + mainTable + " JOIN " + otherTable + " USING (" + usingColumn + ") WHERE " + comparison);
+			PreparedStatement st = Database.INSTANCE.prepareStatement("SELECT * FROM " + mainTable + " JOIN " + otherTable + " USING (" + usingColumn + ") WHERE " + comparison);
 			comparison.insertValues(st);
 			return st.query();
 		} catch (SQLException e) {
@@ -90,7 +91,7 @@ public enum Table {
 	
 	@SuppressWarnings("rawtypes")
 	public static void updateWhere(CommandContext context, Table table, Column parameter, Object value, Comparison comparison) throws SQLException {
-		PreparedStatement st = context.getConnection().prepareStatement("UPDATE " + table + " SET " + parameter + " = ? WHERE " + comparison);
+		PreparedStatement st = Database.INSTANCE.prepareStatement("UPDATE " + table + " SET " + parameter + " = ? WHERE " + comparison);
 		insertValue(st, 1, value);
 		comparison.offset(1);
 		comparison.insertValues(st, 2);
@@ -100,7 +101,7 @@ public enum Table {
 	@SuppressWarnings("rawtypes")
 	public static void deleteWhere(CommandContext context, Table table, Comparison comparison) throws SQLException {
 		PreparedStatement st = null;
-		st = context.getConnection().prepareStatement("DELETE FROM " + table + " WHERE " + comparison);
+		st = Database.INSTANCE.prepareStatement("DELETE FROM " + table + " WHERE " + comparison);
 		comparison.insertValues(st);
 		st.execute();
 	}

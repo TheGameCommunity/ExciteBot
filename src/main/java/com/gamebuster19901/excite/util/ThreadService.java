@@ -90,7 +90,7 @@ public class ThreadService {
 						context.sendMessage("Iterrupted, Emergency Stop!");
 						String stacktrace = StacktraceUtil.getStackTrace(e);
 						context.sendMessage(stacktrace);
-						if(context.getDiscordAuthor() != Main.CONSOLE) {
+						if(context.getAuthor() != Main.CONSOLE) {
 							Main.CONSOLE.sendMessage(stacktrace);
 						}
 						break;

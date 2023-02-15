@@ -2,11 +2,13 @@ package com.gamebuster19901.excite.bot;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 import com.gamebuster19901.excite.Main;
 import com.gamebuster19901.excite.bot.command.CommandContext;
 import com.gamebuster19901.excite.bot.command.Commands;
 import com.gamebuster19901.excite.bot.command.argument.GlobalNode;
+import com.gamebuster19901.excite.bot.command.interaction.Interactions;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
 import com.gamebuster19901.excite.util.StacktraceUtil;
 import com.mojang.brigadier.ParseResults;
@@ -25,7 +27,6 @@ import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
-import net.dv8tion.jda.internal.requests.Route.Interactions;
 
 public class EventReceiver extends ListenerAdapter {
 

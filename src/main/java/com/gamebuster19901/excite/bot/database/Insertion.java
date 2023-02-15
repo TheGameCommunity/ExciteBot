@@ -4,7 +4,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 import com.gamebuster19901.excite.bot.command.CommandContext;
-import com.gamebuster19901.excite.bot.database.sql.DatabaseConnection;
+import com.gamebuster19901.excite.bot.database.sql.Database;
 import com.gamebuster19901.excite.bot.database.sql.PreparedStatement;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
 
@@ -38,10 +38,10 @@ public class Insertion {
 	public PreparedStatement prepare(boolean returnGeneratedKeys) throws SQLException {
 		PreparedStatement ps;
 		if(!returnGeneratedKeys) {
-			ps = DatabaseConnection.INSTANCE.prepareStatement(statementString);
+			ps = Database.INSTANCE.prepareStatement(statementString);
 		}
 		else {
-			ps = DatabaseConnection.INSTANCE.prepareStatement(statementString, Statement.RETURN_GENERATED_KEYS);
+			ps = Database.INSTANCE.prepareStatement(statementString, Statement.RETURN_GENERATED_KEYS);
 		}
 		
 		if(values != null && values.length > 0) {
@@ -59,7 +59,7 @@ public class Insertion {
 		return prepare(returnGeneratedKeys);
 	}
 	
-	public PreparedStatement prepare(DatabaseConnection connection) throws SQLException {
+	public PreparedStatement prepare(Database connection) throws SQLException {
 		return prepare(false);
 	}
 	

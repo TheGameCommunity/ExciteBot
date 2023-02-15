@@ -8,6 +8,7 @@ import com.gamebuster19901.excite.bot.database.Insertion;
 import com.gamebuster19901.excite.bot.database.Row;
 import com.gamebuster19901.excite.bot.database.Table;
 import com.gamebuster19901.excite.bot.database.sql.PreparedStatement;
+import com.gamebuster19901.excite.bot.user.DiscordUser;
 
 import static com.gamebuster19901.excite.bot.database.Table.*;
 
@@ -44,7 +45,7 @@ public class Pardon extends Audit{
 					context.sendMessage(type + " #" + id + " is already pardoned.");
 					return null;
 				}
-				Audit parent = Audit.addAudit(context, PARDON, context.getAuthor().getIdentifierName() + " pardoned " + ban.getBannedUsername());
+				Audit parent = Audit.addAudit(context, PARDON, DiscordUser.toDetailedString(context.getAuthor()) + " pardoned " + ban.getBannedUsername());
 				
 				PreparedStatement st;
 				
