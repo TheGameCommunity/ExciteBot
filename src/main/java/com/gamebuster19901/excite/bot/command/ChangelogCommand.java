@@ -2,6 +2,8 @@ package com.gamebuster19901.excite.bot.command;
 
 import com.mojang.brigadier.CommandDispatcher;
 
+import net.dv8tion.jda.api.utils.messages.MessageCreateData;
+
 public class ChangelogCommand {
 
 	private static final String changelog = 
@@ -33,8 +35,9 @@ public class ChangelogCommand {
 	
 	@SuppressWarnings("rawtypes")
 	private static int message(CommandContext context) {
+		MessageCreateData message = MessageCreateData.fromContent(changelog);
 		if(context.isOperator()) {
-				context.sendMessage(changelog);
+				context.replyMessage(message, false, false);
 		}
 		else {
 			context.sendMessage("You do not have permission to execute this command");
