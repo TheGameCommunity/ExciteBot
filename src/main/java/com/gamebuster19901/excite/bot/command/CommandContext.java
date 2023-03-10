@@ -110,10 +110,14 @@ public class CommandContext<E> {
 	}
 	
 	public void replyMessage(String message) {
+		replyMessage(message, false, false);
+	}
+	
+	public void replyMessage(String message, boolean ephemeral, boolean silent) {
 		if(message.length() > 2000) {
 			message = message.substring(0, 2000);
 		}
-		replyMessage(new MessageCreateBuilder().setContent(message).build(), false, true);
+		replyMessage(new MessageCreateBuilder().setContent(message).build(), ephemeral, silent);
 	}
 	
 	public void editMessage(MessageEditData messageEdit) {

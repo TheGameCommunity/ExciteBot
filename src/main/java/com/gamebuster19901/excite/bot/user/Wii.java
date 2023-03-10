@@ -27,6 +27,7 @@ import com.gamebuster19901.excite.util.Owned;
 
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 
 import static com.gamebuster19901.excite.bot.database.Comparator.*;
 import static com.gamebuster19901.excite.bot.database.Column.*;
@@ -152,9 +153,10 @@ public class Wii implements Named<Wii>, Owned<User, Wii>, ElectronicAddress {
 		EmbedBuilder embed = new EmbedBuilder();
 		embed.setColor(Color.GREEN);
 		embed.setTitle("Registration Successful");
-		embed.setDescription("You have succesfully registered the following wii:\n\n" + this.getIdentifierName());
+		embed.setDescription(owner.getMention() + ", you have succesfully registered the following wii:\n\n" + this.getIdentifierName());
 		ElectronicAddress exciteEmail = Mailbox.ADDRESS;
-		owner.sendMessage(embed);
+		MessageCreateData message = MessageCreateData.fromEmbeds(embed.build());
+		owner.replyMessage(message, true, false);
 		LinkedHashSet<MailResponse> wiiMail = Mailbox.packResponses(
 				new TextualMailResponse((Wii)exciteEmail, this, null).setText(
 					"This wii has been registered with\n Excitebot.\n" +

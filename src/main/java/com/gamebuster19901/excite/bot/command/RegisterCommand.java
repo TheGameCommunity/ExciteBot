@@ -18,6 +18,7 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
 
 import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 
 public class RegisterCommand {
 
@@ -45,17 +46,17 @@ public class RegisterCommand {
 	@SuppressWarnings("rawtypes")
 	private static void requestRegistration(CommandContext context, Player desiredProfile) {
 		User discordUser = context.getAuthor();
-		if(context.isConsoleMessage()) {
-			context.sendMessage("This command must be executed from discord.");
+		if(!context.isDiscordContext()) {
+			context.replyMessage("This command must be executed from discord.");
 			return;
 		}
 		if(DiscordUser.requestingRegistration(discordUser)) {
-			context.sendMessage("You are already trying to register a profile! Please wait until registration is complete or the registration code expires.");
+			context.replyMessage("You are already trying to register a profile! Please wait until registration is complete or the registration code expires.", true, false);
 			return;
 		}
 
 		if(desiredProfile.isBanned()) {
-			context.sendMessage("You cannot register a banned profile.");
+			context.replyMessage("You cannot register a banned profile.", false, false);
 			return;
 		}
 		
@@ -65,24 +66,20 @@ public class RegisterCommand {
 	
 	@SuppressWarnings("rawtypes")
 	private static void sendInfo(CommandContext context, User discordUser, Player desiredProfile, String securityCode) {
-		context.sendMessage(
-				discordUser.getAsMention() + 
+		String text = discordUser.getAsMention() + 
 				", you have requested registration of the following profile:\n\n"
 				+ desiredProfile.toFullString() 
 				+ "\n\nRegistration Code: `" + securityCode + "`\n"
 				+ "Change the profile's username to the registration code, then log in and search for a match.\n\n"
 				+ "Registration may take up to two minutes to complete. The registration code expires after 5 minutes.\n\n"
-				+ "You will receive a reply upon registration completion. Please stay logged in and searching until registration is completed.\n\n"
-				);
+				+ "You will receive a reply upon registration completion. Please stay logged in and searching until registration is completed.\n\n";
+		MessageCreateData message = MessageCreateData.fromContent(text);
+		context.replyMessage(message, true, false);
 	}
 	
 	@SuppressWarnings("rawtypes")
 	private static void registerWii(CommandContext context, String securityCode) {
-		if(context.isGuildContext()) {
-			context.deletePromptingMessage(ConsoleContext.INSTANCE, context.getMention() + " - Woah! Send your code to me via direct message! Nobody else should be seeing your registration code!");
-			return;
-		}
-		if(context.isConsoleMessage()) {
+		if(!context.isDiscordContext()) {
 			context.sendMessage("This command can only be executed in discord");
 			return;
 		}
