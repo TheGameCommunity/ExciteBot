@@ -1,10 +1,22 @@
 package com.gamebuster19901.excite.bot.command;
 
+import java.awt.Color;
+import java.text.SimpleDateFormat;
 import java.time.Duration;
+import java.time.Instant;
+import java.util.Locale;
+import java.util.Set;
+
+import com.gamebuster19901.excite.Player;
+import com.gamebuster19901.excite.bot.user.DiscordUser;
+import com.gamebuster19901.excite.bot.user.Wii;
 import com.gamebuster19901.excite.util.TimeUtils;
 import com.mojang.brigadier.CommandDispatcher;
-import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.tree.LiteralCommandNode;
+
+import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.User;
 
 @SuppressWarnings("rawtypes")
 public class WhoIsCommand {
@@ -17,23 +29,78 @@ public class WhoIsCommand {
 	
 	private static final boolean [] HOURS_ONLY = new boolean[]         {false, false, false, false, true, false, false};
 	
+	private static final SimpleDateFormat DATE = new SimpleDateFormat("yyyy/MM/dd HH:mm z", Locale.ENGLISH);
+	
 	public static void register(CommandDispatcher<CommandContext> dispatcher) {
 		LiteralCommandNode<CommandContext> builder = dispatcher.register(Commands.userGlobal("whois")
-			.then(Commands.argument("player", StringArgumentType.greedyString()).executes((command) -> {
-				return sendResponse(command.getSource(), command.getArgument("player", String.class));
+			.then(Commands.user("user").executes((command) -> {
+				return sendResponse(command.getSource(), command.getArgument("user", User.class));
 			}
 		)));
 		
 		dispatcher.register(Commands.literal("me").executes((command) ->  {
-			return sendResponse(command.getSource(), "" + command.getSource().getAuthor().getIdLong());
+			return sendResponse(command.getSource(), command.getSource().getAuthor());
 		}));
 		
 		dispatcher.register(Commands.literal("wi").redirect(builder));
 	}
 	
 	@SuppressWarnings("serial")
-	public static int sendResponse(CommandContext context, String lookingFor) {
-		//TODO: send response
+	public static int sendResponse(CommandContext context, User user) {
+		if(context.isConsoleMessage() || !context.isDiscordContext()) {
+			context.replyMessage("You cannot execute this command as " + context.getEvent(Object.class).getClass().getSimpleName());
+			return 1;
+		}
+		boolean hasMembers = context.isGuildContext();
+		EmbedBuilder embed = new EmbedBuilder();
+		Member member;
+		embed.setColor(Color.WHITE);
+		Wii[] wiis = DiscordUser.getRegisteredWiis(user);
+		Set<Player> profiles = DiscordUser.getProfiles(context, user);
+		Duration timeOnline = Duration.ZERO;
+		Instant lastOnline = TimeUtils.PLAYER_EPOCH;
+		StringBuilder profileList = new StringBuilder();
+		StringBuilder wiiList = new StringBuilder();
+		for(Player profile : profiles) {
+			profileList.append(profile.toEmbedstring());
+			profileList.append('\n');
+			timeOnline = timeOnline.plus(profile.getOnlineDuration());
+			Instant profileLastOnline = profile.getLastOnline();
+			if(profileLastOnline.isAfter(lastOnline)) {
+				lastOnline = profileLastOnline;
+			}
+		}
+		for(Wii wii : wiis) {
+			wiiList.append(wii.getName());
+			wiiList.append('\n');
+		}
+		if(hasMembers && (member = DiscordUser.getMember(user, context.getServer())) != null) {
+			embed.setColor(member.getColor());
+			embed.setThumbnail(user.getEffectiveAvatarUrl());
+			embed.addField("Username:", user.getName(), false);
+			embed.addField("Discriminator", user.getDiscriminator(), false);
+			//embed.addField("Badges:", "", false);
+			embed.addField("ID:", "" + user.getIdLong(), false);
+			embed.addField("Nickname:", member.getNickname() != null ? member.getNickname() : "##Not Nicknamed##", false);
+			embed.addField("Joined Discord:", DATE.format(member.getTimeCreated().toInstant().toEpochMilli()), false);
+			embed.addField("Joined " + context.getServer().getName() + ":", DATE.format(member.getTimeJoined().toInstant().toEpochMilli()), false);
+			embed.addField("Member for:", readableDuration(TimeUtils.since(member.getTimeJoined().toInstant()), false), false);
+			embed.addField("Time Online:", readableDuration(timeOnline, true), false);
+			embed.addField(profiles.size() + " registered Profiles:", profileList.toString(), false);
+			embed.addField(wiis.length + " registered Wiis:", wiiList.toString(), false);
+		}
+		else {
+			embed.setThumbnail(user.getEffectiveAvatarUrl());
+			embed.addField("Username:", user.getName(), false);
+			embed.addField("Discriminator", user.getDiscriminator(), false);
+			embed.addField("ID:", "" + user.getIdLong(), false);
+			embed.addField("Time Online:", readableDuration(timeOnline, true), false);
+			embed.addField(profiles.size() + " registered Profiles:", profileList.toString(), false);
+			embed.addField(wiis.length + " registered Wiis:", wiiList.toString(), false);
+			embed.appendDescription("For more information, execute this command in a server the user is in.");
+		}
+		embed.setTimestamp(Instant.now());
+		context.sendMessage(embed);
 		return 1;
 	}
 	

@@ -6,6 +6,7 @@ import java.util.regex.Pattern;
 
 import com.gamebuster19901.excite.Main;
 import com.gamebuster19901.excite.bot.audit.CommandAudit;
+import com.gamebuster19901.excite.bot.command.argument.DiscordUserArgumentType;
 import com.gamebuster19901.excite.bot.command.argument.GlobalLiteralArgumentBuilder;
 import com.gamebuster19901.excite.bot.command.argument.suggestion.AnyStringSuggestionProvider;
 import com.gamebuster19901.excite.util.StacktraceUtil;
@@ -18,6 +19,8 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.Suggestion;
+
+import net.dv8tion.jda.api.entities.User;
 
 @SuppressWarnings("rawtypes")
 public class Commands {
@@ -83,6 +86,10 @@ public class Commands {
 	
 	public static GlobalLiteralArgumentBuilder<CommandContext> userGlobal(String name) {
 		return GlobalLiteralArgumentBuilder.literal(name, true);
+	}
+	
+	public static RequiredArgumentBuilder<CommandContext, User> user(String name) {
+		return RequiredArgumentBuilder.argument(name, new DiscordUserArgumentType());
 	}
 	
 	public static <T> RequiredArgumentBuilder<CommandContext, T> argument(String name, ArgumentType<T> type) {

@@ -2,9 +2,8 @@ package com.gamebuster19901.excite.bot.command.argument.suggestion;
 
 import com.mojang.brigadier.Message;
 import com.mojang.brigadier.context.StringRange;
-import com.mojang.brigadier.suggestion.Suggestion;
 
-public class MatchingStringSuggestion extends Suggestion implements MatchingSuggestion {
+public class MatchingStringSuggestion extends MatchingSuggestion<String>{
 
 	public MatchingStringSuggestion(StringRange range, String text) {
 		super(range, text);
@@ -20,6 +19,11 @@ public class MatchingStringSuggestion extends Suggestion implements MatchingSugg
 			return false;
 		}
 		return getText().toLowerCase().endsWith(s.toLowerCase());
+	}
+
+	@Override
+	public String getText() {
+		return getValue();
 	}
 
 }

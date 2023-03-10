@@ -397,11 +397,19 @@ public class DiscordUser{
 
 	
 	public static String toDetailedString(User user) {
-		return user.getName() + user.getDiscriminator() + " (" + user.getIdLong() + ")";
+		return user.getName() + "#" + user.getDiscriminator() + ":(" + user.getIdLong() + ")";
 	}
 	
 	public static String toDetailedString(CommandContext context) {
 		return toDetailedString(context.getAuthor());
+	}
+	
+	public static String toSuggestionString(User user) {
+		return "<@" + toDetailedString(user) + ">";
+	}
+	
+	public static String toSuggestionString(CommandContext context) {
+		return "<@" + toDetailedString(context) + ">";
 	}
 	
 	public static final User getUser(long id) {

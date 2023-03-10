@@ -149,48 +149,14 @@ public class EventReceiver extends ListenerAdapter {
 					else {
 						suggestions.add(completedSuggestion);
 					}
-					
-					//suggestions.add(completedSuggestion);
 				}
 			} catch (InterruptedException | ExecutionException e1) {
 				throw new RuntimeException(e1);
 			}
 			String completedArgs = getCompletedArgs(arguments);
 			List<String> returnedSuggestions = new ArrayList<String>();
-				
+			
 
-			if(suggestions.size() > 25) {
-				suggestions = suggestions.subList(0, 25);
-			}
-			a:
-			{
-			break a;
-			
-			}
-			
-			/*
-			for(int s = 0; s < suggestions.size(); s++) {
-				Suggestion suggestion = suggestions.get(s);
-				StringBuilder returnedSuggestionsBuilder = new StringBuilder();
-				int index = Commands.getMatchingIndex(arguments, suggestion);
-				if(index > -1) {
-					for(int i = 0; i < arguments.size() - 1; i++) {
-						returnedSuggestionsBuilder.append(arguments.get(i));
-						returnedSuggestionsBuilder.append(' ');
-					}
-					returnedSuggestionsBuilder.append(suggestion.getText());
-				}
-				else {
-					for(int i = 0; i < arguments.size(); i++) {
-						returnedSuggestionsBuilder.append(arguments.get(i));
-						returnedSuggestionsBuilder.append(' ');
-					}
-					returnedSuggestionsBuilder.append(suggestion.getText());
-				}
-				returnedSuggestions.add(returnedSuggestionsBuilder.toString());
-			}
-			e.replyChoiceStrings(returnedSuggestions).queue();
-			*/
 			
 			for(Suggestion suggestion : suggestions) {
 				if(suggestion instanceof MatchingSuggestion) {
@@ -205,6 +171,10 @@ public class EventReceiver extends ListenerAdapter {
 				else {
 					returnedSuggestions.add(completedArgs + " " + suggestion.getText());
 				}
+			}
+			
+			if(returnedSuggestions.size() > 25) {
+				returnedSuggestions = returnedSuggestions.subList(0, 25);
 			}
 			
 			e.replyChoiceStrings(returnedSuggestions).queue();
