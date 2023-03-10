@@ -13,13 +13,13 @@ public class ChangelogCommand {
 			"\n" + 
 			"Here is a summary of the changes:\n" + 
 			"\n" + 
-			" * LOTS of back end changes involving command parsing (https://github.com/TheGameCommunity/ExciteBot/commit/6b553095d08d3859934f81600908233c9278f7f2)\n" + 
+			" * The bot now uses slash commands, you may type a command using `/command`\n" + 
 			"\n" + 
-			" * Most arguments for commands can be surrounded by quotation marks `\"\"`. This is useful if an argument you want to specify has a space in it.\n" +
+			" * The bot will now provide suggestions as you type\n" +
+			"   Known issue: suggestions are buggy, this is an issue with discord itself, I've done the best I can to mitigate this issue: https://github.com/discord/discord-api-docs/issues/5878\n\n" + 
+			" * Fixed issue where new users would not be added to the database, preventing notifications from occuring" + 
 			" \n" + 
-			" * Command arguments containing special characters (ex: `#`, `/`) are now parsed properly\n" + 
-			" \n" + 
-			" * Nicknamed discord users now work properly with !whois and other commands" + 
+			" * Consider the bot as being in an open beta, not everything has been smoothly migrated to slash commands properly yet" + 
 			"\n\n" + 
 			"If there are bugs, please create a bug report at <https://github.com/Gamebuster19901/ExciteBot/issues> or ping <@138454176718913536>\n" + 
 			"\n" + 
