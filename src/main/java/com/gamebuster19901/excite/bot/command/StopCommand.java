@@ -15,15 +15,7 @@ public class StopCommand {
 	@SuppressWarnings("rawtypes")
 	private static int stop(CommandContext context) {
 		if(context.isAdmin()) {
-			try {
-				context.sendMessage("Stopping!");
-			}
-			catch (Throwable t) {
-				t.printStackTrace();
-			}
-			finally {
-				ThreadService.shutdown(context, 0);
-			}
+			ThreadService.shutdown(context, 0);
 		}
 		else {
 			context.sendMessage("You do not have permission to execute this command");

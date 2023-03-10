@@ -16,8 +16,8 @@ public class ChangelogCommand {
 			" * The bot now uses slash commands, you may type a command using `/command`\n" + 
 			"\n" + 
 			" * The bot will now provide suggestions as you type\n" +
-			"   Known issue: suggestions are buggy, this is an issue with discord itself, I've done the best I can to mitigate this issue: https://github.com/discord/discord-api-docs/issues/5878\n\n" + 
-			" * Fixed issue where new users would not be added to the database, preventing notifications from occuring" + 
+			" ↳Known issue: suggestions are buggy, this is an issue with discord itself, I've done the best I can to mitigate this issue: https://github.com/discord/discord-api-docs/issues/5878\n\n" + 
+			" * Fixed issue where new users would not be added to the database, preventing notifications from occuring\n" + 
 			" \n" + 
 			" * Consider the bot as being in an open beta, not everything has been smoothly migrated to slash commands properly yet" + 
 			"\n\n" + 

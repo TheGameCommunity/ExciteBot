@@ -97,7 +97,6 @@ public class EventReceiver extends ListenerAdapter {
 				}
 				
 				commands.add(data);
-				System.out.println(command.getUsageText());
 			});
 			Interactions.DISPATCHER.getDispatcher(); //initialize interactions
 			
@@ -135,11 +134,9 @@ public class EventReceiver extends ListenerAdapter {
 						break;
 					}
 					foundSuggestions.add(suggestion);
-					System.out.println(lastArg + " != " + suggestion.getText());
 				}
 				suggestions.addAll(foundSuggestions);
 				if(completedSuggestion != null) {
-					System.out.println("EMEPTYASHDFPIOWHAEPHF AWIEUFHOUIWHQEF");
 					for(Suggestion suggestion : Commands.DISPATCHER.getDispatcher().getCompletionSuggestions(spacedParseResults, command.length() + 1).get().getList()) {
 						suggestions.add(suggestion);
 					}
@@ -161,7 +158,6 @@ public class EventReceiver extends ListenerAdapter {
 			for(Suggestion suggestion : suggestions) {
 				if(suggestion instanceof MatchingSuggestion) {
 					if(((MatchingSuggestion) suggestion).matches(lastArg)) {
-						System.out.println(suggestion + " matches " + lastArg);
 						returnedSuggestions.add(completedArgs + " " + suggestion.getText());
 					}
 					else {

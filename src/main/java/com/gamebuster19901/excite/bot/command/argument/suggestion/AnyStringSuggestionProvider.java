@@ -29,11 +29,9 @@ public class AnyStringSuggestionProvider<S> implements SuggestionProvider<S> {
 		ExciteSuggestionsBuilder b = new ExciteSuggestionsBuilder(builder);
 		String arg = builder.getRemaining();
 		if(builder.getRemaining().isBlank()) {
-			System.out.println("1AnyString: " + builder.getRemaining());
 			b.suggestAnyString(name);
 		}
 		else {
-			System.out.println("2AnyString: " + builder.getRemaining());
 			b.suggestAsMatchable(b.getRemaining());
 		}
 

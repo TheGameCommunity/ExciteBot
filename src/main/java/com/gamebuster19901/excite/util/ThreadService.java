@@ -5,6 +5,8 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 import com.gamebuster19901.excite.Main;
 import com.gamebuster19901.excite.bot.command.CommandContext;
 
+import net.dv8tion.jda.api.interactions.callbacks.IReplyCallback;
+
 public class ThreadService {
 
 	static {
@@ -60,6 +62,11 @@ public class ThreadService {
 	@SuppressWarnings("rawtypes")
 	public static void shutdown(CommandContext context, int ExitCode) {
 		Main.stopping = true;
+		boolean isCallback = context.isDiscordContext();
+		
+		if(context instanceof IReplyCallback) {
+			context.getHook().deferReply();
+		}
 		Thread shutdownHandler = new Thread() {
 			@Override
 			public void run() {
@@ -79,7 +86,12 @@ public class ThreadService {
 						message = message + t.getName() + " - " + t.getState() + "\n";
 					}
 					message = message + "==========";
-					context.sendMessage(message);
+					if(isCallback) {
+						context.getChannel().sendMessage(message).setSuppressedNotifications(true).queue();
+					}
+					else {
+						context.sendMessage(message);
+					}
 					try {
 						Thread.sleep(1000);
 						waitTime = waitTime + 1000;
@@ -87,17 +99,37 @@ public class ThreadService {
 							throw new InterruptedException("Took to long to stop!");
 						}
 					} catch (InterruptedException e) {
-						context.sendMessage("Iterrupted, Emergency Stop!");
-						String stacktrace = StacktraceUtil.getStackTrace(e);
-						context.sendMessage(stacktrace);
-						if(context.getAuthor() != Main.CONSOLE) {
-							Main.CONSOLE.sendMessage(stacktrace);
+						if(isCallback) {
+							context.getChannel().sendMessage("Iterrupted, Emergency Stop!").queue();
+							String stacktrace = StacktraceUtil.getStackTrace(e);
+							context.getChannel().sendMessage(stacktrace).queue();
+							if(context.getAuthor() != Main.CONSOLE) {
+								Main.CONSOLE.sendMessage(stacktrace);
+							}
+							break;
 						}
-						break;
+						else {
+							context.sendMessage("Iterrupted, Emergency Stop!");
+							String stacktrace = StacktraceUtil.getStackTrace(e);
+							context.sendMessage(stacktrace);
+							if(context.getAuthor() != Main.CONSOLE) {
+								Main.CONSOLE.sendMessage(stacktrace);
+							}
+						}
 					}
 				}
 				while(threadCount > 0);
-				context.sendMessage("Stopped!");
+				try {
+					if(isCallback) {
+						context.getChannel().sendMessage("Stopped!").setSuppressedNotifications(true).complete();
+					}
+					else {
+						context.sendMessage("Stopped!");
+					}
+				}
+				catch(Throwable t) {
+					t.printStackTrace();
+				}
 				Main.discordBot.jda.shutdown();
 				System.exit(0);
 			}

@@ -128,6 +128,13 @@ public class CommandContext<E> {
 		}
 	}
 	
+	public IReplyCallback getHook() {
+		if(event instanceof IReplyCallback) {
+			return (IReplyCallback) event;
+		}
+		throw new AssertionError();
+	}
+	
 	public void replyMessage(String message) {
 		replyMessage(message, false, false);
 	}
