@@ -15,7 +15,7 @@ public class MatchingStringSuggestion extends MatchingSuggestion<String>{
 
 	@Override
 	public boolean matches(String s) {
-		if(s.isBlank()) {
+		if(s.isBlank() || getText() == null) {
 			return false;
 		}
 		return getText().toLowerCase().endsWith(s.toLowerCase());

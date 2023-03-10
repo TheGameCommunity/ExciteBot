@@ -33,18 +33,28 @@ public class WhoIsCommand {
 	
 	public static void register(CommandDispatcher<CommandContext> dispatcher) {
 		LiteralCommandNode<CommandContext> builder = dispatcher.register(Commands.userGlobal("whois")
-			.then(Commands.user("user").executes((command) -> {
-				return sendResponse(command.getSource(), command.getArgument("user", User.class));
-			}
-		)));
+			.then(Commands.user("user")
+				.executes((command) -> {
+					return sendResponse(command.getSource(), command.getArgument("user", User.class));
+				})
+			)
+			.then(Commands.player("player")
+				.executes((command) -> {
+					return sendResponse(command.getSource(), command.getArgument("player", Player.class));
+				})
+			)
+			/*.then(Commands.anyStringGreedy("arg")
+					.exe
+			)*/
+		);
 		
 		dispatcher.register(Commands.literal("me").executes((command) ->  {
-			return sendResponse(command.getSource(), command.getSource().getAuthor());
+			return sendResponse(command.getSource(), command.getSource().getDiscordAuthor());
 		}));
 		
 		dispatcher.register(Commands.literal("wi").redirect(builder));
 	}
-	
+
 	@SuppressWarnings("serial")
 	public static int sendResponse(CommandContext context, User user) {
 		if(context.isConsoleMessage() || !context.isDiscordContext()) {
@@ -102,6 +112,21 @@ public class WhoIsCommand {
 		embed.setTimestamp(Instant.now());
 		context.sendMessage(embed);
 		return 1;
+	}
+	
+	private static int sendResponse(CommandContext context, Player profile) {
+		EmbedBuilder embed = new EmbedBuilder();
+		User user = profile.getOwner();
+		embed.addField("Name:", profile.getName(), false);
+		embed.addField("ID:", profile.getID() + "", false);
+		embed.addField("FC:", profile.getFriendCode(), false);
+		embed.addField("Owner:", DiscordUser.toDetailedString(user), false);
+		embed.addField("Time Online:", readableDuration(profile.getOnlineDuration(), true), false);
+		embed.addField("First Seen:", DATE.format(profile.getFirstSeen().toEpochMilli()), false);
+		embed.addField("Last Seen:", DATE.format(profile.getLastOnline().toEpochMilli()), false);
+		embed.setTimestamp(Instant.now());
+		context.sendMessage(embed);
+		return 0;
 	}
 	
 	public static final String readableDuration(Duration duration, boolean includeHours) {

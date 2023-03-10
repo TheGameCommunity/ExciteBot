@@ -40,7 +40,7 @@ public class WiiRegistrationAudit extends Audit {
 		try {
 			st = Insertion.insertInto(Table.AUDIT_WII_REGISTER)
 			.setColumns(AUDIT_ID, WII_ID, DISCORD_ID, UNREGISTER)
-			.to(parent.getID(), wii.getWiiCode().toString(), registrant.getAuthor().getIdLong(), unregister)
+			.to(parent.getID(), wii.getWiiCode().toString(), registrant.getAuthor().getID(), unregister)
 			.prepare(true);
 			
 			st.execute();

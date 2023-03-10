@@ -4,7 +4,6 @@ import com.gamebuster19901.excite.Player;
 import com.gamebuster19901.excite.bot.audit.ban.Ban;
 import com.gamebuster19901.excite.bot.audit.ban.Banee;
 import com.gamebuster19901.excite.bot.audit.ban.Pardon;
-import com.gamebuster19901.excite.bot.command.argument.DiscordUserArgumentType;
 import com.gamebuster19901.excite.bot.command.argument.PlayerArgumentType;
 
 import com.mojang.brigadier.CommandDispatcher;
@@ -19,7 +18,7 @@ public class PardonCommand {
 		
 		dispatcher.register(Commands.userGlobal("pardon")
 				
-			.then(Commands.argument("discord", new DiscordUserArgumentType())
+			.then(Commands.user("discord")
 				.executes((context) -> {
 					return pardon(context.getSource(), Banee.of(context.getArgument("discord", User.class)));
 				})	

@@ -2,8 +2,11 @@ package com.gamebuster19901.excite.bot.command;
 
 import java.time.Instant;
 
+import com.gamebuster19901.excite.Player;
 import com.gamebuster19901.excite.bot.user.ConsoleUser;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
+import com.gamebuster19901.excite.bot.user.NamedDiscordUser;
+import com.gamebuster19901.excite.util.Named;
 
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Guild;
@@ -29,7 +32,7 @@ public class CommandContext<E> {
 	private EmbedBuilder embedBuilder;
 	
 	public CommandContext(E e) {
-		if(e instanceof MessageReceivedEvent || e instanceof Interaction || e instanceof GuildReadyEvent || e instanceof User) {
+		if(e instanceof MessageReceivedEvent || e instanceof Interaction || e instanceof GuildReadyEvent || e instanceof User || e instanceof Player) {
 			this.event = e;
 		}
 		else {
@@ -37,17 +40,33 @@ public class CommandContext<E> {
 		}
 	}
 
-	public User getAuthor() {
+	public Named getAuthor() {
 		if(event instanceof Interaction) {
-			return ((Interaction) event).getUser();
+			return NamedDiscordUser.of(((Interaction) event).getUser());
 		}
 		if(event instanceof MessageReceivedEvent) {
-			return ((MessageReceivedEvent) event).getAuthor();
+			return NamedDiscordUser.of(((MessageReceivedEvent) event).getAuthor());
 		}
 		if(event instanceof User) {
-			return (User) event;
+			return NamedDiscordUser.of((User) event);
+		}
+		if(event instanceof Player) {
+			return (Player) event;
 		}
 		return null;
+	}
+	
+	public User getDiscordAuthor() {
+		if(event instanceof Interaction) {
+			return NamedDiscordUser.of(((Interaction) event).getUser());
+		}
+		if(event instanceof MessageReceivedEvent) {
+			return NamedDiscordUser.of(((MessageReceivedEvent) event).getAuthor());
+		}
+		if(event instanceof User) {
+			return NamedDiscordUser.of((User) event);
+		}
+		throw new AssertionError();
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -164,7 +183,7 @@ public class CommandContext<E> {
 	}
 	
 	public EmbedBuilder constructEmbedResponse(String command, String title) {
-		User user = getAuthor();
+		User user = getDiscordAuthor();
 		embedBuilder = new EmbedBuilder();
 		embedBuilder.setAuthor(user.getAsTag(), null, user.getAvatarUrl());
 		embedBuilder.setTimestamp(Instant.now());
@@ -200,11 +219,11 @@ public class CommandContext<E> {
 	}
 	
 	public boolean isAdmin() {
-		return DiscordUser.isOperator(getAuthor());
+		return DiscordUser.isOperator(getDiscordAuthor());
 	}
 
 	public boolean isOperator() {
-		return DiscordUser.isOperator(getAuthor());
+		return DiscordUser.isOperator(getDiscordAuthor());
 	}
 
 	public void deletePromptingMessage(ConsoleContext instance, String string) {

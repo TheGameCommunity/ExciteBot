@@ -46,7 +46,7 @@ public class CommandAudit extends Audit {
 			
 			if(isPrivateMessage || isConsoleMessage) {
 				channelName = context.getAuthor().getName();
-				channelID = context.getAuthor().getIdLong();
+				channelID = context.getAuthor().getID();
 			}
 			else {
 				serverName = context.getServer().getName();

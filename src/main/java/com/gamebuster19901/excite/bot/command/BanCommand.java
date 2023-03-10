@@ -6,15 +6,11 @@ import java.time.temporal.ChronoUnit;
 import com.gamebuster19901.excite.Main;
 import com.gamebuster19901.excite.Player;
 import com.gamebuster19901.excite.bot.audit.ban.Ban;
-import com.gamebuster19901.excite.bot.command.argument.DiscordUserArgumentType;
 import com.gamebuster19901.excite.bot.command.argument.DurationArgumentType;
-import com.gamebuster19901.excite.bot.command.argument.PlayerArgumentType;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
 import com.gamebuster19901.excite.util.TimeUtils;
 
 import com.mojang.brigadier.CommandDispatcher;
-import com.mojang.brigadier.arguments.StringArgumentType;
-
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.channel.concrete.PrivateChannel;
 
@@ -23,7 +19,7 @@ public class BanCommand {
 	@SuppressWarnings("rawtypes")
 	public static void register(CommandDispatcher<CommandContext> dispatcher) {
 		dispatcher.register(Commands.userGlobal("ban")
-			.then(Commands.argument("discordUser", new DiscordUserArgumentType())
+			.then(Commands.user("discordUser")
 				.executes((context) -> {
 					return banDiscordUser(context.getSource(), context.getArgument("discordUser", User.class), TimeUtils.FOREVER, parseReason(TimeUtils.FOREVER, null));
 				}
@@ -33,14 +29,14 @@ public class BanCommand {
 						Duration duration = context.getArgument("duration", Duration.class);
 						return banDiscordUser(context.getSource(), context.getArgument("discordUser", User.class), duration, parseReason(duration, null));
 					}
-					).then(Commands.argument("reason", StringArgumentType.greedyString())
+					).then(Commands.anyStringGreedy("reason")
 						.executes((context) -> {
 							Duration duration = context.getArgument("duration", Duration.class);
 							return banDiscordUser(context.getSource(), context.getArgument("discordUser", User.class), duration, parseReason(duration, context.getArgument("reason", String.class)));
 						})
 					)
 				)
-			.then(Commands.argument("reason", StringArgumentType.greedyString())
+			.then(Commands.anyStringGreedy("reason")
 				.executes((context) -> {
 					return banDiscordUser(context.getSource(), context.getArgument("discordUser", User.class), TimeUtils.FOREVER, parseReason(TimeUtils.FOREVER, context.getArgument("reason", String.class)));
 				})
@@ -53,7 +49,7 @@ public class BanCommand {
 			
 		
 			
-		.then(Commands.argument("player", PlayerArgumentType.player())
+		.then(Commands.player("player")
 			.executes((context) -> {
 				return banProfile(context.getSource(), context.getArgument("player", Player.class), TimeUtils.FOREVER, parseReason(TimeUtils.FOREVER, null));
 			}
@@ -64,14 +60,14 @@ public class BanCommand {
 					Duration duration = context.getArgument("duration", Duration.class);
 					return banProfile(context.getSource(), context.getArgument("player", Player.class), duration, parseReason(duration, null));
 				}
-				).then(Commands.argument("reason", StringArgumentType.greedyString())
+				).then(Commands.anyStringGreedy("reason")
 					.executes((context) -> {
 						Duration duration = context.getArgument("duration", Duration.class);
 						return banProfile(context.getSource(), context.getArgument("player", Player.class), duration, parseReason(duration, context.getArgument("reason", String.class)));
 					})
 				)
 			)
-			.then(Commands.argument("reason", StringArgumentType.greedyString())
+			.then(Commands.anyStringGreedy("reason")
 					.executes((context) -> {
 						return banProfile(context.getSource(), context.getArgument("player", Player.class), TimeUtils.FOREVER, parseReason(TimeUtils.FOREVER, context.getArgument("reason", String.class)));
 					})
@@ -95,7 +91,7 @@ public class BanCommand {
 					privateChannel = (PrivateChannel) context.getChannel();
 				}
 				else {
-					privateChannel = context.getAuthor().openPrivateChannel().complete();
+					privateChannel = context.getDiscordAuthor().openPrivateChannel().complete();
 				}
 				privateChannel.sendMessage(message).complete();
 			}
@@ -120,7 +116,7 @@ public class BanCommand {
 					privateChannel = (PrivateChannel) context.getChannel();
 				}
 				else {
-					privateChannel = context.getAuthor().openPrivateChannel().complete();
+					privateChannel = context.getDiscordAuthor().openPrivateChannel().complete();
 				}
 				privateChannel.sendMessage(message);
 			}

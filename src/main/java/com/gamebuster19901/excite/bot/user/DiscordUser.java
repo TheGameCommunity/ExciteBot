@@ -397,11 +397,14 @@ public class DiscordUser{
 
 	
 	public static String toDetailedString(User user) {
+		if(user instanceof Nobody) {
+			return "Nobody";
+		}
 		return user.getName() + "#" + user.getDiscriminator() + ":(" + user.getIdLong() + ")";
 	}
 	
 	public static String toDetailedString(CommandContext context) {
-		return toDetailedString(context.getAuthor());
+		return toDetailedString(context.getDiscordAuthor());
 	}
 	
 	public static String toSuggestionString(User user) {
@@ -413,6 +416,9 @@ public class DiscordUser{
 	}
 	
 	public static final User getUser(long id) {
+		if(id == 0) {
+			return Nobody.INSTANCE;
+		}
 		return Main.discordBot.jda.retrieveUserById(id).complete();
 	}
 	

@@ -7,14 +7,14 @@ import com.gamebuster19901.excite.bot.database.sql.PreparedStatement;
 
 public class Comparison {
 	
-	private final Column column;
+	private final Function column;
 	private final Comparator comparator;
 	private final Object value;
 	private String string;
 	private ArrayList<Comparison> sequence = new ArrayList<Comparison>();
 	private int offset;
 	
-	public Comparison(Column column, Comparator comparator, Object value) {
+	public Comparison(Function column, Comparator comparator, Object value) {
 		this.column = column;
 		this.comparator = comparator;
 		this.value = value;
@@ -22,7 +22,7 @@ public class Comparison {
 		sequence.add(this);
 	}
 	
-	public Comparison(Column column, Comparator comparator) {
+	public Comparison(Function column, Comparator comparator) {
 		this.column = column;
 		this.comparator = comparator;
 		this.value = null;
@@ -31,14 +31,14 @@ public class Comparison {
 	public String toString() {
 		if(string == null) {
 			if(value != null) {
-				return column + " " + comparator + " ? ";
+				return column.sqlString() + " " + comparator + " ? ";
 			}
-			return column + " " + comparator + " ";
+			return column.sqlString() + " " + comparator + " ";
 		}
 		return string;
 	}
 	
-	public Object getColumn() {
+	public Function getColumn() {
 		return column;
 	}
 	

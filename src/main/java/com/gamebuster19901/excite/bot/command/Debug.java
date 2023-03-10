@@ -4,9 +4,7 @@ import java.time.Duration;
 
 import com.gamebuster19901.excite.Player;
 import com.gamebuster19901.excite.bot.command.argument.ChannelArgumentType;
-import com.gamebuster19901.excite.bot.command.argument.DiscordUserArgumentType;
 import com.gamebuster19901.excite.bot.command.argument.DurationArgumentType;
-import com.gamebuster19901.excite.bot.command.argument.PlayerArgumentType;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
 import com.gamebuster19901.excite.util.TimeUtils;
 import com.mojang.brigadier.CommandDispatcher;
@@ -54,7 +52,7 @@ public class Debug {
 								)
 				))
 				.then(Commands.literal("user")
-					.then(Commands.argument("user", new DiscordUserArgumentType())
+					.then(Commands.user("user")
 						.executes((context)	-> {
 							relayUser(context.getSource(), context.getArgument("user", User.class));
 							return 1;
@@ -62,7 +60,7 @@ public class Debug {
 					)
 				)
 				.then(Commands.literal("player")
-					.then(Commands.argument("player", PlayerArgumentType.player())
+					.then(Commands.player("player")
 						.executes((context) -> {
 							relayPlayer(context.getSource(), context.getArgument("player", Player.class));
 							return 1;

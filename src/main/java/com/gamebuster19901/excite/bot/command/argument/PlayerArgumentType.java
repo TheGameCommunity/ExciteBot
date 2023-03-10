@@ -1,13 +1,18 @@
 package com.gamebuster19901.excite.bot.command.argument;
 
+import java.util.concurrent.CompletableFuture;
+
 import com.gamebuster19901.excite.Player;
 import com.gamebuster19901.excite.UnknownPlayer;
+import com.gamebuster19901.excite.bot.command.CommandContext;
 import com.gamebuster19901.excite.bot.command.Commands;
 import com.gamebuster19901.excite.bot.command.ConsoleContext;
 import com.gamebuster19901.excite.bot.command.exception.ParseExceptions;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.brigadier.suggestion.Suggestions;
+import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 
 public class PlayerArgumentType implements ArgumentType<Player> {
 	
@@ -46,4 +51,13 @@ public class PlayerArgumentType implements ArgumentType<Player> {
 		throw ParseExceptions.PLAYER_AMBIGUITY.create(input, players);
 	}
 
+	@Override
+	public <S> CompletableFuture<Suggestions> listSuggestions(com.mojang.brigadier.context.CommandContext<S> context, SuggestionsBuilder builder) {
+		Player[] players = Player.searchPlayers((CommandContext) context.getSource(), Commands.lastArgOf(builder.getInput()));
+		for(Player p : players) {
+			builder.suggest(p.getIdentifierName());
+		}
+		return builder.buildFuture();
+	}
+	
 }

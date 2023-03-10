@@ -50,9 +50,9 @@ public enum Table {
 	}
 	
 	@SuppressWarnings("rawtypes")
-	public static Result selectColumnsFromWhere(CommandContext context, Column columns, Table table, Comparison comparison) throws SQLException {
+	public static Result selectColumnsFromWhere(CommandContext context, Function columns, Table table, Comparison comparison) throws SQLException {
 		PreparedStatement st;
-		st = Database.INSTANCE.prepareStatement("SELECT " + columns + " FROM " + table + " WHERE " + comparison);
+		st = Database.INSTANCE.prepareStatement("SELECT " + columns.sqlString() + " FROM " + table + " WHERE " + comparison);
 		comparison.insertValues(st);
 
 		return st.query();
@@ -82,7 +82,7 @@ public enum Table {
 	@SuppressWarnings({ "rawtypes" })
 	public static boolean existsWhere(CommandContext context, Table table, Comparison comparison) {
 		try {
-			Result result = selectColumnsFromWhere(context, (Column) comparison.getColumn(), table, comparison);
+			Result result = selectColumnsFromWhere(context, (Function) comparison.getColumn(), table, comparison);
 			return result.getRowCount() > 0;
 		} catch (SQLException e) {
 			throw new IOError(e);

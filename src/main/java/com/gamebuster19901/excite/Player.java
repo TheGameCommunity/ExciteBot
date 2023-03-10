@@ -16,6 +16,7 @@ import com.gamebuster19901.excite.bot.audit.ban.Banee;
 import com.gamebuster19901.excite.bot.command.ConsoleContext;
 import com.gamebuster19901.excite.bot.command.CommandContext;
 import com.gamebuster19901.excite.bot.database.Comparison;
+import com.gamebuster19901.excite.bot.database.Function;
 import com.gamebuster19901.excite.bot.database.Insertion;
 import com.gamebuster19901.excite.bot.database.Result;
 import com.gamebuster19901.excite.bot.database.Table;
@@ -527,9 +528,25 @@ public class Player implements Banee<Player>, Owned<User, Player> {
 		return players.toArray(new Player[]{});
 	}
 	
+	public static Player[] searchPlayers(CommandContext context, String query) {
+		HashSet<Player> players = new HashSet<Player>();
+		try {
+			Result rs = Table.selectAllFromWhere(context, PLAYERS, new Comparison(Function.Lower.of(PLAYER_NAME), LIKE, query + "%"));
+			while(rs.next()) {
+				players.add(new Player(rs));
+			}
+		} catch(SQLException e) {
+			throw new IOError(e);
+		}
+		return players.toArray(new Player[] {});
+	}
+	
 	public static Player[] getPlayersByAnyIdentifier(CommandContext context, String identifier) {
 		HashSet<Player> players = new HashSet<Player>();
 		try {
+			if(identifier.endsWith(")") && identifier.indexOf('(') != -1) {
+				identifier = identifier.substring(identifier.indexOf('(') + 1, identifier.length() - 1);
+			}
 			Result rs = Table.selectAllFromWhere(context, PLAYERS, 
 				new Comparison(PLAYER_NAME, EQUALS, identifier)
 				.or(

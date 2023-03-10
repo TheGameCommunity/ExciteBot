@@ -28,6 +28,7 @@ import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message.Attachment;
 import net.dv8tion.jda.api.entities.MessageEmbed.Field;
+import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.interactions.InteractionHook;
 import net.dv8tion.jda.api.requests.restaction.pagination.MessagePaginationAction;
@@ -50,7 +51,7 @@ public class ArchiveCommand {
 					return 1;
 				}
 				Guild guild = source.getServer();
-				Member member = DiscordUser.getMember(source.getAuthor(), guild);
+				Member member = DiscordUser.getMember((User) source.getAuthor(), guild);
 				HashSet<TextChannel> channelsToArchive = getChannels(source, guild, Arrays.asList(argument.split(" ")));
 				for(TextChannel channel : channelsToArchive) {
 					if(!member.hasPermission(channel, Permission.MANAGE_CHANNEL, Permission.MESSAGE_MANAGE)) {

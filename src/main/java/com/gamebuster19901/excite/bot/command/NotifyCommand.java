@@ -34,11 +34,11 @@ public class NotifyCommand {
 	private static int setThreshold(CommandContext context, int threshold) {
 		if(!context.isConsoleMessage()) {
 			if(threshold > 0) {
-				DiscordUser.setNotifyThreshold(context.getAuthor(), threshold);
+				DiscordUser.setNotifyThreshold(context.getDiscordAuthor(), threshold);
 				context.sendMessage(context.getMention() + ", the player count must now be " + threshold + " or higher for you to be notified");
 			}
 			else if (threshold == -1) {
-				DiscordUser.setNotifyThreshold(context.getAuthor(), threshold);
+				DiscordUser.setNotifyThreshold(context.getDiscordAuthor(), threshold);
 				context.sendMessage(context.getMention() + ", you will no longer be notified if players are online.");
 			}
 			else {
@@ -58,7 +58,7 @@ public class NotifyCommand {
 			if(frequency != null) {
 				Duration min = Duration.ofMinutes(5);
 				if(frequency.compareTo(min) >= 0) {
-					DiscordUser.setNotifyFrequency(context.getAuthor(), frequency);
+					DiscordUser.setNotifyFrequency(context.getDiscordAuthor(), frequency);
 					context.sendMessage(context.getMention() + ", You will now be notified of online players a maximum of once every " + TimeUtils.readableDuration(frequency));
 				}
 				else {
@@ -78,7 +78,7 @@ public class NotifyCommand {
 	@SuppressWarnings("rawtypes")
 	private static int setContinuous(CommandContext context, boolean continuous) {
 		if(!context.isConsoleMessage()) {
-			DiscordUser.setNotifyContinuously(context.getAuthor(), continuous);
+			DiscordUser.setNotifyContinuously(context.getDiscordAuthor(), continuous);
 			context.sendMessage(context.getAuthor().getAsMention() + ", you have set continuous notifications to " + continuous);
 		}
 		else {
@@ -89,7 +89,7 @@ public class NotifyCommand {
 	
 	private static int setDetailed(CommandContext context, boolean detailed) {
 		if(!context.isConsoleMessage()) {
-			DiscordUser.setSendDetailedPM(context.getAuthor(), detailed);
+			DiscordUser.setSendDetailedPM(context.getDiscordAuthor(), detailed);
 			context.sendMessage(context.getAuthor().getAsMention() + ", you have set detailed PM messages to " + detailed);
 		}
 		else {

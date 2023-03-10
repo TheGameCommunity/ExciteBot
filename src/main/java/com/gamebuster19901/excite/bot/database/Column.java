@@ -6,7 +6,7 @@ import static com.gamebuster19901.excite.bot.database.Table.*;
 import java.util.Arrays;
 import java.util.HashSet;
 
-public enum Column {
+public enum Column implements Function {
 
 	//MULTIPLE TABLES:
 	ALL_COLUMNS("*", Table.values()),
@@ -127,5 +127,10 @@ public enum Column {
 			}
 		}
 		throw new IllegalArgumentException("No column with name " + dbName);
+	}
+
+	@Override
+	public String sqlString() {
+		return toString();
 	}
 }

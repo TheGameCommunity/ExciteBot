@@ -32,7 +32,7 @@ public class BotDeleteMessageAudit extends Audit {
 		try {
 			st = Insertion.insertInto(Table.AUDIT_BOT_MSG_DEL)
 			.setColumns(AUDIT_ID, DISCORD_ID)
-			.to(parent.getID(), deleted.getAuthor().getIdLong())
+			.to(parent.getID(), deleted.getAuthor().getID())
 			.prepare(deleter, true);
 			
 			st.execute();

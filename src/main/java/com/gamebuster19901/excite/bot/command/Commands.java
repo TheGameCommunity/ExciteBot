@@ -5,9 +5,11 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 import com.gamebuster19901.excite.Main;
+import com.gamebuster19901.excite.Player;
 import com.gamebuster19901.excite.bot.audit.CommandAudit;
 import com.gamebuster19901.excite.bot.command.argument.DiscordUserArgumentType;
 import com.gamebuster19901.excite.bot.command.argument.GlobalLiteralArgumentBuilder;
+import com.gamebuster19901.excite.bot.command.argument.PlayerArgumentType;
 import com.gamebuster19901.excite.bot.command.argument.suggestion.AnyStringSuggestionProvider;
 import com.gamebuster19901.excite.util.StacktraceUtil;
 
@@ -90,6 +92,10 @@ public class Commands {
 	
 	public static RequiredArgumentBuilder<CommandContext, User> user(String name) {
 		return RequiredArgumentBuilder.argument(name, new DiscordUserArgumentType());
+	}
+	
+	public static RequiredArgumentBuilder<CommandContext, Player> player(String name) {
+		return RequiredArgumentBuilder.argument(name, PlayerArgumentType.player());
 	}
 	
 	public static <T> RequiredArgumentBuilder<CommandContext, T> argument(String name, ArgumentType<T> type) {

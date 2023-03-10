@@ -5,7 +5,6 @@ import java.sql.SQLException;
 import javax.mail.MessagingException;
 
 import com.gamebuster19901.excite.Player;
-import com.gamebuster19901.excite.bot.command.argument.PlayerArgumentType;
 import com.gamebuster19901.excite.bot.database.Column;
 import com.gamebuster19901.excite.bot.database.Comparator;
 import com.gamebuster19901.excite.bot.database.Comparison;
@@ -26,7 +25,7 @@ public class RegisterCommand {
 	public static void register(CommandDispatcher<CommandContext> dispatcher) {
 		dispatcher.register(Commands.userGlobal("register")
 			.then(Commands.literal("profile")
-				.then(Commands.argument("player", PlayerArgumentType.player())
+				.then(Commands.player("player")
 					.executes(context -> {
 						requestRegistration(context.getSource(), context.getArgument("player", Player.class));
 						return 1;
@@ -45,7 +44,7 @@ public class RegisterCommand {
 	
 	@SuppressWarnings("rawtypes")
 	private static void requestRegistration(CommandContext context, Player desiredProfile) {
-		User discordUser = context.getAuthor();
+		User discordUser = context.getDiscordAuthor();
 		if(!context.isDiscordContext()) {
 			context.replyMessage("This command must be executed from discord.");
 			return;
