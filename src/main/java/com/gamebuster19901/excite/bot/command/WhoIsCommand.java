@@ -18,7 +18,7 @@ public class WhoIsCommand {
 	private static final boolean [] HOURS_ONLY = new boolean[]         {false, false, false, false, true, false, false};
 	
 	public static void register(CommandDispatcher<CommandContext> dispatcher) {
-		LiteralCommandNode<CommandContext> builder = dispatcher.register(Commands.literal("whois")
+		LiteralCommandNode<CommandContext> builder = dispatcher.register(Commands.userGlobal("whois")
 			.then(Commands.argument("player", StringArgumentType.greedyString()).executes((command) -> {
 				return sendResponse(command.getSource(), command.getArgument("player", String.class));
 			}

@@ -26,7 +26,7 @@ public class ChangelogCommand {
 	
 	@SuppressWarnings("rawtypes")
 	public static void register(CommandDispatcher<CommandContext> dispatcher) {
-		dispatcher.register(Commands.literal("cl").executes((context) -> {
+		dispatcher.register(Commands.userGlobal("changelog").executes((context) -> {
 			return message(context.getSource());
 		}));
 	}

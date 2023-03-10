@@ -20,7 +20,7 @@ public class Debug {
 	public static void register(CommandDispatcher<CommandContext> dispatcher) {
 		
 		dispatcher.register(
-			Commands.literal("debug")
+			Commands.userGlobal("debug")
 				.then(Commands.literal("out")
 					/*.executes(
 							(context -> 

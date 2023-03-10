@@ -37,7 +37,7 @@ import static com.gamebuster19901.excite.bot.command.ArchiveCommand.WorkerStatus
 public class ArchiveCommand {
 	@SuppressWarnings("rawtypes")
 	public static void register(CommandDispatcher<CommandContext> dispatcher) {
-		dispatcher.register(Commands.literal("archive").then(Commands.argument("channels", StringArgumentType.greedyString()).executes((context) -> {
+		dispatcher.register(Commands.global("archive").then(Commands.argument("channels", StringArgumentType.greedyString()).executes((context) -> {
 			return archive(context.getSource(), context.getArgument("channels", String.class));
 		})));
 	}

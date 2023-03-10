@@ -22,7 +22,7 @@ public class BanCommand {
 
 	@SuppressWarnings("rawtypes")
 	public static void register(CommandDispatcher<CommandContext> dispatcher) {
-		dispatcher.register(Commands.literal("ban")
+		dispatcher.register(Commands.userGlobal("ban")
 			.then(Commands.argument("discordUser", new DiscordUserArgumentType())
 				.executes((context) -> {
 					return banDiscordUser(context.getSource(), context.getArgument("discordUser", User.class), TimeUtils.FOREVER, parseReason(TimeUtils.FOREVER, null));

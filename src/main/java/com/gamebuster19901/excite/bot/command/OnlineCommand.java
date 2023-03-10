@@ -10,7 +10,7 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 public class OnlineCommand {
 
 	public static void register(CommandDispatcher<CommandContext> dispatcher) {
-		LiteralArgumentBuilder<CommandContext> builder = Commands.literal("online").executes((command) -> {
+		LiteralArgumentBuilder<CommandContext> builder = Commands.userGlobal("online").executes((command) -> {
 			return sendResponse(command.getSource(), command);
 		});
 		

@@ -11,7 +11,7 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 public class InsertCommand {
 	
 	public static void register(CommandDispatcher<CommandContext> dispatcher) {
-		dispatcher.register(Commands.literal("insert").then(Commands.literal("profile")
+		dispatcher.register(Commands.userGlobal("insert").then(Commands.literal("profile")
 			.then(Commands.argument("pid", IntegerArgumentType.integer(1, 999999999))
 			.then(Commands.argument("fc", StringArgumentType.string())
 			.then(Commands.argument("name", StringArgumentType.greedyString())

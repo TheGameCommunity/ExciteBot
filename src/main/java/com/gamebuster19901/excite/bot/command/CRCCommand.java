@@ -14,7 +14,7 @@ public class CRCCommand {
 
 	public static void register(CommandDispatcher<CommandContext> dispatcher) {
 		dispatcher.register(
-				Commands.literal("crc")
+				Commands.userGlobal("crc")
 					.then(Commands.literal("test")
 						.then(Commands.argument("data", StringArgumentType.greedyString())
 							.executes(context -> {
@@ -23,8 +23,8 @@ public class CRCCommand {
 						)
 					)
 					.then(Commands.literal("assert")
-						.then(Commands.argument("expected", StringArgumentType.string())
-							.then(Commands.argument("data", StringArgumentType.greedyString())
+						.then(Commands.anyString("expected")
+							.then(Commands.anyStringGreedy("data")
 								.executes(context -> {
 									String expectedString = context.getArgument("expected", String.class);
 									Integer expected = null;

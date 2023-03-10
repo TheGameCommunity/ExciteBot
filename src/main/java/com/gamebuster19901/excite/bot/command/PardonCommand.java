@@ -17,7 +17,7 @@ public class PardonCommand {
 	@SuppressWarnings("rawtypes")
 	public static void register(CommandDispatcher<CommandContext> dispatcher) {
 		
-		dispatcher.register(Commands.literal("pardon")
+		dispatcher.register(Commands.userGlobal("pardon")
 				
 			.then(Commands.argument("discord", new DiscordUserArgumentType())
 				.executes((context) -> {

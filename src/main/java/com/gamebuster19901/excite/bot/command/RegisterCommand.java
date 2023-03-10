@@ -23,7 +23,7 @@ public class RegisterCommand {
 
 	@SuppressWarnings("rawtypes")
 	public static void register(CommandDispatcher<CommandContext> dispatcher) {
-		dispatcher.register(Commands.literal("register")
+		dispatcher.register(Commands.userGlobal("register")
 			.then(Commands.literal("profile")
 				.then(Commands.argument("player", PlayerArgumentType.player())
 					.executes(context -> {

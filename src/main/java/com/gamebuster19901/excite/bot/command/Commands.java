@@ -1,15 +1,23 @@
 package com.gamebuster19901.excite.bot.command;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Pattern;
+
 import com.gamebuster19901.excite.Main;
 import com.gamebuster19901.excite.bot.audit.CommandAudit;
+import com.gamebuster19901.excite.bot.command.argument.GlobalLiteralArgumentBuilder;
+import com.gamebuster19901.excite.bot.command.argument.suggestion.AnyStringSuggestionProvider;
 import com.gamebuster19901.excite.util.StacktraceUtil;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.arguments.ArgumentType;
+import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.brigadier.suggestion.Suggestion;
 
 @SuppressWarnings("rawtypes")
 public class Commands {
@@ -56,8 +64,25 @@ public class Commands {
 		}
 	}
 	
+	@Deprecated
 	public static LiteralArgumentBuilder<CommandContext> literal(String name) {
 		return LiteralArgumentBuilder.literal(name);
+	}
+	
+	public static GlobalLiteralArgumentBuilder<CommandContext> global(String name) {
+		return GlobalLiteralArgumentBuilder.literal(name);
+	}
+	
+	public static RequiredArgumentBuilder<CommandContext, String> anyString(String name) {
+		return argument(name, StringArgumentType.string()).suggests(new AnyStringSuggestionProvider<>(name));
+	}
+	
+	public static RequiredArgumentBuilder<CommandContext, String> anyStringGreedy(String name) {
+		return argument(name, StringArgumentType.greedyString()).suggests(new AnyStringSuggestionProvider<>(name));
+	}
+	
+	public static GlobalLiteralArgumentBuilder<CommandContext> userGlobal(String name) {
+		return GlobalLiteralArgumentBuilder.literal(name, true);
 	}
 	
 	public static <T> RequiredArgumentBuilder<CommandContext, T> argument(String name, ArgumentType<T> type) {
@@ -114,10 +139,48 @@ public class Commands {
 	}
 	
 	public static String lastArgOf(String command) {
-		if(command.indexOf(' ') > 0) {
-			return command.substring(command.lastIndexOf(' ') + 1);
+		List<String> args = getArgs(command);
+		if(args.size() > 0) {
+			return args.get(args.size() - 1);
 		}
 		return "";
+	}
+	
+	public static ArrayList<String> getArgs(String command) {
+		ArrayList<String> args = new ArrayList<>();
+		if(command.indexOf(' ') > 0) {
+			String[] split = command.split(Pattern.quote(" "));
+			for(int i = 1; i < split.length; i++) {
+				String arg = split[i];
+				if(!arg.isBlank()) {
+					args.add(split[i]);
+				}
+			}
+		}
+		return args;
+	}
+	
+	public static int getMatchingIndex(List<String> arguments, Suggestion suggested) {
+		return getMatchingIndex(arguments, suggested.getText());
+	}
+	
+	public static int getMatchingIndex(List<String> arguments, String suggested) {
+		if(arguments.size() > 0) {
+			String arg = arguments.get(arguments.size() - 1);
+			String suggestion = suggested;
+			if(!(arg.isBlank() || suggestion.isBlank())) {
+				if(arg.charAt(0) == suggestion.charAt(0)) {
+					int i = 1;
+					for(; i < arg.length() && i < suggestion.length(); i++) {
+						if(arg.charAt(i) != suggestion.charAt(i)) {
+							break;
+						}
+					}
+					return i;
+				}
+			}
+		}
+		return -1;
 	}
 	
 }

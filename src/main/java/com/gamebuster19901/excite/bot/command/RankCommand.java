@@ -11,7 +11,7 @@ public class RankCommand {
 
 	@SuppressWarnings("rawtypes")
 	public static void register(CommandDispatcher<CommandContext> dispatcher) {
-		dispatcher.register(Commands.literal("rank")
+		dispatcher.register(Commands.userGlobal("rank")
 				.then(Commands.literal("add")
 						.then(Commands.argument("rank", StringArgumentType.word())
 								.then(Commands.argument("user", new DiscordUserArgumentType())
