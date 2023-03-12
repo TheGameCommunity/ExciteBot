@@ -85,6 +85,7 @@ public class EventReceiver extends ListenerAdapter {
 		public void onGuildReady(GuildReadyEvent e) {
 			List<CommandData> commands = new ArrayList<>();
 			Commands.DISPATCHER.getDispatcher().getRoot().getChildren().forEach((command) -> {
+				while(Main.discordBot == null) {}
 				if(!Main.discordBot.isDev()) {
 					if(command instanceof GlobalNode) {
 						return; //Don't register global commands as guild commands if we're not in a dev environment

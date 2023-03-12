@@ -1,5 +1,6 @@
 package com.gamebuster19901.excite.util;
 
+import com.gamebuster19901.excite.bot.user.DiscordUser;
 import com.gamebuster19901.excite.bot.user.NamedDiscordUser;
 
 import net.dv8tion.jda.api.entities.Member;
@@ -23,6 +24,18 @@ public interface Named<T> extends Identified {
 	
 	public default String getAsMention() {
 		return "";
+	}
+	
+	public static String toDetailedString(Object object) {
+		if(object instanceof Named) {
+			return ((Named<?>) object).toDetailedString();
+		}
+		else if(object instanceof User) {
+			return DiscordUser.toDetailedString((User) object);
+		}
+		else {
+			return object.toString();
+		}
 	}
 	
 	public default boolean matches(String lookingFor) {

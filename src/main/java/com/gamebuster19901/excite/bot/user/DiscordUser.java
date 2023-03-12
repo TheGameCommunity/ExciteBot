@@ -26,6 +26,7 @@ import com.gamebuster19901.excite.bot.database.Table;
 import com.gamebuster19901.excite.bot.database.sql.Database;
 import com.gamebuster19901.excite.bot.database.sql.PreparedStatement;
 import com.gamebuster19901.excite.transaction.CurrencyType;
+import com.gamebuster19901.excite.util.Named;
 import com.gamebuster19901.excite.util.TimeUtils;
 
 import static com.gamebuster19901.excite.bot.database.Comparator.*;
@@ -404,7 +405,7 @@ public class DiscordUser{
 	}
 	
 	public static String toDetailedString(CommandContext context) {
-		return toDetailedString(context.getDiscordAuthor());
+		return Named.toDetailedString(context.getAuthor());
 	}
 	
 	public static String toSuggestionString(User user) {

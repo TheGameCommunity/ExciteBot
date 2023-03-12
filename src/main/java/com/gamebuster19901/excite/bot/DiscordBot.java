@@ -56,10 +56,8 @@ public class DiscordBot {
 			this.jda = builder.build();
 			jda.addEventListener(new EventReceiver());
 			dev = Boolean.parseBoolean(reader.readLine());
+			System.out.println("DEV: " + dev);
 			if(!dev) {
-				
-			}
-			else {
 				setupGlobalCommands();
 			}
 		} 
@@ -136,7 +134,7 @@ public class DiscordBot {
 				if(command instanceof GlobalLiteralCommandNode) {
 					SlashCommandData data = net.dv8tion.jda.api.interactions.commands.build.Commands.slash(command.getName(), command.getUsageText());
 					if(command.getChildren().size() > 0) {
-						data.addOption(OptionType.STRING, "argument", "argument");
+						data.addOption(OptionType.STRING, "arguments", "arguments", true, true);
 					}
 					System.out.println("Global: " + command.getUsageText());
 					commands.add(data);
