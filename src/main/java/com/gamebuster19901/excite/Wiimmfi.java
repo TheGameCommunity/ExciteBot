@@ -42,7 +42,8 @@ public class Wiimmfi {
 	
 	private static final URL EXCITEBOTS;
 	private static JsonElement JSON;
-	private static HashSet<Player> PREV_ONLINE_PLAYERS = new HashSet<Player>();
+	private static HashSet<Player> PREV_ONLINE_PLAYERS = new HashSet<>();
+	private static HashSet<Player> PREV_ONLINE_PLAYERS_THAT_LOGGED_OUT = new HashSet<Player>();
 	private static HashSet<Player> ONLINE_PLAYERS = new HashSet<Player>();
 	private static final Duration WAIT_TIME = Duration.ofSeconds(20);
 	static {
@@ -207,6 +208,7 @@ public class Wiimmfi {
 							player = Player.addPlayer(new CommandContext(player), true, pid, fc, name);
 						}
 						else {
+							System.out.println(status);
 							player.setName(name);
 							player.setOnlineStatus(status);
 							player.setHost(host);
@@ -217,6 +219,16 @@ public class Wiimmfi {
 				}
 			}
 		}
+		
+		/*
+		//DEBUG
+		Player debugPlayer = Player.getPlayerByID(ConsoleContext.INSTANCE, 999999996);
+		if(debugPlayer instanceof UnknownPlayer) {
+			debugPlayer = Player.addPlayer(ConsoleContext.INSTANCE, true, 999999996, "0000-0000-0003", "Invalid");
+		}
+		debugPlayer.setOnlineStatus(2);
+		onlinePlayers.add(debugPlayer);
+		*/
 		
 		for(Player player : onlinePlayers) {
 			if(PREV_ONLINE_PLAYERS.contains(player)) {
@@ -229,14 +241,15 @@ public class Wiimmfi {
 				LogInAudit.addLoginAudit(new CommandContext(player), player);
 				player.updateLastOnline();
 			}
-			PREV_ONLINE_PLAYERS.remove(player);
+			PREV_ONLINE_PLAYERS_THAT_LOGGED_OUT.remove(player);
 		}
-		for(Player player : PREV_ONLINE_PLAYERS) {
+		for(Player player : PREV_ONLINE_PLAYERS_THAT_LOGGED_OUT) {
 			LogOutAudit.addLogOutAudit(new CommandContext(player), player);
 		}
 		
 		ONLINE_PLAYERS = onlinePlayers;
 		PREV_ONLINE_PLAYERS = ONLINE_PLAYERS;
+		PREV_ONLINE_PLAYERS_THAT_LOGGED_OUT = ONLINE_PLAYERS;
 		
 		return onlinePlayers.toArray(new Player[]{});
 	}
