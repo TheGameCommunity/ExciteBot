@@ -17,6 +17,7 @@ import com.gamebuster19901.excite.util.StacktraceUtil;
 import com.mojang.brigadier.ParseResults;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.Suggestion;
+import com.mojang.brigadier.tree.CommandNode;
 
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.GenericEvent;
@@ -94,6 +95,11 @@ public class EventReceiver extends ListenerAdapter {
 					}
 				}
 				SlashCommandData data = net.dv8tion.jda.api.interactions.commands.build.Commands.slash(command.getName(), command.getUsageText());
+				
+				CommandNode redirect = command.getRedirect();
+				if(redirect != null) {
+					command = redirect;
+				}
 				
 				if(command.getChildren().size() > 0) {
 					data.addOption(OptionType.STRING, "arguments", "arguments", true, true);
