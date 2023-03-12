@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 import com.gamebuster19901.excite.Main;
+import com.gamebuster19901.excite.bot.audit.CommandAudit;
 import com.gamebuster19901.excite.bot.command.CommandContext;
 import com.gamebuster19901.excite.bot.command.Commands;
 import com.gamebuster19901.excite.bot.command.argument.GlobalNode;
@@ -65,8 +66,9 @@ public class EventReceiver extends ListenerAdapter {
 				c.append(' ');
 				c.append(arg.getAsString().trim());
 			}
-			CommandContext context = new CommandContext(e);
+			CommandContext<SlashCommandInteractionEvent> context = new CommandContext<>(e);
 			try {
+				CommandAudit.addCommandAudit(context, c.toString());
 				Commands.DISPATCHER.getDispatcher().execute(c.toString() , context);
 			} catch (Throwable t) {
 				if(t.getMessage() != null && !t.getMessage().isBlank()) {
