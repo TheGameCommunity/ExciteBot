@@ -77,7 +77,7 @@ public class Player implements Banee<Player>, Owned<User, Player> {
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public static Player addPlayer(CommandContext<?> context, boolean automatic, int playerID, String friendCode, String name) throws SQLException {
 		
-		if(context.getEvent(Player.class) instanceof UnknownPlayer) {
+		if(context.getEvent(Object.class) instanceof UnknownPlayer) {
 			UnknownPlayer player = context.getEvent(UnknownPlayer.class);
 			player.name = name;
 			player.friendCode = friendCode;
@@ -364,7 +364,7 @@ public class Player implements Banee<Player>, Owned<User, Player> {
 	public void updateSecondsPlayed() {
 		try {
 			if(!isOnline() || !Wiimmfi.getOnlinePlayers().contains(this)) {
-				throw new IllegalStateException();
+				throw new IllegalStateException(this.getIdentifierName());
 			}
 			Table.updateWhere(ConsoleContext.INSTANCE, PLAYERS, SECONDS_PLAYED, Duration.between(getLastOnline(), Instant.now()).plus(getOnlineDuration()), new Comparison(PLAYER_ID, EQUALS, this.getID()));
 		} catch (SQLException e) {
