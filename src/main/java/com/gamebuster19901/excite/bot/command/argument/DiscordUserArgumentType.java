@@ -3,6 +3,7 @@ package com.gamebuster19901.excite.bot.command.argument;
 import java.util.concurrent.CompletableFuture;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.Nullable;
 
 import com.gamebuster19901.excite.Main;
 import com.gamebuster19901.excite.bot.command.CommandContext;
@@ -18,29 +19,25 @@ import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.exceptions.ErrorResponseException;
 
 public class DiscordUserArgumentType implements ArgumentType<User>{
 	
 	@Override
 	public <S> User parse(S context, StringReader reader) throws CommandSyntaxException {
-		String s = Commands.readString(reader);
-		long id;
-			if(s.length() > 3) {
-				if(s.startsWith("<@")) {
-					try {
-						id = Long.parseLong(s.substring(StringUtils.lastIndexOf(s, '(') + 1, s.length() - 2));
-					}
-					catch(Throwable t) {
-						t.printStackTrace();
-						throw t;
-					}
-				}
-				else {
-					id = Long.parseLong(s);
-				}
-				return Main.discordBot.jda.retrieveUserById(id).complete();
-			}
-		throw ParseExceptions.DISCORD_NOT_FOUND.create(s);
+		int beginIndex = reader.getCursor();
+		User user = getUser(reader);
+		int endIndex = reader.getCursor();
+		if(user != null) {
+			return user;
+		}
+		reader.setCursor(beginIndex);
+		int amount = endIndex - beginIndex;
+		StringBuilder sb = new StringBuilder();
+		for(int i = 0; i < amount; i++) {
+			sb.append(reader.read());
+		}
+		throw ParseExceptions.DISCORD_NOT_FOUND.create(sb);
 	}
 	
 	@Override
@@ -61,6 +58,34 @@ public class DiscordUserArgumentType implements ArgumentType<User>{
 			});
 		}
 		return builder.buildFuture();
+	}
+	
+	@Nullable
+	public User getUser(StringReader s) {
+		long id;
+		int cursor = s.getCursor();
+		StringBuilder sb = new StringBuilder();
+		if(s.canRead(2)) {
+			sb.append(s.read());
+			sb.append(s.read());
+			if(sb.toString().equals("<@")) {
+				while(s.canRead()) {
+					char c = s.read();
+					sb.append(c);
+					if(c == '>') {
+						try {
+							String userString = sb.toString();
+							id = Long.parseLong(userString.substring(StringUtils.lastIndexOf(userString, '(') + 1, userString.length() - 2));
+							return Main.discordBot.jda.retrieveUserById(id).complete();
+						}
+						catch(ErrorResponseException | NumberFormatException e) {
+							
+						}
+					}
+				}
+			}
+		}
+		return null;
 	}
 	
 }
