@@ -66,7 +66,7 @@ jobs:
       uses: mikepenz/gradle-dependency-submission@v0.8.4
 
     - name: Build with Gradle
-      run: ./gradlew build
+      run: ./gradlew shadowJar
 
     # ℹ️ Command-line programs to run using the OS shell.
     # 📚 See https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idstepsrun
