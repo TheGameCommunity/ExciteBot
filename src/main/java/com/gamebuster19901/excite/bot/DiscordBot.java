@@ -14,6 +14,8 @@ import java.util.logging.Logger;
 
 import javax.security.auth.login.LoginException;
 
+import org.apache.http.client.HttpResponseException;
+
 import com.gamebuster19901.excite.Wiimmfi;
 import com.gamebuster19901.excite.bot.command.Commands;
 import com.gamebuster19901.excite.bot.command.argument.GlobalLiteralArgumentBuilder.GlobalLiteralCommandNode;
@@ -110,7 +112,8 @@ public class DiscordBot {
 		}
 		
 		Presence presence = jda.getPresence();
-		if(wiimmfi.getError() == null) {
+		Throwable e = wiimmfi.getError();
+		if(e == null) {
 			int playerCount = Wiimmfi.getAcknowledgedPlayerCount();
 			if (presence.getStatus() != OnlineStatus.ONLINE || presence.getActivity() == null || presence.getActivity().getType() != ActivityType.WATCHING || !presence.getActivity().getName().equals(playerCount + " racers online")) {
 				presence.setPresence(OnlineStatus.ONLINE, Activity.of(ActivityType.WATCHING, playerCount + " racers online"));
@@ -118,7 +121,18 @@ public class DiscordBot {
 		}
 		else {
 			if(presence.getStatus() != OnlineStatus.DO_NOT_DISTURB) {
-				presence.setPresence(OnlineStatus.DO_NOT_DISTURB, Activity.of(ActivityType.WATCHING, "Bot offline"));
+				if(e instanceof HttpResponseException) {
+					HttpResponseException r = (HttpResponseException) e;
+					if(r.getStatusCode() == 503) {
+						presence.setPresence(OnlineStatus.DO_NOT_DISTURB, Activity.of(ActivityType.WATCHING, "Wiimmfi Undergoing Maintenance"));
+					}
+					else if (r.getStatusCode() >= 500 && r.getStatusCode() < 600) {
+						presence.setPresence(OnlineStatus.DO_NOT_DISTURB, Activity.of(ActivityType.WATCHING, "Wiimmfi offline: " + r.getReasonPhrase()));
+					}
+				}
+				else {
+					presence.setPresence(OnlineStatus.DO_NOT_DISTURB, Activity.of(ActivityType.WATCHING, "Bot offline"));
+				}
 			}
 		}
 	}
