@@ -7,6 +7,9 @@ import java.util.Base64;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.io.IOUtils;
 
+import com.gamebuster19901.excite.game.cLanguage.Signed;
+import com.gamebuster19901.excite.game.cLanguage.Unsigned;
+
 public class CRCTester {
 	
 	public static final @Unsigned int[] POLYNOMIALS = getCRC32Table();

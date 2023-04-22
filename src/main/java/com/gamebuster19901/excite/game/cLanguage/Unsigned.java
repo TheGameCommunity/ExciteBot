@@ -1,4 +1,4 @@
-package com.gamebuster19901.excite.game.crc;
+package com.gamebuster19901.excite.game.cLanguage;
 
 import static java.lang.annotation.ElementType.*;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
