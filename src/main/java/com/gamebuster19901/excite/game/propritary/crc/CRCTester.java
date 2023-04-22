@@ -1,4 +1,4 @@
-package com.gamebuster19901.excite.game.crc;
+package com.gamebuster19901.excite.game.propritary.crc;
 
 import java.io.IOException;
 import java.io.InputStream;
