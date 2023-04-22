@@ -21,6 +21,7 @@ build
 hs_err_pid*.log
 
 #Run
+/dev
 /run
 /backups
 /.archive
