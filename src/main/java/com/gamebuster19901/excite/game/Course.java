@@ -25,7 +25,7 @@ public class Course {
 	}
 	
 	public boolean acceptingChallenges() {
-		if(cup.isTutorial() || cup.isMode(Mode.POKER) || cup.isMode(Mode.MINIGAME)) {
+		if(cup.isTutorial() || cup.isMode(Mode.POKER) || cup.isMode(Mode.MINIGAME)) { //the game can send replays and challenges for poker and minigames, but the bot doesn't support this for now.
 			return false;
 		}
 		return true;
