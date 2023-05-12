@@ -29,6 +29,7 @@ public enum Table {
 	AUDIT_TRANSACTIONS,
 	AUDIT_WII_REGISTER,
 	AUDITS,
+	BETA_TESTERS,
 	DISCORD_SERVERS,
 	DISCORD_USERS,
 	MAIL,
@@ -167,6 +168,39 @@ public enum Table {
 			demoter.sendMessage(user.getAsMention() + " is no longer a bot operator for " + botName);
 		} catch (SQLException e) {
 			demoter.sendMessage("could not revoke the operator permissions of " + user);
+			demoter.sendMessage(StacktraceUtil.getStackTrace(e));
+			throw new IOError(e);
+		}
+	}
+	
+	@SuppressWarnings("rawtypes")
+	public static void addTester(CommandContext promoter, User user) {
+		PreparedStatement st = null;
+		try {
+			st = Insertion.insertInto(BETA_TESTERS).setColumns(Column.DISCORD_ID).to(user.getIdLong()).prepare(promoter);
+			st.execute();
+			String botName = Main.discordBot.getSelfUser().getAsMention();
+			DiscordUser.sendMessage(user, promoter.getMention() + " has promoted you to beta tester for " + botName);
+		}
+		catch(SQLException e) {
+			promoter.sendMessage("Could not make " + user + " a beta tester:");
+			promoter.sendMessage(StacktraceUtil.getStackTrace(e));
+			if(st != null) {
+				System.out.println(st);
+			}
+			throw new IOError(e);
+		}
+	}
+	
+	@SuppressWarnings("rawtypes")
+	public static void removeTester(CommandContext demoter, User user) {
+		try {
+			deleteWhere(demoter, Table.BETA_TESTERS, new Comparison(Column.DISCORD_ID, Comparator.EQUALS, user.getIdLong()));
+			String botName = Main.discordBot.getSelfUser().getAsMention();
+			DiscordUser.sendMessage(user, "You are no longer a beta tester for " + botName);
+		}
+		catch(SQLException e) {
+			demoter.sendMessage("Could not revoke beta tester permissions from " + user);
 			demoter.sendMessage(StacktraceUtil.getStackTrace(e));
 			throw new IOError(e);
 		}

@@ -41,9 +41,12 @@ public class RankCommand {
 			else if (rank.equalsIgnoreCase("operator") || rank.equalsIgnoreCase("op")) {
 				return addOperator(context, user);
 			}
+			else if (rank.equalsIgnoreCase("tester")) {
+				return addTester(context, user);
+			}
 		}
 		else {
-			context.sendMessage("You do not have permission to execute that command.");
+			context.replyMessage("You do not have permission to execute that command.");
 		}
 		return 1;
 	}
@@ -57,9 +60,12 @@ public class RankCommand {
 			else if (rank.equalsIgnoreCase("operator") || rank.equalsIgnoreCase("op")) {
 				return removeOperator(context, user);
 			}
+			else if (rank.equalsIgnoreCase("tester")) {
+				return removeTester(context, user);
+			}
 		}
 		else {
-			context.sendMessage("You do not have permission to execute that command.");
+			context.replyMessage("You do not have permission to execute that command.");
 		}
 		return 1;
 	}
@@ -67,7 +73,7 @@ public class RankCommand {
 	@SuppressWarnings("rawtypes")
 	private static int addAdmin(CommandContext context, User user) {		
 		if(DiscordUser.isAdmin(user)) {
-			context.sendMessage(user + " is already a bot admin");
+			context.replyMessage(user + " is already a bot admin");
 		}
 		else {
 			DiscordUser.setAdmin(context, user, true);
@@ -78,7 +84,7 @@ public class RankCommand {
 	@SuppressWarnings("rawtypes")
 	private static int removeAdmin(CommandContext context, User user) {
 		if(!DiscordUser.isAdmin(user)) {
-			context.sendMessage(user + " is already not an admin");
+			context.replyMessage(user + " is already not an admin");
 		}
 		else {
 			DiscordUser.setAdmin(context, user, false);
@@ -90,7 +96,7 @@ public class RankCommand {
 	private static int addOperator(CommandContext context, User user) {
 		
 		if(DiscordUser.isOperator(user)) {
-			context.sendMessage(user + " is already a bot operator");
+			context.replyMessage(user + " is already a bot operator");
 		}
 		else {
 			DiscordUser.setOperator(context, user, true);
@@ -102,7 +108,7 @@ public class RankCommand {
 	@SuppressWarnings("rawtypes")
 	private static int removeOperator(CommandContext context, User user) {		
 		if(!DiscordUser.isOperator(user)) {
-			context.sendMessage(user + " is already not a bot operator");
+			context.replyMessage(user + " is already not a bot operator");
 		}
 		else {
 			DiscordUser.setOperator(context, user, false);
@@ -110,4 +116,25 @@ public class RankCommand {
 		return 1;
 	}
 	
+	@SuppressWarnings("rawtypes")
+	private static int addTester(CommandContext context, User user) {
+		if(DiscordUser.isTester(user)) {
+			context.replyMessage(user + " is already a beta tester");
+		}
+		else {
+			DiscordUser.setTester(context, user, true);
+		}
+		return 1;
+	}
+	
+	@SuppressWarnings("rawtypes")
+	private static int removeTester(CommandContext context, User user) {
+		if(!DiscordUser.isTester(user)) {
+			context.replyMessage(user + " is already not a beta tester");
+		}
+		else {
+			DiscordUser.setTester(context, user, false);
+		}
+		return 1;
+	}
 }

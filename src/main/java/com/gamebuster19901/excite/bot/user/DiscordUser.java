@@ -140,6 +140,16 @@ public class DiscordUser{
 		}
 	}
 	
+	public static boolean isTester(User user) {
+		try {
+			Result result = Table.selectAllFromWhere(ConsoleContext.INSTANCE, Table.BETA_TESTERS, new Comparison(DISCORD_ID, EQUALS, user.getIdLong()));
+			return result.next();
+		}
+		catch(SQLException e) {
+			throw new IOError(e);
+		}
+	}
+	
 	public static boolean isKnown(long discordID) {
 		return Table.existsWhere(ConsoleContext.INSTANCE, Table.DISCORD_USERS, new Comparison(DISCORD_ID, EQUALS, discordID));
 	}
@@ -156,9 +166,11 @@ public class DiscordUser{
 	public static void setAdmin(CommandContext promoter, User user, boolean admin) {
 		if(admin) {
 			Table.addAdmin(promoter, user);
+			promoter.replyMessage("Successfully promoted " + user.getAsMention() + " to admin");
 		}
 		else {
 			Table.removeAdmin(promoter, user);
+			promoter.replyMessage("Successfully revoked adminship of " + user.getAsMention());
 		}
 		if(admin == false && isOperator(user)) {
 			setOperator(promoter, user, false);
@@ -173,11 +185,25 @@ public class DiscordUser{
 				setAdmin(promoter, user, operator);
 			}
 			Table.addOperator(promoter, user);
+			promoter.replyMessage("Successfully promoted " + user.getAsMention() + " to operator");
 		}
 		else {
 			Table.removeOperator(promoter, user);
+			promoter.replyMessage("Successfully revoked operator permissions of " + user.getAsMention() + " (User still has admin privilages)");
 		}
 		RankChangeAudit.addRankChange(promoter, user, "operator", operator);
+	}
+	
+	public static void setTester(CommandContext promoter, User user, boolean tester) {
+		if(tester) {
+			Table.addTester(promoter, user);
+			promoter.replyMessage(user.getAsMention() + " is now a beta tester");
+		}
+		else {
+			Table.removeTester(promoter, user);
+			promoter.replyMessage(user.getAsMention() + " is no longer a beta tester");
+		}
+		RankChangeAudit.addRankChange(promoter, user, "tester", tester);
 	}
 	
 	public static int getNotifyThreshold(User user) {
