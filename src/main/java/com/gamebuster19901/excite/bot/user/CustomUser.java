@@ -14,7 +14,7 @@ import net.dv8tion.jda.api.requests.restaction.CacheRestAction;
 
 abstract class CustomUser implements User {
 
-	protected String name;;
+	protected String name;
 	protected String discriminator;
 	protected long id;
 	

@@ -54,6 +54,7 @@ public class NamedDiscordUser implements User, Named<NamedDiscordUser> {
 	}
 
 	@Override
+	@Deprecated
 	public String getDiscriminator() {
 		return user.getDiscriminator();
 	}
@@ -116,6 +117,11 @@ public class NamedDiscordUser implements User, Named<NamedDiscordUser> {
 	@Override
 	public int getFlagsRaw() {
 		return user.getFlagsRaw();
+	}
+
+	@Override
+	public String getGlobalName() {
+		return user.getGlobalName();
 	}
 
 }

@@ -18,7 +18,7 @@ public class ConsoleUser extends CustomUser {
 
 	@Override
 	public String getAsMention() {
-		return "CONSOLE";
+		return name;
 	}
 	
 	public static ConsoleUser getConsoleUser() {
@@ -32,6 +32,11 @@ public class ConsoleUser extends CustomUser {
 	
 	public void sendMessage(String message) {
 		DiscordUser.sendMessage(this, message);
+	}
+
+	@Override
+	public String getGlobalName() {
+		return name;
 	}
 	
 }

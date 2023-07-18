@@ -17,6 +17,11 @@ public class UnknownUser extends CustomUser {
 	public String getAsMention() {
 		return getName() + getDiscriminator();
 	}
+
+	@Override
+	public String getGlobalName() {
+		return getName();
+	}
 	
 
 }

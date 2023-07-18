@@ -17,4 +17,9 @@ public class Nobody extends CustomUser {
 	public String getAsMention() {
 		return "Nobody";
 	}
+
+	@Override
+	public String getGlobalName() {
+		return "Nobody";
+	}
 }
