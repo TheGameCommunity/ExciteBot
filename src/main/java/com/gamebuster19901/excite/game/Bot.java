@@ -23,7 +23,8 @@ public enum Bot {
 	LIZARD,
 	SQUID,
 	BOULDER,
-	FLEA;
+	FLEA,
+	CRICKET;
 	
 	public String toString() {
 		return WordUtils.capitalizeFully(name());
