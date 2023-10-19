@@ -42,10 +42,10 @@ import com.gamebuster19901.excite.bot.command.ConsoleContext;
 import com.gamebuster19901.excite.bot.database.Insertion;
 import com.gamebuster19901.excite.bot.user.Wii;
 import com.gamebuster19901.excite.bot.user.Wii.InvalidWii;
-import com.gamebuster19901.excite.game.challenge.InvalidChallenge;
-import com.gamebuster19901.excite.game.challenge.Rewardable;
 import com.gamebuster19901.excite.util.StacktraceUtil;
 import com.gamebuster19901.excite.util.TimeUtils;
+import com.thegamecommunity.excite.modding.game.challenge.InvalidChallenge;
+import com.thegamecommunity.excite.modding.game.challenge.Rewardable;
 
 import java.io.File;
 

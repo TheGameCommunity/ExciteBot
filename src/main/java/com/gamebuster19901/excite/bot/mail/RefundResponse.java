@@ -4,7 +4,7 @@ import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 
 import com.gamebuster19901.excite.bot.user.Wii;
-import com.gamebuster19901.excite.game.challenge.Rewardable;
+import com.thegamecommunity.excite.modding.game.challenge.Rewardable;
 
 public class RefundResponse extends MailReplyResponse implements Rewardable {
 

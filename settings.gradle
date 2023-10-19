@@ -4,4 +4,7 @@ sourceControl {
 	gitRepository('https://github.com/TheGameCommunity/brigadier.git') {
 		producesModule('com.thegamecommunity:brigadier')
 	}
+	gitRepository('https://github.com/TheGameCommunity/excite.git') {
+		producesModule('com.thegamecommunity:excite')
+	}
 }

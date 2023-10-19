@@ -6,7 +6,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 
-import org.jetbrains.annotations.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 import com.gamebuster19901.excite.bot.audit.Audit;
 import com.gamebuster19901.excite.bot.audit.AuditType;

@@ -3,11 +3,11 @@ package com.gamebuster19901.excite.bot.command;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.gamebuster19901.excite.game.Bot;
-import com.gamebuster19901.excite.game.Course;
-import com.gamebuster19901.excite.game.Cup;
-import com.gamebuster19901.excite.game.Mode;
 import com.mojang.brigadier.CommandDispatcher;
+import com.thegamecommunity.excite.modding.game.Bot;
+import com.thegamecommunity.excite.modding.game.Course;
+import com.thegamecommunity.excite.modding.game.Cup;
+import com.thegamecommunity.excite.modding.game.Mode;
 
 public class GameDataCommand {
 

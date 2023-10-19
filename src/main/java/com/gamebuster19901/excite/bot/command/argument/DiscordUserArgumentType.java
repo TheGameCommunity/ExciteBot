@@ -3,7 +3,7 @@ package com.gamebuster19901.excite.bot.command.argument;
 import java.util.concurrent.CompletableFuture;
 
 import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 import com.gamebuster19901.excite.Main;
 import com.gamebuster19901.excite.bot.command.CommandContext;

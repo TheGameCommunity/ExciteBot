@@ -5,9 +5,9 @@ import java.io.FileInputStream;
 import java.nio.file.Paths;
 
 import com.gamebuster19901.excite.bot.server.emote.Emote;
-import com.gamebuster19901.excite.game.propritary.crc.CRCTester;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
+import com.thegamecommunity.excite.modding.game.propritary.crc.CRCTester;
 
 public class CRCCommand {
 	public static final int POLYNOMIAL = 0x690CE0EE;

@@ -13,7 +13,7 @@ import static com.gamebuster19901.excite.bot.database.Table.*;
 import java.io.IOError;
 import java.sql.SQLException;
 
-import org.jetbrains.annotations.Nullable;
+import org.eclipse.jdt.annotation.Nullable;
 
 import static com.gamebuster19901.excite.bot.database.Column.*;
 import static com.gamebuster19901.excite.bot.database.Comparator.*;
