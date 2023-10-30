@@ -9,11 +9,11 @@ public class ConsoleUser extends CustomUser {
 	
 	public static final long CONSOLE_USER_ID = 0;
 	
-	private final String name = "CONSOLE";
+	private static final String name = "CONSOLE";
 	
 	@Deprecated
 	public ConsoleUser() {
-		super(CONSOLE_USER_ID);
+		super(name, "0000", CONSOLE_USER_ID);
 	}
 
 	@Override

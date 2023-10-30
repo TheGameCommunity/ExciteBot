@@ -53,7 +53,8 @@ public class CommandContext<E> {
 		if(event instanceof Player) {
 			return (Player) event;
 		}
-		return null;
+		throw new AssertionError(event.getClass().getCanonicalName());
+		//return null;
 	}
 	
 	public User getDiscordAuthor() {
@@ -78,7 +79,7 @@ public class CommandContext<E> {
 	}
 	
 	public boolean isDiscordContext() {
-		return event instanceof ISnowflake;
+		return event instanceof ISnowflake && !(event instanceof ConsoleUser);
 	}
 	
 	public boolean isGuildContext() {
@@ -226,11 +227,11 @@ public class CommandContext<E> {
 	}
 	
 	public boolean isAdmin() {
-		return DiscordUser.isOperator(getDiscordAuthor());
+		return DiscordUser.isOperator(getDiscordAuthor()) || isConsoleMessage();
 	}
 
 	public boolean isOperator() {
-		return DiscordUser.isOperator(getDiscordAuthor());
+		return DiscordUser.isOperator(getDiscordAuthor()) || isConsoleMessage();
 	}
 
 	public void deletePromptingMessage(ConsoleContext instance, String string) {
