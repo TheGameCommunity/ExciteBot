@@ -76,9 +76,9 @@ public class Mailbox {
 	public static final Session SESSION = Session.getInstance(new Properties());
 	static {
 		LOGGER.setLevel(Level.FINEST);
-		ConsoleHandler consoleHandler = new ConsoleHandler();
-		consoleHandler.setLevel(Level.FINEST);
-		LOGGER.addHandler(consoleHandler);
+		//ConsoleHandler consoleHandler = new ConsoleHandler();
+		//consoleHandler.setLevel(Level.FINEST);
+		//LOGGER.addHandler(consoleHandler);
 		MAILBOX = new File("./run/Mailbox");
 		INBOX = new File("./run/Mailbox/Inbox");
 		INBOX_ERRORED = new File("./run/Mailbox/Inbox/Errored");
@@ -366,8 +366,8 @@ public class Mailbox {
 			post.getEntity().writeTo(fos);
 			fos.close();
 
-			System.out.println(client.execute(post).getStatusLine());
-			Commands.DISPATCHER.getDispatcher().execute("stop", ConsoleContext.INSTANCE);
+			//System.out.println(client.execute(post).getStatusLine());
+			//Commands.DISPATCHER.getDispatcher().execute("stop", ConsoleContext.INSTANCE);
 		}
 		catch(Throwable t) {
 			LOGGER.log(Level.FINEST, "Failed to send emails", t);
