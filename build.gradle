@@ -33,8 +33,8 @@ dependencies {
 	implementation group: 'com.thegamecommunity', name:'brigadier', version: 'TGC-1.3.0.0'
 	shadow group: 'com.mysql', name: 'mysql-connector-j', version: '8.2.0'
 	shadow group: 'org.eclipse.jdt', name: 'org.eclipse.jdt.annotation', version: '2.2.700'
-	shadow group: 'com.thegamecommunity', name:'excite', version: '0.1.0.0'
-	implementation group: 'com.thegamecommunity', name:'excite', version: '0.1.0.0'
+	shadow group: 'com.thegamecommunity', name:'excite', version: '0.3.0.0'
+	implementation group: 'com.thegamecommunity', name:'excite', version: '0.3.0.0'
 	
 	
 	/*

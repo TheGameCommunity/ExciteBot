@@ -1,6 +1,5 @@
 package com.gamebuster19901.excite.bot.mail;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.input.QueueInputStream;
 import org.apache.http.HttpEntity;
