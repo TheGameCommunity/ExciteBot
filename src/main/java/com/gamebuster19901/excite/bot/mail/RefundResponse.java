@@ -20,14 +20,4 @@ public class RefundResponse extends MailReplyResponse implements Rewardable {
 		return rewardable.getReward();
 	}
 
-	@Override
-	protected String getResponseTemplate() {
-		throw new AssertionError("Not implemented");
-	}
-	
-	@Override
-	public void initVars() {
-		super.initVars();
-	}
-
 }

@@ -1,17 +1,18 @@
 package com.gamebuster19901.excite.bot.mail;
 
-import javax.mail.MessagingException;
-import javax.mail.internet.MimeMessage;
+import java.io.OutputStream;
+
+import javax.mail.Message;
 
 public class NoResponse extends MailResponse {
 	
-	NoResponse(MimeMessage message) {
-		super(message);
+	NoResponse(Message prompt) {
+		super(prompt);
 	}
-	
+
 	@Override
-	public String getResponse() throws MessagingException {
-		return null;
+	public void writeTo(OutputStream o) {
+		//NO-OP
 	}
 
 }
