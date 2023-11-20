@@ -6,12 +6,13 @@ import static com.gamebuster19901.excite.bot.database.Table.AUDITS;
 
 import java.io.File;
 import java.io.IOError;
+import java.io.IOException;
 import java.sql.SQLException;
 
+import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeMessage;
 
 import com.gamebuster19901.excite.bot.command.ConsoleContext;
 import com.gamebuster19901.excite.bot.command.CommandContext;
@@ -36,7 +37,7 @@ public class MailAudit extends Audit {
 	}
 
 	@SuppressWarnings("rawtypes")
-	public static MailAudit addMailAudit(CommandContext context, MimeMessage message, boolean incoming, File file) throws AddressException, MessagingException {
+	public static MailAudit addMailAudit(CommandContext context, Message message, boolean incoming, File file) throws AddressException, MessagingException, IOException {
 		ElectronicAddress from = new EmailAddress(message.getFrom()[0]);
 		ElectronicAddress to = new EmailAddress(new InternetAddress(message.getHeader("To")[0]));
 		String description = from.getEmail() + " sent mail to " + to.getEmail();
@@ -62,7 +63,7 @@ public class MailAudit extends Audit {
 		try {
 			st = Insertion.insertInto(Table.MAIL)
 			.setColumns(AUDIT_ID, SENDER, RECIPIENT, INCOMING, MAIL_TYPE, FILE)
-			.to(parent.getID(), from.getEmail(), to.getEmail(), incoming, mailType, file.getAbsolutePath())
+			.to(parent.getID(), from.getEmail(), to.getEmail(), incoming, mailType, file.getCanonicalPath())
 			.prepare(context, true);
 			
 			st.execute();

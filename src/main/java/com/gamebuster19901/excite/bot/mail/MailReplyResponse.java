@@ -1,17 +1,24 @@
 package com.gamebuster19901.excite.bot.mail;
 
+import java.io.IOException;
+import java.io.OutputStream;
+
+import javax.mail.Message;
 import javax.mail.MessagingException;
+import javax.mail.Message.RecipientType;
+import javax.mail.internet.AddressException;
+import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
 import com.gamebuster19901.excite.bot.user.Wii;
 
-public abstract class MailReplyResponse extends MailResponse {
+public abstract class MailReplyResponse extends MailResponse implements EmailResponse {
 	
 	protected Wii responder;
 	protected ElectronicAddress respondee;
-	protected String response = getResponseTemplate();
+	protected Message response = new MimeMessage(Mailbox.SESSION);
 	
-	public MailReplyResponse(Wii responder, ElectronicAddress respondee, MimeMessage message) {
+	public MailReplyResponse(Wii responder, ElectronicAddress respondee, Message message) throws MessagingException {
 		super(message);
 		this.responder = responder;
 		this.respondee = respondee;
@@ -29,21 +36,31 @@ public abstract class MailReplyResponse extends MailResponse {
 		return respondee;
 	}
 	
-	@Override
-	public String getResponse() throws MessagingException {
+	public Message getResponse() throws MessagingException {
 		return response;
 	}
 	
-	public void initVars() {
-		setVar("from", responder.getEmail());
-		setVar("to", respondee.getEmail());
-		setVar("boundary", Mailbox.BOUNDARY);
+	@Override
+	public MailReplyResponse setSubject(String subject) throws MessagingException {
+		response.setSubject(subject);
+		return this;
+	}
+
+	@Override
+	public MailReplyResponse setFrom(ElectronicAddress address) throws AddressException, MessagingException {
+		response.setFrom(new InternetAddress(address.getEmail()));
+		return this;
+	}
+
+	@Override
+	public MailReplyResponse setTo(ElectronicAddress to) throws AddressException, MessagingException {
+		response.setRecipient(RecipientType.TO, new InternetAddress(to.getEmail()));
+		return this;
 	}
 	
-	public void setVar(String var, String value) {
-		response = response.replace("%" + var + "%", value);
+	@Override
+	public final void writeTo(OutputStream o) throws IOException, MessagingException {
+		response.writeTo(o);
 	}
-	
-	protected abstract String getResponseTemplate();
 	
 }

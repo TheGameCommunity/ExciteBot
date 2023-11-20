@@ -3,8 +3,8 @@ package com.gamebuster19901.excite.bot.user;
 import java.awt.Color;
 import java.io.IOError;
 import java.sql.SQLException;
-import java.util.LinkedHashSet;
 import java.util.Random;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 import javax.mail.MessagingException;
@@ -18,9 +18,8 @@ import com.gamebuster19901.excite.bot.database.Comparison;
 import com.gamebuster19901.excite.bot.database.Result;
 import com.gamebuster19901.excite.bot.database.Table;
 import com.gamebuster19901.excite.bot.mail.ElectronicAddress;
-import com.gamebuster19901.excite.bot.mail.MailResponse;
 import com.gamebuster19901.excite.bot.mail.Mailbox;
-import com.gamebuster19901.excite.bot.mail.TextualMailResponse;
+import com.gamebuster19901.excite.bot.mail.WiiDashboardResponse;
 import com.gamebuster19901.excite.bot.server.emote.Emote;
 import com.gamebuster19901.excite.util.Named;
 import com.gamebuster19901.excite.util.Owned;
@@ -157,15 +156,13 @@ public class Wii implements Named<Wii>, Owned<User, Wii>, ElectronicAddress {
 		ElectronicAddress exciteEmail = Mailbox.ADDRESS;
 		MessageCreateData message = MessageCreateData.fromEmbeds(embed.build());
 		owner.replyMessage(message, true, false);
-		LinkedHashSet<MailResponse> wiiMail = Mailbox.packResponses(
-				new TextualMailResponse((Wii)exciteEmail, this, null).setText(
-					"This wii has been registered with\n Excitebot.\n" +
-					"registrant: " + DiscordUser.toDetailedString(getOwner()) + "\n\n" +
-					"If this is not you, contact a TCG\nadmin immediately.\n\n" +
-					"-The Game Community"
-				)
-			);
-		Mailbox.sendResponses(wiiMail);
+		WiiDashboardResponse notice = new WiiDashboardResponse((Wii)exciteEmail, this, null).setText(
+			"This wii has been registered with\n Excitebot.\n" +
+			"registrant: " + DiscordUser.toDetailedString(getOwner()) + "\n\n" +
+			"If this is not you, contact a TCG\nadmin immediately.\n\n" +
+			"-The Game Community"
+		);
+		Mailbox.sendResponses(Set.of(notice));
 	}
 	
 	public static Wii getWii(String code) {

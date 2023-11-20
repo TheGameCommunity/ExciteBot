@@ -2,6 +2,8 @@ package com.gamebuster19901.excite.bot.command;
 
 import java.time.Instant;
 
+import javax.mail.Address;
+
 import com.gamebuster19901.excite.Player;
 import com.gamebuster19901.excite.bot.user.ConsoleUser;
 import com.gamebuster19901.excite.bot.user.DiscordUser;
@@ -32,7 +34,7 @@ public class CommandContext<E> {
 	private EmbedBuilder embedBuilder;
 	
 	public CommandContext(E e) {
-		if(e instanceof MessageReceivedEvent || e instanceof Interaction || e instanceof GuildReadyEvent || e instanceof User || e instanceof Player) {
+		if(e instanceof MessageReceivedEvent || e instanceof Interaction || e instanceof GuildReadyEvent || e instanceof User || e instanceof Player || e instanceof Address) {
 			this.event = e;
 		}
 		else {
