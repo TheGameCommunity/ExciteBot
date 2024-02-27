@@ -15,6 +15,7 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.mail.MessagingException;
 import javax.security.auth.login.LoginException;
 
 import com.gamebuster19901.excite.bot.DiscordBot;
@@ -260,6 +261,9 @@ public class Main {
 					}
 					catch(InterruptedException e) {
 						break;
+					}
+					catch(MessagingException e) {
+						e.printStackTrace(); //We don't want to crash if a message simply fails to parse
 					}
 					catch(Throwable t) {
 						throw new RuntimeException(t);
