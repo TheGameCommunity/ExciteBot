@@ -41,7 +41,7 @@ dependencies {
 	* Testing
 	*/
 	
-	testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.10.1'
+	testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.10.2'
 	
 	/*
 	* Transitive dependencies declared to resolve security vulnerabilities
