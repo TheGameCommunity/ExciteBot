@@ -27,6 +27,8 @@ hs_err_pid*.log
 /.archive
 # secrets
 **.secret
+badmail
+mailOut*
 
 #ModLauncher
 logs/*
