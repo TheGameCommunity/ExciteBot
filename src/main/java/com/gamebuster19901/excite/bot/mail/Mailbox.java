@@ -30,7 +30,6 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Properties;
 import java.util.Set;
-import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.mail.Address;
@@ -41,7 +40,6 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 
 import com.gamebuster19901.excite.bot.audit.MailAudit;
-import com.gamebuster19901.excite.bot.command.Commands;
 import com.gamebuster19901.excite.bot.command.ConsoleContext;
 import com.gamebuster19901.excite.bot.database.Insertion;
 import com.gamebuster19901.excite.bot.user.Wii;
