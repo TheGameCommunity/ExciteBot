@@ -15,8 +15,8 @@ repositories {
 	}
 }
 
-sourceCompatibility = 19
-targetCompatibility = 19
+sourceCompatibility = 21
+targetCompatibility = 21
 
 dependencies {
 	shadow group: 'com.google.code.gson', name: 'gson', version: '2.10.1'
