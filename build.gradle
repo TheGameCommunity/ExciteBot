@@ -46,12 +46,12 @@ dependencies {
 	/*
 	* Transitive dependencies declared to resolve security vulnerabilities
 	*/
-	shadow group: 'com.squareup.okio', name: 'okio', version: '3.9.0'  //Dependabot Alert #1
+	shadow group: 'com.squareup.okio', name: 'okio', version: '3.9.1'  //Dependabot Alert #1
 }
 
 configurations.all {
 	resolutionStrategy {
-		force group: 'com.squareup.okio', name: 'okio', version: '3.9.0' //Dependabot Alert #1
+		force group: 'com.squareup.okio', name: 'okio', version: '3.9.1' //Dependabot Alert #1
 	}
 }
 
